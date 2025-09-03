@@ -1,0 +1,53 @@
+# ==================================
+# Node.js & React .gitignore
+# ==================================
+
+# Node modules
+node_modules/
+ 
+# Build output
+dist/
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependency directories
+jspm_packages/
+
+# Environment variables
+.env
+.env.*.local
+
+# Cache
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+out/
+.temp/
+
+# Testing
+coverage/
+*.lcov
+
+# IDEs & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Misc
+*.tgz
+*.zip
+
+# React specific
+*.eslintcache
