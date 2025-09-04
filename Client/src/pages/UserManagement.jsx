@@ -1,112 +1,120 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import AddUserModal from '../components/AddNewUser';
+import { getAllUsers } from '../api/userApi';
 
 const UserManagement = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [userTypeFilter, setUserTypeFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+    const [users, SetUsers] = useState([]);
 
-    const users = [
-        {
-            id: 1,
-            name: 'Ramesh Patel',
-            mobile: 'XXXXXXXXX',
-            email: 'ramesh.patel@gmail.com',
-            userType: 'Salesman',
-            status: 'Active',
-            avatar: 'RP'
-        },
-        {
-            id: 2,
-            name: 'Arjun Kumar',
-            mobile: 'XXXXXXXXX',
-            email: 'arjun.kumar@example.com',
-            userType: 'Admin',
-            status: 'Inactive',
-            avatar: 'AK'
-        },
-        {
-            id: 3,
-            name: 'Neha Sharma',
-            mobile: 'XXXXXXXXX',
-            email: 'neha.sharma@example.com',
-            userType: 'Salesman',
-            status: 'Active',
-            avatar: 'NS'
-        },
-        {
-            id: 4,
-            name: 'Rahul Singh',
-            mobile: 'XXXXXXXXX',
-            email: 'rahul.singh@example.com',
-            userType: 'Salesman',
-            status: 'Inactive',
-            avatar: 'RS'
-        },
-        {
-            id: 5,
-            name: 'Priya Agarwal',
-            mobile: 'XXXXXXXXX',
-            email: 'priya.agarwal@example.com',
-            userType: 'Admin',
-            status: 'Active',
-            avatar: 'PA'
-        },
-        {
-            id: 6,
-            name: 'Suresh Verma',
-            mobile: 'XXXXXXXXX',
-            email: 'suresh.verma@example.com',
-            userType: 'Salesman',
-            status: 'Active',
-            avatar: 'SV'
-        },
-        {
-            id: 7,
-            name: 'Deepak Mishra',
-            mobile: 'XXXXXXXXX',
-            email: 'deepak.mishra@example.com',
-            userType: 'Salesman',
-            status: 'Active',
-            avatar: 'DM'
-        },
-        {
-            id: 8,
-            name: 'Anita Bansal',
-            mobile: 'XXXXXXXXX',
-            email: 'anita.bansal@example.com',
-            userType: 'Salesman',
-            status: 'Active',
-            avatar: 'AB'
-        },
-        {
-            id: 9,
-            name: 'Manish Patel',
-            mobile: 'XXXXXXXXX',
-            email: 'manish.patel@example.com',
-            userType: 'Admin',
-            status: 'Inactive',
-            avatar: 'MP'
-        },
-        {
-            id: 10,
-            name: 'Sonia Rani',
-            mobile: 'XXXXXXXXX',
-            email: 'sonia.rani@example.com',
-            userType: 'Salesman',
-            status: 'Active',
-            avatar: 'SR'
-        }
-    ];
+    useEffect(() => {
+        const getUser = async () => {
+            try {
+                const res = await getAllUsers();
+                SetUsers(res);
+            } catch (err) {
+                console.error(err);
+            }
+        };
 
-    const getAvatarColor = (name) => {
-        const colors = [
-            '#8B5CF6', '#F59E0B', '#EF4444', '#10B981', '#3B82F6',
-            '#F97316', '#84CC16', '#06B6D4', '#8B5A2B', '#EC4899'
-        ];
-        return colors[name.charCodeAt(0) % colors.length];
-    };
+        getUser();
+    }, []);
+
+
+    // const users = [
+    //     {
+    //         id: 1,
+    //         name: 'Ramesh Patel',
+    //         mobile: 'XXXXXXXXX',
+    //         email: 'ramesh.patel@gmail.com',
+    //         userType: 'Salesman',
+    //         status: 'Active',
+    //         avatar: 'RP'
+    //     },
+    //     {
+    //         id: 2,
+    //         name: 'Arjun Kumar',
+    //         mobile: 'XXXXXXXXX',
+    //         email: 'arjun.kumar@example.com',
+    //         userType: 'Admin',
+    //         status: 'Inactive',
+    //         avatar: 'AK'
+    //     },
+    //     {
+    //         id: 3,
+    //         name: 'Neha Sharma',
+    //         mobile: 'XXXXXXXXX',
+    //         email: 'neha.sharma@example.com',
+    //         userType: 'Salesman',
+    //         status: 'Active',
+    //         avatar: 'NS'
+    //     },
+    //     {
+    //         id: 4,
+    //         name: 'Rahul Singh',
+    //         mobile: 'XXXXXXXXX',
+    //         email: 'rahul.singh@example.com',
+    //         userType: 'Salesman',
+    //         status: 'Inactive',
+    //         avatar: 'RS'
+    //     },
+    //     {
+    //         id: 5,
+    //         name: 'Priya Agarwal',
+    //         mobile: 'XXXXXXXXX',
+    //         email: 'priya.agarwal@example.com',
+    //         userType: 'Admin',
+    //         status: 'Active',
+    //         avatar: 'PA'
+    //     },
+    //     {
+    //         id: 6,
+    //         name: 'Suresh Verma',
+    //         mobile: 'XXXXXXXXX',
+    //         email: 'suresh.verma@example.com',
+    //         userType: 'Salesman',
+    //         status: 'Active',
+    //         avatar: 'SV'
+    //     },
+    //     {
+    //         id: 7,
+    //         name: 'Deepak Mishra',
+    //         mobile: 'XXXXXXXXX',
+    //         email: 'deepak.mishra@example.com',
+    //         userType: 'Salesman',
+    //         status: 'Active',
+    //         avatar: 'DM'
+    //     },
+    //     {
+    //         id: 8,
+    //         name: 'Anita Bansal',
+    //         mobile: 'XXXXXXXXX',
+    //         email: 'anita.bansal@example.com',
+    //         userType: 'Salesman',
+    //         status: 'Active',
+    //         avatar: 'AB'
+    //     },
+    //     {
+    //         id: 9,
+    //         name: 'Manish Patel',
+    //         mobile: 'XXXXXXXXX',
+    //         email: 'manish.patel@example.com',
+    //         userType: 'Admin',
+    //         status: 'Inactive',
+    //         avatar: 'MP'
+    //     },
+    //     {
+    //         id: 10,
+    //         name: 'Sonia Rani',
+    //         mobile: 'XXXXXXXXX',
+    //         email: 'sonia.rani@example.com',
+    //         userType: 'Salesman',
+    //         status: 'Active',
+    //         avatar: 'SR'
+    //     }
+    // ];
 
     return (
         <div className="bg-background-color min-h-screen ">
@@ -142,7 +150,7 @@ const UserManagement = () => {
                     <div className="flex items-center gap-4">
                         {/* Search */}
                         <div className="relative flex-1 max-w-sm">
-                            <img src="/icons/search.svg" alt="Search" className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 opacity-50" />
+                            <img src="/icons/Search.png" alt="Search" className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 opacity-50" />
                             <input
                                 type="text"
                                 placeholder="Search user name"
@@ -207,32 +215,22 @@ const UserManagement = () => {
                         </thead>
                         <tbody className="bg-background-color divide-y divide-gray-400">
                             {users.map((user) => (
-                                <tr key={user.id} className="hover:bg-gray-50">
+                                <tr key={user.UserId} className="hover:bg-gray-50">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
-                                            <div
-                                                className="h-8 w-8 rounded-full flex items-center justify-center text-white text-sm font-medium mr-3"
-                                                style={{ backgroundColor: getAvatarColor(user.name) }}
-                                            >
-                                                {user.avatar}
-                                            </div>
-                                            <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                                            {/* Add Image Here */}
+                                            <div className="text-sm font-medium text-gray-900">{user.Name}</div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.mobile}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.email}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.Contact}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.Email}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap">{user.UserType}</td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`text-sm font-medium ${user.userType === 'Admin' ? 'text-orange-600' : 'text-blue-600'
+                                        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${user.IsActive
+                                            ? 'bg-green-100 text-green-800'
+                                            : 'bg-red-100 text-red-800'
                                             }`}>
-                                            {user.userType}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${user.status === 'Active'
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-red-100 text-red-800'
-                                            }`}>
-                                            {user.status}
+                                            {user.IsActive ? "Active" : "Inactive"}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

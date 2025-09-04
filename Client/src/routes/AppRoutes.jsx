@@ -16,15 +16,15 @@ export default function AppRoutes() {
         path="/"
         element={
           <PrivateRoute>
-            <Layout /> 
+            <Layout />
           </PrivateRoute>
         }
       >
-        <Route index element={<Dashboard />} /> {/* default route */}
-        <Route path="/user-management" element={<UserManagement />} /> {/* default route */}
+        <Route index element={<Dashboard />} />
 
         {/* add more private pages here */}
-      
+        <Route path="/usermanagement" element={<UserManagement />} />
+
       </Route>
     </Routes>
   );

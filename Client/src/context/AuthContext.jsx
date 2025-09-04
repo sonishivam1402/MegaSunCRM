@@ -6,19 +6,22 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
+  const [token, setToken] = useState(null); // access token
+  const [refreshToken, setRefreshToken] = useState(null);
   const [menus, setMenus] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Load user + token from localStorage on app start
+  // Load user + tokens from localStorage on app start
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
+    const storedRefreshToken = localStorage.getItem("refreshToken");
     const storedUser = localStorage.getItem("user");
     const storedMenus = localStorage.getItem("menus");
 
-    if (storedToken && storedUser && storedMenus) {
+    if (storedToken && storedRefreshToken && storedUser && storedMenus) {
       setToken(storedToken);
+      setRefreshToken(storedRefreshToken);
       setUser(JSON.parse(storedUser));
       setMenus(JSON.parse(storedMenus));
     }
@@ -28,37 +31,53 @@ export const AuthProvider = ({ children }) => {
 
   // Login function
   const login = async (credentials) => {
-    const data = await apiLogin(credentials); // { token, user }
-    setToken(data.token);
+    const data = await apiLogin(credentials); 
+
+    setToken(data.accessToken);
+    setRefreshToken(data.refreshToken);
     setUser(data.user);
     setMenus(data.menus);
 
-    // persist to localStorage
-    localStorage.setItem("token", data.token);
+    localStorage.setItem("token", data.accessToken);
+    localStorage.setItem("refreshToken", data.refreshToken);
     localStorage.setItem("user", JSON.stringify(data.user));
     localStorage.setItem("menus", JSON.stringify(data.menus));
 
-    navigate("/"); // redirect after login
+    navigate("/");
   };
 
   // Logout function
-  const logout = () => {
-    apiLogout();
+  const logout = async () => {
+    try {
+      if (refreshToken) {
+        await apiLogout(); 
+      }
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
 
     // clear state
     setToken(null);
+    setRefreshToken(null);
     setUser(null);
     setMenus([]);
 
     // clear localStorage
-    localStorage.removeItem("token");
-    localStorage.removeItem("menus");
+    localStorage.clear();
 
-    navigate("/login"); // redirect to login
+    navigate("/login");
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, menus, loading }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      token, 
+      refreshToken, 
+      login, 
+      logout, 
+      menus, 
+      loading 
+    }}>
       {children}
     </AuthContext.Provider>
   );

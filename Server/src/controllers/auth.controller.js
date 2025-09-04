@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { generateToken } from "../utils/jwt.js";
+import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 import { sql, poolPromise } from "../database/db.js"; // MSSQL connection
 
 
@@ -40,15 +40,13 @@ export const signIn = async (req, res) => {
     const pool = await poolPromise;
 
     const result = await pool
-        .request()
-        .input("Email", sql.NVarChar, email) 
-        .execute("sp_UserLogin"); 
-
+      .request()
+      .input("Email", sql.NVarChar, email)
+      .execute("sp_UserLogin");
 
     const user = result.recordset[0];
-    console.log(user);
-    if (user.UserId==null) {
-      await logActivity(null, "Login Failed", email); 
+    if (!user) {
+      await logActivity(null, "Login Failed", email);
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
@@ -58,24 +56,95 @@ export const signIn = async (req, res) => {
       return res.status(400).json({ message: "Wrong Password" });
     }
 
-    // Success Activity Log
-    await logActivity(user.UserId, "Login Success", email); 
+    await logActivity(user.UserId, "Login Success", email);
 
-    // Get Permissions
     const menusResult = await pool
       .request()
       .input("UserTypeId", sql.UniqueIdentifier, user.UserTypeId)
       .execute("sp_GetPermissions");
 
-    // Generate JWT
-    const token = generateToken({ id: user.UserId, email: user.Email, userTypeId: user.UserTypeId });
+    // Generate tokens
+    const accessToken = generateAccessToken({
+      id: user.UserId,
+      email: user.Email,
+      userTypeId: user.UserTypeId,
+    });
 
-    const { HashPassword, ...userWithoutPassword } = user; //remove password
+    const refreshToken = generateRefreshToken({
+      id: user.UserId
+    });
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 7);
 
-    res.json({ token, user:userWithoutPassword, menus: menusResult.recordset });
+    // Storing refresh token in DB
+    await pool.request()
+      .input("UserId", sql.UniqueIdentifier, user.UserId)
+      .input("Token", sql.NVarChar, refreshToken)
+      .input("ExpiryDate", sql.DateTime, expiryDate)
+      .query(`
+      INSERT INTO RefreshTokens (UserId, Token, ExpiryDate)
+      VALUES (@UserId, @Token, @ExpiryDate)
+    `);
+
+    const { HashPassword, ...userWithoutPassword } = user;
+
+    res.json({
+      accessToken,
+      refreshToken,
+      user: userWithoutPassword,
+      menus: menusResult.recordset,
+    });
 
   } catch (err) {
     console.error("Login error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Create Refresh Token
+export const refreshToken = async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) return res.status(401).json({ message: "Refresh token required" });
+
+    const pool = await poolPromise;
+    const result = await pool.request()
+      .input("Token", sql.NVarChar, refreshToken)
+      .execute("sp_GetRefreshToken"); 
+
+    const tokenData = result.recordset[0];
+    if (!tokenData || new Date(tokenData.ExpiryDate) < new Date()) {
+      return res.status(403).json({ message: "Invalid or expired refresh token" });
+    }
+    console.log("Refresh Token :", tokenData);
+
+    const newAccessToken = generateAccessToken({
+      id: tokenData.UserId,
+      email: tokenData.Email,
+      userTypeId: tokenData.UserTypeId,
+    });
+
+    res.json({ accessToken: newAccessToken });
+
+  } catch (err) {
+    console.error("Refresh error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Logout
+export const logout = async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    const pool = await poolPromise;
+
+    await pool.request()
+      .input("Token", sql.NVarChar, refreshToken)
+      .execute("sp_DeleteRefreshToken");
+    
+    res.json({ message: "Logged out" });
+  } catch (err) {
+    console.error("Logout error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
