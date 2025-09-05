@@ -2,7 +2,7 @@
 export const checkPermission = (action, pageName) => {
   return (req, res, next) => {
     const userPermissions = req.user.menus; // from DB
-
+    //console.log(req.user.id);
     const page = userPermissions.find(p => p.Name === pageName);
     //console.log(page);
     if (!page || !page[action]) {

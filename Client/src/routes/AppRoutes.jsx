@@ -3,7 +3,8 @@ import LoginPage from "../pages/LoginPage";
 import Dashboard from "../pages/Dashboard";
 import PrivateRoute from "./PrivateRoute";
 import Layout from "../components/Layout";
-import UserManagement from "../pages/UserManagement";
+import UserManagement from "../pages/userManagement/UserManagement";
+import UserDetailsPage from "../pages/userManagement/UserDetail";
 
 export default function AppRoutes() {
   return (
@@ -24,6 +25,7 @@ export default function AppRoutes() {
 
         {/* add more private pages here */}
         <Route path="/usermanagement" element={<UserManagement />} />
+        <Route path="/users/:userId/details" element={<UserDetailsPage />} />
 
       </Route>
     </Routes>

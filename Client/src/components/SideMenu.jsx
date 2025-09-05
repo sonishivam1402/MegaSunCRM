@@ -1,11 +1,12 @@
 import { useAuth } from '../context/AuthContext'
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Logo from "/Logo.png";
 
 const SideMenu = () => {
   const { menus } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [selectedMenu, setSelectedMenu] = useState(null);
   const [isCollapsed, setIsCollapsed] = useState(true);
 
@@ -31,18 +32,26 @@ const SideMenu = () => {
   const orderedSections = sectionOrder.filter(type => groupedMenus[type]);
 
   useEffect(() => {
-    if (menus && menus.length > 0 && !selectedMenu) {
-      // Find the first menu item from the ordered sections
-      if (orderedSections.length > 0 && groupedMenus[orderedSections[0]]?.length > 0) {
-        const firstMenuItem = groupedMenus[orderedSections[0]][0];
-        setSelectedMenu(firstMenuItem.PermissionId);
+    if (menus && menus.length > 0) {
+      // Find the menu item that matches the current location
+      const currentMenu = menus.find(menu => menu.NavigationPath === location.pathname);
+      
+      if (currentMenu) {
+        // If current route matches a menu item, select it
+        setSelectedMenu(currentMenu.PermissionId);
+      } else if (!selectedMenu) {
+        // If no match and no selected menu, default to first menu item
+        if (orderedSections.length > 0 && groupedMenus[orderedSections[0]]?.length > 0) {
+          const firstMenuItem = groupedMenus[orderedSections[0]][0];
+          setSelectedMenu(firstMenuItem.PermissionId);
+        }
       }
     }
-  }, [menus, selectedMenu, orderedSections, groupedMenus]);
+  }, [menus, location.pathname, selectedMenu, orderedSections, groupedMenus]);
 
   return (
     <div 
-      className={`bg-background-color h-screen flex flex-col transition-all duration-300 border-r border-b-color ${
+      className={`bg-w-primary h-screen flex flex-col transition-all duration-300 border-r border-b-color ${
         isCollapsed ? 'w-[80px]' : 'w-[280px]'
       }`}
       onMouseEnter={() => setIsCollapsed(false)}
@@ -62,7 +71,7 @@ const SideMenu = () => {
       {/* Navigation Menu */}
       <nav className="flex-1 py-4">
         {orderedSections.map((type) => (
-          <div key={type} className="mb-6">
+          <div key={type} className={isCollapsed ? "mb-2" : "mb-6"}>
             {/* Section Header - only show when expanded */}
             {!isCollapsed && (
               <div className="px-6 mb-3">

@@ -27,7 +27,7 @@ export const getUserById = async (req, res, next) => {
       .input("UserId", sql.UniqueIdentifier, userId)
       .execute("sp_GetUserByUserId");
 
-    res.json(result.recordset);
+    res.json(result.recordset[0]);
 
   } catch (err) {
     console.error("Error in fetching user deatils :", err);
@@ -36,13 +36,13 @@ export const getUserById = async (req, res, next) => {
 };
 
 
-// Get User Types
-export const getUserTypes = async (req, res, next) => {
+// Get User Types Names
+export const getUserTypeNames = async (req, res, next) => {
   try {
     const pool = await poolPromise;
     const result = await pool
       .request()
-      .execute("sp_GetUserTypes");
+      .execute("sp_GetUserTypeNames");
 
     res.json(result.recordset);
 
@@ -52,25 +52,57 @@ export const getUserTypes = async (req, res, next) => {
   }
 };
 
+// Get User Types
+export const getUserType = async (req, res, next) => {
+  try {
+    const { UserTypeId } = req.body;
+    //console.log("UserTypeId:", UserTypeId);
+
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("UserTypeId", sql.UniqueIdentifier, UserTypeId)
+      .execute("sp_GetUserTypes");
+
+    if (result.recordsets.length > 1) {
+      res.json({
+        data: result.recordsets[0],   // user type details 
+        status: result.recordsets[1][0], // SUCCESS / MESSAGE
+      });
+    } else {
+      res.json({
+        status: result.recordsets[0][0], // Unauthorized response
+      });
+    }
+
+  } catch (err) {
+    console.error("Error in fetching user types:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 // Update User by Id
 export const updateUserbyId = async (req, res, next) => {
   try {
     const { user } = req.body;
+    console.log("User Update Info : ",user);
     const pool = await poolPromise;
     const result = await pool
       .request()
       .input("Name", sql.NVarChar(100), user.name)
-      .input("UserId", sql.UniqueIdentifier, user.userId)
+      .input("UserId", sql.UniqueIdentifier, user.id)
       .input("Email", sql.NVarChar(100), user.email)
       .input("UserTypeId", sql.NVarChar(100), user.userTypeId)
       .input("Contact", sql.NVarChar(20), user.contact.toString())
       .input("ProfileImagePath", sql.NVarChar(sql.MAX), user.profileImagePath)
       .input("Designation", sql.NVarChar(sql.MAX), user.designation)
       .input("IsActive", sql.Bit, user.isActive)
-      .input("ModifiedBy", sql.UniqueIdentifier, user.modifiedBy)
+      .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
       .execute("sp_UpdateUserByUserID");
-
-    res.json(result.recordset[0]);
+    
+    //console.log("res : ",res);
+    res.status(201).json(result.recordset[0]);
 
   } catch (err) {
     console.error("Error in updating new user :", err);
@@ -100,45 +132,90 @@ export const updatePassword = async (req, res, next) => {
     }
 };
 
-
 // Create User Type
+export const createUserType = async (req, res) => {
+  try {
+    const pool = await poolPromise;
 
-const createUserType = async (req, res) => {  // need to update
-    try {
-        const {
-            name,
-            isAdmin,
-            isRegularUser,
-            createdBy,
-            modifiedBy,
-            permissions // should be an array of permission objects
-        } = req.body;
+    const {
+      Name,
+      IsAdmin,
+      IsRegularUser,
+      CreatedBy,
+      ModifiedBy,
+      permissions = {}
+    } = req.body;
 
-        // Validate input
-        if (!name || !createdBy || !modifiedBy || !Array.isArray(permissions)) {
-            return res.status(400).json({ success: false, message: 'Missing required fields' });
-        }
+    const result = await pool
+      .request()
+      .input("Name", sql.NVarChar(100), Name)
+      .input("IsAdmin", sql.Bit, IsAdmin)
+      .input("IsRegularUser", sql.Bit, IsRegularUser)
+      .input("CreatedBy", sql.UniqueIdentifier, CreatedBy)
+      .input("ModifiedBy", sql.UniqueIdentifier, ModifiedBy)
 
-        const permissionsJson = JSON.stringify(permissions);
+      // Lead
+      .input("LeadReadAccess", sql.Bit, permissions.lead?.read ?? 0)
+      .input("LeadCreateAccess", sql.Bit, permissions.lead?.create ?? 0)
+      .input("LeadUpdateAccess", sql.Bit, permissions.lead?.update ?? 0)
+      .input("LeadDeleteAccess", sql.Bit, permissions.lead?.delete ?? 0)
 
-        const pool = await poolPromise;
-        const request = pool.request();
+      // Dashboard (defaults 1 in SP)
+      .input("DashboardReadAccess", sql.Bit, permissions.dashboard?.read ?? 1)
+      .input("DashboardCreateAccess", sql.Bit, permissions.dashboard?.create ?? 1)
+      .input("DashboardUpdateAccess", sql.Bit, permissions.dashboard?.update ?? 1)
+      .input("DashboardDeleteAccess", sql.Bit, permissions.dashboard?.delete ?? 1)
 
-        request.input('Name', sql.NVarChar(100), name);
-        request.input('IsAdmin', sql.Bit, isAdmin);
-        request.input('IsRegularUser', sql.Bit, isRegularUser);
-        request.input('CreatedBy', sql.UniqueIdentifier, createdBy);
-        request.input('ModifiedBy', sql.UniqueIdentifier, modifiedBy);
-        request.input('PermissionsJson', sql.NVarChar(sql.MAX), permissionsJson);
+      // Invoices
+      .input("InvoiceReadAccess", sql.Bit, permissions.invoice?.read ?? 0)
+      .input("InvoiceCreateAccess", sql.Bit, permissions.invoice?.create ?? 0)
+      .input("InvoiceUpdateAccess", sql.Bit, permissions.invoice?.update ?? 0)
+      .input("InvoiceDeleteAccess", sql.Bit, permissions.invoice?.delete ?? 0)
 
-        const result = await request.execute('dbo.sp_CreateUserTypeJson');
+      // Quotation
+      .input("QuotationReadAccess", sql.Bit, permissions.quotation?.read ?? 0)
+      .input("QuotationCreateAccess", sql.Bit, permissions.quotation?.create ?? 0)
+      .input("QuotationUpdateAccess", sql.Bit, permissions.quotation?.update ?? 0)
+      .input("QuotationDeleteAccess", sql.Bit, permissions.quotation?.delete ?? 0)
 
-        res.json({
-            success: result.recordset[0]?.Success === 1,
-            message: result.recordset[0]?.Message || 'Procedure executed'
-        });
-    } catch (err) {
-        console.error('Error in createUserType:', err);
-        res.status(500).json({ success: false, message: 'Internal server error', error: err.message });
-    }
+      // User
+      .input("UserReadAccess", sql.Bit, permissions.user?.read ?? 0)
+      .input("UserCreateAccess", sql.Bit, permissions.user?.create ?? 0)
+      .input("UserUpdateAccess", sql.Bit, permissions.user?.update ?? 0)
+      .input("UserDeleteAccess", sql.Bit, permissions.user?.delete ?? 0)
+
+      // FollowUps
+      .input("FollowUpsReadAccess", sql.Bit, permissions.followUps?.read ?? 0)
+      .input("FollowUpsCreateAccess", sql.Bit, permissions.followUps?.create ?? 0)
+      .input("FollowUpsUpdateAccess", sql.Bit, permissions.followUps?.update ?? 0)
+      .input("FollowUpsDeleteAccess", sql.Bit, permissions.followUps?.delete ?? 0)
+
+      // Target
+      .input("TargetReadAccess", sql.Bit, permissions.target?.read ?? 0)
+      .input("TargetCreateAccess", sql.Bit, permissions.target?.create ?? 0)
+      .input("TargetUpdateAccess", sql.Bit, permissions.target?.update ?? 0)
+      .input("TargetDeleteAccess", sql.Bit, permissions.target?.delete ?? 0)
+
+      // Orders
+      .input("OrdersReadAccess", sql.Bit, permissions.orders?.read ?? 0)
+      .input("OrdersCreateAccess", sql.Bit, permissions.orders?.create ?? 0)
+      .input("OrdersUpdateAccess", sql.Bit, permissions.orders?.update ?? 0)
+      .input("OrdersDeleteAccess", sql.Bit, permissions.orders?.delete ?? 0)
+
+      // Product
+      .input("ProductReadAccess", sql.Bit, permissions.product?.read ?? 0)
+      .input("ProductCreateAccess", sql.Bit, permissions.product?.create ?? 0)
+      .input("ProductUpdateAccess", sql.Bit, permissions.product?.update ?? 0)
+      .input("ProductDeleteAccess", sql.Bit, permissions.product?.delete ?? 0)
+
+      .execute("sp_CreateUserType");
+
+    res.status(201).json({
+      message: "UserType created successfully"
+    });
+  } catch (err) {
+    console.error("Error creating UserType:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
 };
+
