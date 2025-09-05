@@ -30,7 +30,7 @@ export default function LoginPage() {
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Left Side - Form */}
-      <div className="w-1/2 flex items-center justify-center bg-background-color">
+      <div className="w-1/2 flex items-center justify-center bg-w-primary">
         <div className="w-[500px] h-[500px] flex flex-col gap-10 p-6">
           <img src={Logo} alt="Logo" className="w-[260px] h-[122px]" />
 

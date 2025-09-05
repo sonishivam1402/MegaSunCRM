@@ -21,11 +21,11 @@ export const createNewUser = async (req, res, next) => {
       .input("Designation", sql.NVarChar(sql.MAX), user.designation)
       .input("GSTId", sql.NVarChar(100), user.gstId)
       .input("Address", sql.NVarChar(sql.MAX), user.address)
-      .input("CreatedBy", sql.UniqueIdentifier, user.createdBy)
-      .input("ModifiedBy", sql.UniqueIdentifier, user.modifiedBy)
+      .input("CreatedBy", sql.UniqueIdentifier, req.user.id)
+      .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
       .execute("sp_CreateNewUser");
 
-    res.json(result.recordset[0]);
+    res.status(201).json(result.recordset[0]);
 
   } catch (err) {
     console.error("Error in creating new user :", err);

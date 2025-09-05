@@ -14,7 +14,8 @@ export default function TopNavbar() {
     const location = useLocation(); // Uncomment when using React Router
     const pageNames = {
         '/': 'Dashboard',
-        '/user-management': 'User Management',
+        '/usermanagement': 'User Management',
+        '/users/:userId/details': 'User Management',
         '/analytics': 'Analytics',
         '/reports': 'Reports',
         '/settings': 'Settings',
@@ -86,7 +87,7 @@ export default function TopNavbar() {
     };
 
     return (
-        <div className="w-full bg-background-color border-b border-b-color">
+        <div className="w-full bg-w-primary border-b border-b-color">
             <div className="h-16 flex items-center justify-between px-6">
                 {/* Left side - Page Title */}
                 <div className="flex items-center">

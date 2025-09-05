@@ -75,9 +75,12 @@ button:focus-visible {
   font-style: normal;
 }
 
-.bg-background-color {
+.bg-w-primary {
   background-color:#F1F0E9;
-;
+}
+
+.bg-g-secondary {
+  background-color:#0D4715;
 }
 
 .bg-btn-color {
@@ -88,3 +91,6 @@ button:focus-visible {
   border-color: #1919194D;
 }
 
+.bg-btn-gray{
+  background: #00000012;
+}
