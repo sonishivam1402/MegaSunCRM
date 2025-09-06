@@ -50,7 +50,8 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
     getUserTypeNames();
   }, []);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
       // Prepare FormData for multipart request
       const data = new FormData();
@@ -59,7 +60,6 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
       });
 
       const res = await createNewUser(data);
-
 
       if (res?.status === 201) {
         alert("User created successfully:");
@@ -88,7 +88,7 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-white/30 backdrop-blur-xs flex items-center justify-end z-50">
+    <div className="fixed inset-0 bg-white/30 backdrop-blur-xs flex items-center justify-end z-50 overflow-y-auto">
       <div className="bg-white w-200 h-screen max-w-2xl">
         {/* Header */}
         <div className="p-3 px-6 border-b border-gray-200">
