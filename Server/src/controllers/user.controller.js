@@ -26,7 +26,7 @@ export const createNewUser = async (req, res, next) => {
       .input("Contact", sql.NVarChar(20), data.contact.toString())
       .input("ProfileImagePath", sql.NVarChar(sql.MAX), fileUrl)
       .input("Designation", sql.NVarChar(sql.MAX), data.designation)
-      .input("GSTId", sql.NVarChar(100), data.gstId)
+      .input("GSTId", sql.NVarChar(100), data.gst)
       .input("Address", sql.NVarChar(sql.MAX), data.address)
       .input("CreatedBy", sql.UniqueIdentifier, req.user.id)
       .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
@@ -128,7 +128,7 @@ export const getUserType = async (req, res, next) => {
 // Update User by Id
 export const updateUserbyId = async (req, res, next) => {
   try {
-    const data  = req.body;
+    const data = req.body;
     //console.log("User Update Info : ", data);
 
     let fileUrl = data.profileImagePath; // default = old path
@@ -153,7 +153,7 @@ export const updateUserbyId = async (req, res, next) => {
       .input("IsActive", sql.Bit, data.isActive === true || data.isActive === "true")
       .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
       .execute("sp_UpdateUserByUserID");
-    
+
     //console.log(result.recordset[0])
     res.status(201).json(result.recordset[0]);
   } catch (err) {
@@ -166,17 +166,22 @@ export const updateUserbyId = async (req, res, next) => {
 // Update User Password
 export const updatePassword = async (req, res, next) => {
   try {
-    const { userId, password } = req.body;
-    const hashPassword = await bcrypt.hash(password, 10);
+    const { newPassword } = req.body;
+    console.log(newPassword)
+    const hashPassword = await bcrypt.hash(newPassword, 10);
     const pool = await poolPromise;
     const result = await pool
       .request()
-      .input("UserId", sql.UniqueIdentifier, userId)
-      .input("Password", sql.NVarChar(100), password)
+      .input("UserId", sql.UniqueIdentifier, req.user.id)
+      .input("Password", sql.NVarChar(100), newPassword)
       .input("HashPassword", sql.NVarChar(sql.MAX), hashPassword)
       .execute("sp_UpdatePassword");
 
-    res.json(result.recordset);
+      if (result.recordset[0].Success) {
+        res.status(201).json(result.recordset[0]);
+      } else {
+        res.json(result.recordset[0]);
+      }
 
   } catch (err) {
     console.error("Error in updating password :", err);

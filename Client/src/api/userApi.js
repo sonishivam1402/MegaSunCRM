@@ -29,7 +29,7 @@ export const getUserById = async (id) => {
 // Create New User
 export const createNewUser = async (data) => {
   try {
-    //console.log("API Call Data : ", user);
+    //console.log("API Call Data : ", data);
     const res = await API.post("/user/createNewUser", data);
     return res;
   } catch (err) {
@@ -76,6 +76,18 @@ export const getAllUserTypeNames = async () => {
   } catch (err) {
     if (err.response && err.response.status !== 401) {
       console.error("Get User Types failed:", err);
+    }
+    throw err;
+  }
+};
+
+export const updateUserPassword = async (newPassword) => {
+  try {
+    const res = await API.post("/user/updatePassword", {newPassword});
+    return res;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Update Password failed:", err);
     }
     throw err;
   }

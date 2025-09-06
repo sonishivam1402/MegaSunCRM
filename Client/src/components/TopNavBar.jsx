@@ -1,8 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom'; // Uncomment when using React Router
+import { useLocation, matchPath } from 'react-router-dom';
+import { useAuth } from "../context/AuthContext";
+import ChangePasswordModal from "./ChangePasswordModal";
+import { updateUserPassword } from '../api/userApi';
 
 export default function TopNavbar() {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+
     const [userProfile, setUserProfile] = useState({
         name: '',
         email: '',
@@ -10,8 +15,9 @@ export default function TopNavbar() {
     });
     const dropdownRef = useRef(null);
 
-    // For demonstration - you can replace this with actual route logic
-    const location = useLocation(); // Uncomment when using React Router
+    const { logout } = useAuth();
+
+    const location = useLocation();
     const pageNames = {
         '/': 'Dashboard',
         '/usermanagement': 'User Management',
@@ -22,10 +28,16 @@ export default function TopNavbar() {
         '/profile': 'Profile',
         '/notifications': 'Notifications'
     };
-    const currentPageTitle = pageNames[location.pathname] || 'Dashboard'; // Uncomment when using React Router
-    //const currentPageTitle = 'Dashboard'; // Remove this line when using React Router
 
-    // Load user data from localStorage
+    let currentPageTitle = pageNames[location.pathname] || 'Dashboard';
+
+    for (const path in pageNames) {
+        if (matchPath({ path, end: true }, location.pathname)) {
+            currentPageTitle = pageNames[path];
+            break;
+        }
+    }
+
     useEffect(() => {
         const userData = localStorage.getItem('user');
         if (userData) {
@@ -46,10 +58,10 @@ export default function TopNavbar() {
                 });
             }
         } else {
-            // Set default values for demo
+            console.error('Error parsing user data:', error);
             setUserProfile({
-                name: 'Dhruvil Soni',
-                email: 'dhruvil0811@gmail.com',
+                name: 'User Name',
+                email: 'user@example.com',
                 profileImage: ''
             });
         }
@@ -75,15 +87,32 @@ export default function TopNavbar() {
 
     const handleChangePassword = () => {
         setIsDropdownOpen(false);
-        // Add your change password logic here
-        console.log('Change Password clicked');
+        setIsChangePasswordOpen(true);
     };
 
     const handleSignOut = () => {
         setIsDropdownOpen(false);
-        // Add your sign out logic here
-        localStorage.removeItem('user');
+        logout();
         console.log('Sign Out clicked');
+    };
+
+    // Handle API call
+    const handlePasswordSubmit = async (newPassword) => {
+        try {
+            console.log(newPassword);
+            const res = await updateUserPassword(newPassword)
+            console.log("res: ", res)
+            if (res?.status === 201) {
+                alert("Password updated successfully");
+                setIsChangePasswordOpen(false);
+            } else {
+                console.warn(res.data.MESSAGE);
+                alert(res.data.MESSAGE);
+            }
+        } catch (error) {
+            console.error("Error changing password:", error);
+            alert("Something went wrong");
+        }
     };
 
     return (
@@ -122,21 +151,6 @@ export default function TopNavbar() {
                                     }`}
                             />
                         </button>
-                        
-                        {/* Profile Image
-                        <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-300 flex-shrink-0">
-                            {userProfile.profileImage ? (
-                                <img
-                                    src={userProfile.profileImage}
-                                    alt="Profile"
-                                    className="w-10 h-10 object-cover"
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-white text-sm font-medium" style={{ backgroundColor: '#0D4715' }}>
-                                    {userProfile.name.charAt(0).toUpperCase()}
-                                </div>
-                            )}
-                        </div> */}
 
                         {/* Dropdown Menu - Fixed positioning */}
                         {isDropdownOpen && (
@@ -188,21 +202,27 @@ export default function TopNavbar() {
                     </div>
 
                     {/* Profile Image */}
-                        <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-300 flex-shrink-0">
-                            {userProfile.profileImage ? (
-                                <img
-                                    src={userProfile.profileImage}
-                                    alt="Profile"
-                                    className="w-12 h-12 object-cover"
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center text-white text-sm font-medium" style={{ backgroundColor: '#0D4715' }}>
-                                    {userProfile.name.charAt(0).toUpperCase()}
-                                </div>
-                            )}
-                        </div>
+                    <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-300 flex-shrink-0">
+                        {userProfile.profileImage ? (
+                            <img
+                                src={userProfile.profileImage}
+                                alt="Profile"
+                                className="w-12 h-12 object-cover"
+                            />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center text-white text-sm font-medium" style={{ backgroundColor: '#0D4715' }}>
+                                {userProfile.name.charAt(0).toUpperCase()}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
+            {/* Change Password Modal */}
+            <ChangePasswordModal
+                isOpen={isChangePasswordOpen}
+                onClose={() => setIsChangePasswordOpen(false)}
+                onSubmit={handlePasswordSubmit}
+            />
         </div>
     );
 }
