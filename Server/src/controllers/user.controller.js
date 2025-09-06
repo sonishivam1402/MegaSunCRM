@@ -150,10 +150,11 @@ export const updateUserbyId = async (req, res, next) => {
       .input("Contact", sql.NVarChar(20), data.contact.toString())
       .input("ProfileImagePath", sql.NVarChar(sql.MAX), fileUrl) // updated path
       .input("Designation", sql.NVarChar(sql.MAX), data.designation)
-      .input("IsActive", sql.Bit, data.isActive)
+      .input("IsActive", sql.Bit, data.isActive === true || data.isActive === "true")
       .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
       .execute("sp_UpdateUserByUserID");
-
+    
+    //console.log(result.recordset[0])
     res.status(201).json(result.recordset[0]);
   } catch (err) {
     console.error("Error in updating user :", err);
