@@ -23,7 +23,7 @@ const UserDetailsPage = () => {
         try {
             setLoading(true);
             const response = await getUserById(userId);
-            console.log(response);
+            //console.log("Details Page : ",response);
             setUserDetails(response);
             setError(null);
         } catch (err) {
@@ -146,9 +146,9 @@ const UserDetailsPage = () => {
                         {/* Profile Image */}
                         <div className="flex-shrink-0">
                             <div className="relative w-64 h-80 rounded-lg overflow-hidden bg-gray-100">
-                                {userDetails.ProfileImage ? (
+                                {userDetails.ProfileImagePath ? (
                                     <img
-                                        src={userDetails.ProfileImage}
+                                        src={userDetails.ProfileImagePath}
                                         alt={userDetails.Name}
                                         className="w-full h-full object-cover"
                                     />

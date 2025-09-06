@@ -2,37 +2,6 @@ import bcrypt from "bcryptjs";
 import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 import { sql, poolPromise } from "../database/db.js"; // MSSQL connection
 
-
-// Create New User
-export const createNewUser = async (req, res, next) => {
-  try {
-    const { user } = req.body;
-    const hashPassword = await bcrypt.hash(user.password, 10);
-    const pool = await poolPromise;
-    const result = await pool
-      .request()
-      .input("Name", sql.NVarChar(100), user.name)
-      .input("Email", sql.NVarChar(100), user.email)
-      .input("Password", sql.NVarChar(100), user.password)
-      .input("UserTypeId", sql.NVarChar(100), user.userTypeId)
-      .input("HashPassword", sql.NVarChar(sql.MAX), hashPassword)
-      .input("Contact", sql.NVarChar(20), user.contact.toString())
-      .input("ProfileImagePath", sql.NVarChar(sql.MAX), user.profileImagePath)
-      .input("Designation", sql.NVarChar(sql.MAX), user.designation)
-      .input("GSTId", sql.NVarChar(100), user.gstId)
-      .input("Address", sql.NVarChar(sql.MAX), user.address)
-      .input("CreatedBy", sql.UniqueIdentifier, req.user.id)
-      .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
-      .execute("sp_CreateNewUser");
-
-    res.status(201).json(result.recordset[0]);
-
-  } catch (err) {
-    console.error("Error in creating new user :", err);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
 // Sign-In
 export const signIn = async (req, res) => {
   try {
@@ -110,7 +79,7 @@ export const refreshToken = async (req, res) => {
     const pool = await poolPromise;
     const result = await pool.request()
       .input("Token", sql.NVarChar, refreshToken)
-      .execute("sp_GetRefreshToken"); 
+      .execute("sp_GetRefreshToken");
 
     const tokenData = result.recordset[0];
     if (!tokenData || new Date(tokenData.ExpiryDate) < new Date()) {
@@ -141,7 +110,7 @@ export const logout = async (req, res) => {
     await pool.request()
       .input("Token", sql.NVarChar, refreshToken)
       .execute("sp_DeleteRefreshToken");
-    
+
     res.json({ message: "Logged out" });
   } catch (err) {
     console.error("Logout error:", err);
