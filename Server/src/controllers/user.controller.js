@@ -1,5 +1,48 @@
 import { sql, poolPromise } from "../database/db.js";
 import bcrypt from "bcryptjs";
+import uploadFile from '../database/s3.js';
+
+// Create New User
+export const createNewUser = async (req, res, next) => {
+  try {
+    const data = req.body;
+    let fileUrl = null;
+
+    if (req.file) {
+      const uploadResult = await uploadFile(req.file);
+      fileUrl = uploadResult.Location;
+      //console.log("File Url : ", fileUrl);
+    }
+
+    const hashPassword = await bcrypt.hash(data.password, 10);
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("Name", sql.NVarChar(100), data.name)
+      .input("Email", sql.NVarChar(100), data.email)
+      .input("Password", sql.NVarChar(100), data.password)
+      .input("UserTypeId", sql.NVarChar(100), data.userTypeId)
+      .input("HashPassword", sql.NVarChar(sql.MAX), hashPassword)
+      .input("Contact", sql.NVarChar(20), data.contact.toString())
+      .input("ProfileImagePath", sql.NVarChar(sql.MAX), fileUrl)
+      .input("Designation", sql.NVarChar(sql.MAX), data.designation)
+      .input("GSTId", sql.NVarChar(100), data.gstId)
+      .input("Address", sql.NVarChar(sql.MAX), data.address)
+      .input("CreatedBy", sql.UniqueIdentifier, req.user.id)
+      .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
+      .execute("sp_CreateNewUser");
+
+    if (result.recordset[0].Success) {
+      res.status(201).json(result.recordset[0]);
+    } else {
+      res.json(result.recordset[0]);
+    }
+
+  } catch (err) {
+    console.error("Error in creating new user :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 // All Users
 export const getAllUsers = async (req, res, next) => {
@@ -85,27 +128,35 @@ export const getUserType = async (req, res, next) => {
 // Update User by Id
 export const updateUserbyId = async (req, res, next) => {
   try {
-    const { user } = req.body;
-    console.log("User Update Info : ",user);
+    const data  = req.body;
+    //console.log("User Update Info : ", data);
+
+    let fileUrl = data.profileImagePath; // default = old path
+
+    // If new file uploaded, push to S3
+    if (req.file) {
+      const uploadResult = await uploadFile(req.file);
+      fileUrl = uploadResult.Location;
+      //console.log("New File Uploaded to S3 : ", fileUrl);
+    }
+
     const pool = await poolPromise;
     const result = await pool
       .request()
-      .input("Name", sql.NVarChar(100), user.name)
-      .input("UserId", sql.UniqueIdentifier, user.id)
-      .input("Email", sql.NVarChar(100), user.email)
-      .input("UserTypeId", sql.NVarChar(100), user.userTypeId)
-      .input("Contact", sql.NVarChar(20), user.contact.toString())
-      .input("ProfileImagePath", sql.NVarChar(sql.MAX), user.profileImagePath)
-      .input("Designation", sql.NVarChar(sql.MAX), user.designation)
-      .input("IsActive", sql.Bit, user.isActive)
+      .input("Name", sql.NVarChar(100), data.name)
+      .input("UserId", sql.UniqueIdentifier, data.id)
+      .input("Email", sql.NVarChar(100), data.email)
+      .input("UserTypeId", sql.NVarChar(100), data.userTypeId)
+      .input("Contact", sql.NVarChar(20), data.contact.toString())
+      .input("ProfileImagePath", sql.NVarChar(sql.MAX), fileUrl) // updated path
+      .input("Designation", sql.NVarChar(sql.MAX), data.designation)
+      .input("IsActive", sql.Bit, data.isActive)
       .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
       .execute("sp_UpdateUserByUserID");
-    
-    //console.log("res : ",res);
-    res.status(201).json(result.recordset[0]);
 
+    res.status(201).json(result.recordset[0]);
   } catch (err) {
-    console.error("Error in updating new user :", err);
+    console.error("Error in updating user :", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -124,12 +175,12 @@ export const updatePassword = async (req, res, next) => {
       .input("HashPassword", sql.NVarChar(sql.MAX), hashPassword)
       .execute("sp_UpdatePassword");
 
-        res.json(result.recordset);
+    res.json(result.recordset);
 
-    } catch (err) {
-        console.error("Error in updating password :", err);
-        res.status(500).json({ message: "Server error" });
-    }
+  } catch (err) {
+    console.error("Error in updating password :", err);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 // Create User Type

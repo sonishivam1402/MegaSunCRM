@@ -27,9 +27,10 @@ export const getUserById = async (id) => {
 };
 
 // Create New User
-export const createNewUser = async (user) => {
+export const createNewUser = async (data) => {
   try {
-    const res = await API.post("/auth/createNewUser",{user});
+    //console.log("API Call Data : ", user);
+    const res = await API.post("/user/createNewUser", data);
     return res;
   } catch (err) {
     if (err.response && err.response.status !== 401) {
@@ -40,10 +41,10 @@ export const createNewUser = async (user) => {
 };
 
 // Update User By Id
-export const updateUserById = async (id,user) => {
+export const updateUserById = async (id, data) => {
   try {
     //console.log(user);
-    const res = await API.post(`/user/${id}`,{user});
+    const res = await API.post(`/user/${id}`, data );
     return res;
   } catch (err) {
     if (err.response && err.response.status !== 401) {
@@ -56,7 +57,7 @@ export const updateUserById = async (id,user) => {
 // Get All User Types
 export const getAllUserType = async (UserTypeId) => {
   try {
-    const res = await API.post("/user/userTypes",{UserTypeId});
+    const res = await API.post("/user/userTypes", { UserTypeId });
     return res.data.data;
   } catch (err) {
     if (err.response && err.response.status !== 401) {
