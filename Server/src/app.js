@@ -2,14 +2,11 @@ import express from "express";
 import cors from "cors";
 import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/userRoutes.js";
+import corsOptions from "./config/corsOptions.js";
 
 const app = express();
 
-app.use(cors({
-  origin: "http://localhost:5173",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true,
-}));
+app.use(cors(corsOptions));
 
 app.use(express.json());
 

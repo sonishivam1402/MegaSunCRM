@@ -1,11 +1,11 @@
 import { config } from "dotenv";
 
-config({path :`.env.${process.env.NODE_ENV || 'development'}.local`});
+config({ path: `.env.${process.env.NODE_ENV || 'development'}.local` });
 
-export const { 
-    PORT, SERVER_URL,
+export const {
+    PORT, SERVER_URL, ALLOWED_ORIGINS,
     NODE_ENV,
     JWT_SECRET, JWT_EXPIRES_IN, REFRESH_SECRET, REFRESH_TOKEN_EXPIRES_IN,
-    DB_USER, DB_PASSWORD, DB_PORT, DB_SERVER, DB_DATABASE, DB_ENCRYPT, DB_TRUST_SERVER_CERT, 
+    DB_USER, DB_PASSWORD, DB_PORT, DB_SERVER, DB_DATABASE, DB_ENCRYPT, DB_TRUST_SERVER_CERT,
     AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_BUCKET_NAME
-    }=process.env;
+} = process.env;
