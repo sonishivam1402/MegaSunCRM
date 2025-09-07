@@ -69,28 +69,45 @@ button:focus-visible {
   }
 } */
 
+@font-face {
+  font-family: "CabinetGrotesk-Variable";
+  src: url("../fonts/CabinetGrotesk-Variable.woff2") format("woff2"),
+    url("../fonts/CabinetGrotesk-Variable.woff") format("woff"),
+    url("../fonts/CabinetGrotesk-Variable.ttf") format("truetype");
+  font-weight: 100 900;
+  font-display: swap;
+  font-style: normal;
+}
+
+body {
+  font-family: 'CabinetGrotesk-Variable', sans-serif;
+  background-color: #f1f0e9;
+  color: #141414;
+  border-color: #1919194D;
+}
+
 .text-anton-regular {
   font-family: "Anton", sans-serif;
   font-weight: 400;
   font-style: normal;
 }
 
-.bg-w-primary {
-  background-color:#F1F0E9;
+input{
+  background-color: #00000012;
 }
 
-.bg-g-secondary {
-  background-color:#0D4715;
+select{
+  background-color: #00000012
 }
 
-.bg-btn-color {
-  background-color: #0D4715;
+button:hover{
+    cursor: pointer;
 }
 
-.border-b-color{
-  border-color: #1919194D;
-}
-
-.bg-btn-gray{
+.bg-btn-gray {
   background: #00000012;
+}
+
+.border-b,.border-t,.border-l,.border-r{
+  border-color: #1919194D;
 }

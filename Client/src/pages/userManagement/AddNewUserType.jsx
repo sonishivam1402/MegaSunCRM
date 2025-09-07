@@ -77,9 +77,19 @@ const AddNewUserTypeModal = ({ isOpen, onClose, onUserCreated }) => {
     }));
   };
 
+  const resetForm = () => {
+    setFormData({
+      accessName: '',
+      status: '',
+      accessType: 'full',
+      dashboardAccess: {},
+      pageAccess: {}
+    });
+  }
+
   const buildPermissionsPayload = () => {
     const permissions = {};
-    
+
     pageItems.forEach(item => {
       if (formData.accessType === 'full') {
         // For full access (admin), all permissions are true
@@ -121,13 +131,7 @@ const AddNewUserTypeModal = ({ isOpen, onClose, onUserCreated }) => {
         onUserCreated();
 
         // Reset form
-        setFormData({
-          accessName: '',
-          status: '',
-          accessType: 'full',
-          dashboardAccess: {},
-          pageAccess: {}
-        });
+        resetForm();
       } else {
         alert(response.data.Message)
       }
@@ -141,19 +145,19 @@ const AddNewUserTypeModal = ({ isOpen, onClose, onUserCreated }) => {
 
   return (
     <div className="fixed inset-0 bg-white/30 backdrop-blur-sm bg-opacity-50 flex items-center justify-end z-50">
-      <div className="bg-white w-full max-w-2xl h-screen overflow-y-auto">
+      <div className="bg-[#F0EEE4] w-full max-w-2xl h-screen overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-3">
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-              ←
+            <button onClick={()=>{onClose(),resetForm()}} className="hover:cursor-pointer">
+              <img src="Left_arrow.png" alt="left-arrow" className='w-5 h-5' />
             </button>
             <div>
               <h2 className="text-lg font-semibold">Add new user type</h2>
               <p className="text-sm text-gray-500">Add in the details of the new user type.</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <button onClick={()=>{onClose(),resetForm()}} className="text-[#242425] text-xl font-light hover:cursor-pointer">
             ✕
           </button>
         </div>
@@ -168,7 +172,7 @@ const AddNewUserTypeModal = ({ isOpen, onClose, onUserCreated }) => {
             <input
               type="text"
               placeholder="Type user type name here"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-sm"
               value={formData.accessName}
               onChange={(e) => handleInputChange('accessName', e.target.value)}
             />
@@ -180,7 +184,7 @@ const AddNewUserTypeModal = ({ isOpen, onClose, onUserCreated }) => {
               Status
             </label>
             <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-sm"
               value={formData.status}
               onChange={(e) => handleInputChange('status', e.target.value)}
             >
@@ -200,7 +204,7 @@ const AddNewUserTypeModal = ({ isOpen, onClose, onUserCreated }) => {
                   value="full"
                   checked={formData.accessType === 'full'}
                   onChange={(e) => handleAccessTypeChange('full')}
-                  className="mr-3 text-green-600"
+                  className="mr-3 bg-green-900 text-green-900"
                 />
                 <span className="text-sm">Full access - Admin</span>
               </label>
@@ -221,7 +225,7 @@ const AddNewUserTypeModal = ({ isOpen, onClose, onUserCreated }) => {
           {/* Dashboard View (Same for both Full and Limited Access) */}
           <div>
             <h3 className="text-sm font-medium text-gray-700 mb-3">
-              Dashboard view <span className="text-xs text-gray-500">(Display only - Not saved to API)</span>
+              Dashboard view
             </h3>
             <div className="space-y-2">
               {dashboardItems.map(item => (
@@ -243,8 +247,8 @@ const AddNewUserTypeModal = ({ isOpen, onClose, onUserCreated }) => {
             <div>
               <h3 className="text-sm font-medium text-gray-700 mb-3">Pages Access</h3>
               <div className="overflow-x-auto">
-                <table className="w-full border border-gray-200 rounded-md">
-                  <thead className="bg-gray-50">
+                <table className="w-full  rounded-md">
+                  <thead className="bg-[#00000012]">
                     <tr>
                       <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                         Page
@@ -268,7 +272,7 @@ const AddNewUserTypeModal = ({ isOpen, onClose, onUserCreated }) => {
                               type="checkbox"
                               checked={(formData.pageAccess[item.id] && formData.pageAccess[item.id][op.key]) || false}
                               onChange={(e) => handlePageCrudChange(item.id, op, e.target.checked)}
-                              className="text-green-600 rounded"
+                              className="text-green-900 rounded"
                             />
                           </td>
                         ))}
@@ -282,11 +286,11 @@ const AddNewUserTypeModal = ({ isOpen, onClose, onUserCreated }) => {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t">
+        <div className="p-4">
           <button
             onClick={handleSubmit}
             disabled={!formData.accessName || !formData.status}
-            className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-green-800 text-white py-2 px-4 rounded-md hover:bg-green-900 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Create User Type
           </button>

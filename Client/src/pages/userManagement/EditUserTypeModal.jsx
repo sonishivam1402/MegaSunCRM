@@ -252,29 +252,13 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
     }
   };
 
-  const getAccessTypeBadge = () => {
-    if (formData.accessType === 'full') {
-      return (
-        <span className="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-purple-100 text-purple-800 border border-purple-200">
-          Administrator
-        </span>
-      );
-    } else {
-      return (
-        <span className="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full bg-blue-100 text-blue-800 border border-blue-200">
-          Regular User
-        </span>
-      );
-    }
-  };
-
   if (!isOpen) return null;
 
   // Show loading state
   if (loading) {
     return (
       <div className="fixed inset-0 bg-white/30 backdrop-blur-sm bg-opacity-50 flex items-center justify-end z-50">
-        <div className="bg-white w-full max-w-2xl h-screen overflow-y-auto flex items-center justify-center">
+        <div className="bg-[#F0EEE4] w-full max-w-2xl h-screen overflow-y-auto flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
             <p className="mt-4 text-gray-600">Loading user type data...</p>
@@ -288,7 +272,7 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
   if (error) {
     return (
       <div className="fixed inset-0 bg-white/30 backdrop-blur-sm bg-opacity-50 flex items-center justify-end z-50">
-        <div className="bg-white w-full max-w-2xl h-screen overflow-y-auto flex items-center justify-center">
+        <div className="bg-[#F0EEE4] w-full max-w-2xl h-screen overflow-y-auto flex items-center justify-center">
           <div className="text-center max-w-md p-6">
             <div className="text-red-600 text-4xl mb-4">⚠️</div>
             <h2 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Data</h2>
@@ -315,12 +299,12 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
 
   return (
     <div className="fixed inset-0 bg-white/30 backdrop-blur-sm bg-opacity-50 flex items-center justify-end z-50">
-      <div className="bg-white w-full max-w-2xl h-screen overflow-y-auto">
+      <div className="bg-[#F0EEE4] w-full max-w-2xl h-screen overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-3">
             <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-              ←
+              <img src="Left_arrow.png" alt="left-arrow" className='w-5 h-5' />
             </button>
             <div>
               <h2 className="text-lg font-semibold">Edit user type</h2>
@@ -342,7 +326,7 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
             <input
               type="text"
               placeholder="Type user type name here"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md "
               value={formData.accessName}
               onChange={(e) => handleInputChange('accessName', e.target.value)}
             />
@@ -354,7 +338,7 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
               Status
             </label>
             <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md "
               value={formData.status}
               onChange={(e) => handleInputChange('status', e.target.value)}
             >
@@ -369,21 +353,17 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Access Type
             </label>
-            <div className="flex items-center p-3 bg-gray-50 border border-gray-200 rounded-md">
-              {getAccessTypeBadge()}
+            <div className="flex items-center p-3 bg-[#00000012] border border-gray-200 rounded-md">
               <span className="ml-3 text-sm text-gray-600">
                 {formData.accessType === 'full' ? 'Full access - Admin' : 'Limited access - Sub account'}
               </span>
             </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Access type cannot be modified after creation
-            </p>
           </div>
 
           {/* Dashboard View (Same for both Full and Limited Access) */}
           <div>
             <h3 className="text-sm font-medium text-gray-700 mb-3">
-              Dashboard view <span className="text-xs text-gray-500">(Display only - Not saved to API)</span>
+              Dashboard view
             </h3>
             <div className="space-y-2">
               {dashboardItems.map(item => (
@@ -405,8 +385,8 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
             <div>
               <h3 className="text-sm font-medium text-gray-700 mb-3">Pages Access</h3>
               <div className="overflow-x-auto">
-                <table className="w-full border border-gray-200 rounded-md">
-                  <thead className="bg-gray-50">
+                <table className="w-full rounded-md">
+                  <thead className="bg-[#00000012]">
                     <tr>
                       <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                         Page
@@ -430,7 +410,7 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
                               type="checkbox"
                               checked={(formData.pageAccess[item.id] && formData.pageAccess[item.id][op.key]) || false}
                               onChange={(e) => handlePageCrudChange(item.id, op, e.target.checked)}
-                              className="text-green-600 rounded"
+                              className="text-green-900 rounded"
                             />
                           </td>
                         ))}
@@ -441,25 +421,6 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
               </div>
             </div>
           )}
-
-          {/* Admin Access Notice */}
-          {formData.accessType === 'full' && (
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <h4 className="text-sm font-medium text-purple-800">Administrator Access</h4>
-                  <div className="mt-1 text-sm text-purple-700">
-                    <p>This user type has full administrative privileges with access to all system features and operations.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Footer */}
@@ -467,7 +428,7 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
           <button
             onClick={handleSubmit}
             disabled={!formData.accessName || !formData.status}
-            className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-green-800 text-white py-2 px-4 rounded-md hover:bg-green-900 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Update User Type
           </button>

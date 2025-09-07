@@ -267,7 +267,7 @@ const AllUsersTab = ({ refreshKey }) => {
                             placeholder="Search user name (min 3 chars)"
                             value={searchTerm}
                             onChange={handleSearchChange}
-                            className="w-full pl-10 pr-4 py-2 bg-btn-gray rounded-s-xs text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full pl-10 pr-4 py-2 bg-btn-gray rounded-s-xs text-sm  "
                         />
                         {loading && (
                             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -281,7 +281,7 @@ const AllUsersTab = ({ refreshKey }) => {
                         <select
                             value={userTypeFilter}
                             onChange={(e) => setUserTypeFilter(e.target.value)}
-                            className="appearance-none bg-btn-gray rounded-s-xs px-4 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="appearance-none bg-btn-gray rounded-s-xs px-4 py-2 pr-8 text-sm hover:cursor-pointer  "
                         >
                             <option value="">User type</option>
                             {userTypeOptions.map((op, index) => (
@@ -296,7 +296,7 @@ const AllUsersTab = ({ refreshKey }) => {
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className="appearance-none bg-btn-gray rounded-s-xs px-4 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="appearance-none bg-btn-gray rounded-s-xs px-4 py-2 pr-8 text-sm hover:cursor-pointer  "
                         >
                             <option value="">Status</option>
                             <option value="Active">Active</option>
@@ -310,7 +310,7 @@ const AllUsersTab = ({ refreshKey }) => {
             {/* Table */}
             <div className="px-6 h-100 overflow-y-auto">
                 <table className="w-full">
-                    <thead className="bg-w-primary border-b border-b-color">
+                    <thead className=" border-b border-b-color">
                         <tr>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">NAME</th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">MOBILE NUMBER</th>
@@ -320,7 +320,7 @@ const AllUsersTab = ({ refreshKey }) => {
                             <th className="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-w-primary divide-y divide-gray-400">
+                    <tbody className=" divide-y divide-gray-400">
                         {loading ? (
                             <tr>
                                 <td colSpan="6" className="px-6 py-4 text-center">
@@ -349,7 +349,7 @@ const AllUsersTab = ({ refreshKey }) => {
                                                         className="w-8 h-8 object-cover"
                                                     />
                                                 ) : (
-                                                    <div className="w-full h-full flex items-center justify-center text-white text-sm font-medium bg-g-secondary">
+                                                    <div className="w-full h-full flex items-center justify-center text-white text-sm font-medium bg-[#0d4715]">
                                                         {user.Name ? user.Name.charAt(0).toUpperCase() : '?'}
                                                     </div>
                                                 )}
@@ -374,7 +374,7 @@ const AllUsersTab = ({ refreshKey }) => {
                                                 className="p-1 hover:bg-gray-100 rounded"
                                                 onClick={() => toggleDropdown(user.UserId)}
                                             >
-                                                <img src="/icons/Meatball_menu.png" alt="More options" className="w-4 h-1 opacity-50" />
+                                                <img src="/icons/Meatball_menu.png" alt="More options" className="w-4 h-1 opacity-50 hover:cursor-pointer" />
                                             </button>
 
                                             {/* Dropdown Menu */}
@@ -383,13 +383,13 @@ const AllUsersTab = ({ refreshKey }) => {
                                                     <div className="py-1">
                                                         <button
                                                             onClick={() => handleDetails(user.UserId)}
-                                                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                                            className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
                                                         >
                                                             Details
                                                         </button>
                                                         <button
                                                             onClick={() => handleEdit(user)}
-                                                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                                            className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
                                                         >
                                                             Edit
                                                         </button>
@@ -414,7 +414,7 @@ const AllUsersTab = ({ refreshKey }) => {
                             <select
                                 value={pageSize}
                                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                                className="appearance-none bg-btn-gray rounded-s-xs px-3 py-1 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="appearance-none bg-btn-gray hover:cursor-pointer rounded-s-xs px-3 py-1 pr-8 text-sm  "
                             >
                                 <option value={10}>10</option>
                                 <option value={50}>50</option>
