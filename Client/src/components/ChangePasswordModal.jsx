@@ -25,7 +25,7 @@ export default function ChangePasswordModal({ isOpen, onClose, onSubmit }) {
                         placeholder="Enter new password"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
-                        className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
+                        className="w-full px-3 py-2 border rounded-md"
                     />
                     <div className="flex justify-end space-x-2">
                         <button

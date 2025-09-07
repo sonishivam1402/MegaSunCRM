@@ -117,7 +117,7 @@ export default function TopNavbar() {
     };
 
     return (
-        <div className="w-full bg-w-primary border-b border-b-color">
+        <div className="w-full  border-b">
             <div className="h-16 flex items-center justify-between px-6">
                 {/* Left side - Page Title */}
                 <div className="flex items-center">

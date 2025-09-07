@@ -90,7 +90,7 @@ const AllUserTypesTab = ({ refreshKey }) => {
             {/* Table */}
             <div className="px-6 h-120 overflow-y-auto">
                 <table className="w-full">
-                    <thead className="bg-w-primary border-b border-b-color">
+                    <thead className=" border-b border-b-color">
                         <tr>
                             <th className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">USER TYPE NAME</th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Access</th>
@@ -98,7 +98,7 @@ const AllUserTypesTab = ({ refreshKey }) => {
                             <th className="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-w-primary divide-y divide-gray-400">
+                    <tbody className=" divide-y divide-gray-400">
                         {currentUserTypes.map((userType, index) => (
                             <tr key={userType.UserTypeId || index} className="hover:bg-gray-50 text-center">
                                 <td className="px-6 py-4 whitespace-nowrap">
@@ -137,13 +137,13 @@ const AllUserTypesTab = ({ refreshKey }) => {
                                                 <div className="py-1">
                                                     <button
                                                         onClick={() => handleDetails(userType.UserTypeId)}
-                                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                                        className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
                                                     >
                                                         Details
                                                     </button>
                                                     <button
                                                         onClick={() => handleEdit(userType)}
-                                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                                        className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
                                                     >
                                                         Edit
                                                     </button>
@@ -167,7 +167,7 @@ const AllUserTypesTab = ({ refreshKey }) => {
                             <select
                                 value={recordsPerPage}
                                 onChange={(e) => handleRecordsPerPageChange(Number(e.target.value))}
-                                className="appearance-none w-full px-1 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="appearance-none w-full px-1 py-1 text-sm hover:cursor-pointer  "
                             >
                                 <option value={10}>10</option>
                                 <option value={25}>25</option>
@@ -190,17 +190,17 @@ const AllUserTypesTab = ({ refreshKey }) => {
                     <button
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
-                        className="px-2 py-1 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-2 py-1 text-sm text-gray-500 hover:text-gray-700 disabled:!opacity-50 disabled:!cursor-not-allowed"
                     >
                         &lt;
                     </button>
-                    <span className="px-3 py-1 text-sm text-gray-700 border-x border-b-color">
+                    <span className="px-3 py-1 text-sm text-gray-700  border-x border-b-color">
                         {currentPage}/{totalPages}
                     </span>
                     <button
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === totalPages}
-                        className="px-2 py-1 text-sm text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-2 py-1 text-sm text-gray-700 disabled:!opacity-50 disabled:!cursor-not-allowed"
                     >
                         &gt;
                     </button>

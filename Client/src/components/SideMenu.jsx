@@ -75,7 +75,7 @@ const SideMenu = () => {
 
   return (
     <div 
-      className={`bg-w-primary h-screen flex flex-col transition-all duration-300 border-r border-b-color ${
+      className={` h-screen flex flex-col transition-all duration-300 border-r border-[#1919194d] ${
         isCollapsed ? 'w-[80px]' : 'w-[280px]'
       }`}
       onMouseEnter={() => setIsCollapsed(false)}

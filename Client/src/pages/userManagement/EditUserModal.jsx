@@ -40,14 +40,13 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
         userTypeId: userData.UserTypeId || '',
         designation: userData.Designation || '',
         isActive: userData.IsActive === true,
-        profileImagePath: userData.profileImagePath || '',
+        profileImagePath: userData.ProfileImagePath || '',
         imageFile: null
       });
 
       // set preview image if already available
-      if (userData.profileImagePath) {
-        //console.log("image : ", userData.profileImagePath)
-        setPreviewImage(userData.profileImagePath);
+      if (userData.ProfileImagePath) {
+        setPreviewImage(userData.ProfileImagePath);
       }
     }
   }, [userData]);
@@ -68,6 +67,21 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
         imageFile: file
       }));
       setPreviewImage(URL.createObjectURL(file));
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setPreviewImage(null);
+    setFormData(prev => ({
+      ...prev,
+      imageFile: null,
+      profileImagePath: ''
+    }));
+
+    // Clear the file input
+    const fileInput = document.getElementById('imageFile');
+    if (fileInput) {
+      fileInput.value = '';
     }
   };
 
@@ -113,19 +127,19 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
 
   return (
     <div className="fixed inset-0 bg-white/30 backdrop-blur-xs flex items-center justify-end z-50">
-      <div className="bg-white w-200 h-screen max-w-2xl">
+      <div className="bg-[#F0EEE4] w-200 h-screen max-w-2xl">
         {/* Header */}
-        <div className="p-3 px-6 border-b border-gray-200">
+        <div className="p-3 px-6 border-b">
           <div className='flex items-center justify-between'>
-            <h2 className="text-2xl font-medium text-gray-900">Edit user</h2>
+            <h2 className="text-[32px] font-bold">Edit User</h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 text-xl font-light"
+              className="text-[#242425] text-xl font-light hover:cursor-pointer"
             >
               ×
             </button>
           </div>
-          <p className="text-sm text-gray-600 my-3">Edit the details of the user.</p>
+          <p className="text-sm text-gray-600">Edit the details of the user.</p>
         </div>
 
         {/* Content */}
@@ -134,14 +148,14 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
             <div className='w-full flex justify-between items-center gap-5'>
               {/* User's full name */}
               <div className='w-full'>
-                <label className="block text-sm font-medium text-gray-700 mb-2">User's full name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">User's Full Name</label>
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
                   placeholder="John Doe"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400  "
                   required
                 />
               </div>
@@ -155,7 +169,7 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
                   value={formData.contact}
                   onChange={handleInputChange}
                   placeholder="XXXXXXXXXX"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50"
                   required
                 />
               </div>
@@ -171,7 +185,7 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="john.doe@gmail.com"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50"
                   required
                 />
               </div>
@@ -185,7 +199,7 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
                   value={formData.designation}
                   onChange={handleInputChange}
                   placeholder="Designation"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50"
                   required
                 />
               </div>
@@ -199,10 +213,10 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
                   name="userTypeId"
                   value={formData.userTypeId}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm   bg-gray-50"
                   required
                 >
-                  <option value="">Select role</option>
+                  <option value="">Select Role</option>
                   {userTypeOptions.map((op, index) => (
                     <option key={index} value={op.UserTypeId}>{op.Name}</option>
                   ))}
@@ -218,10 +232,10 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
-                      isActive: e.target.value === "true", 
+                      isActive: e.target.value === "true",
                     }))
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm   bg-gray-50"
                   required
                 >
                   <option value="">Select Status</option>
@@ -231,32 +245,66 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
               </div>
             </div>
 
-            {/* Upload user profile pic */}
+            {/* image upload section */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Upload user profile pic</label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-3 py-6 text-center bg-gray-50 h-55">
-                <div className="flex flex-col items-center justify-items-center h-full">
-                  {previewImage && (
-                    <img
-                      src={previewImage}
-                      alt="Profile Preview"
-                      className="w-24 h-24 rounded-full mb-3 object-cover"
-                    />
+              <label className="block text-sm font-medium text-gray-700 mb-2">Upload User Profile Picture</label>
+              <div className="border-2 border-dashed border-[#0000006E] rounded-sm bg-[#00000012] p-3 py-6 text-center h-55">
+                <div className="flex flex-col items-center justify-center h-full">
+                  {previewImage ? (
+                    // Show image with cancel option
+                    <div className='relative'>
+                      <img
+                        src={previewImage}
+                        alt="Profile Preview"
+                        className="w-40 h-40 object-cover"
+                      />
+                      <div className="flex gap-3">
+                        <input
+                          type="file"
+                          id="imageFile"
+                          accept="image/png, image/jpeg"
+                          onChange={handleFileChange}
+                          hidden
+                        />
+                        {/* <label
+                          htmlFor="imageFile"
+                          className="text-sm text-green-600 underline hover:text-green-700 cursor-pointer"
+                        >
+                          Change Image
+                        </label> */}
+                        <button
+                          type="button"
+                          onClick={handleRemoveImage}
+                          className="absolute -top-2 left-37 text-sm bg-green-900 text-white w-5 h-5 rounded-full cursor-pointer"
+                        >
+                          x
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    // Show upload option when no image
+                    <>
+                      <svg width="78" height="59" viewBox="0 0 78 59" fill="none" xmlns="http://www.w3.org/2000/svg" className='mb-5'>
+                        <path d="M6.71739 52.3506H5.08698C4.13482 52.3506 3.22499 51.9772 2.54999 51.3143C1.87825 50.6513 1.5 49.7502 1.5 48.8103V5.04025C1.5 4.1005 1.87826 3.19931 2.54999 2.53631C3.22173 1.87332 4.13474 1.5 5.08698 1.5H67.6956C68.6478 1.5 69.5609 1.87333 70.2326 2.53631C70.9044 3.1993 71.2826 4.10042 71.2826 5.04025V6.64942H72.913C73.8652 6.64942 74.7783 7.02275 75.45 7.68573C76.1218 8.34872 76.5 9.24984 76.5 10.1897V53.9598C76.5 54.8995 76.1217 55.8007 75.45 56.4637C74.7783 57.1267 73.8653 57.5 72.913 57.5H10.3044C9.35221 57.5 8.43913 57.1267 7.76738 56.4637C7.09564 55.8007 6.71739 54.8996 6.71739 53.9598V52.3506ZM69.326 35.0971V5.04099C69.326 4.61617 69.1565 4.20423 68.85 3.90169C68.5434 3.59916 68.1293 3.43181 67.6956 3.43181H5.08697C4.65327 3.43181 4.23916 3.60238 3.93263 3.90169C3.62611 4.20422 3.45655 4.61295 3.45655 5.04099V42.8213L22.7024 26.1981C23.0709 25.8795 23.622 25.8795 23.9905 26.1981L31.9177 33.0436L48.7895 18.4736C49.158 18.155 49.7091 18.155 50.0775 18.4736L69.3234 35.0935L69.326 35.0971ZM3.45673 45.3894V48.8137C3.45673 49.2385 3.62955 49.6505 3.93281 49.953C4.23934 50.2555 4.65346 50.4229 5.08715 50.4229H67.6958C68.1295 50.4229 68.5436 50.2523 68.8502 49.953C69.1567 49.6505 69.3262 49.2417 69.3262 48.8137V37.6654L49.435 20.4853L32.5633 35.0553C32.1948 35.3739 31.6437 35.3739 31.2752 35.0553L23.348 28.2098L3.45673 45.3894ZM8.67412 52.354V53.9631C8.67412 54.3912 8.84368 54.7999 9.1502 55.1024C9.45673 55.405 9.87085 55.5723 10.3045 55.5723H72.9132C73.3469 55.5723 73.761 55.4017 74.0675 55.1024C74.3741 54.7999 74.5436 54.3912 74.5436 53.9631V10.1898C74.5436 9.76171 74.3741 9.35299 74.0675 9.05045C73.761 8.74792 73.3469 8.58057 72.9132 8.58057H71.2828V48.8103C71.2828 49.7501 70.9045 50.6513 70.2328 51.3143C69.5611 51.9772 68.648 52.3506 67.6958 52.3506H8.67421L8.67412 52.354ZM15.5219 9.22735C18.9394 9.22735 21.7176 11.9662 21.7176 15.3423C21.7176 18.7152 18.9394 21.4573 15.5219 21.4573C12.1012 21.4573 9.32625 18.7152 9.32625 15.3423C9.32625 11.9662 12.1012 9.22735 15.5219 9.22735ZM15.5219 11.1584C13.1806 11.1584 11.2828 13.0347 11.2828 15.3423C11.2828 17.6531 13.1806 19.5262 15.5219 19.5262C17.86 19.5262 19.761 17.6531 19.761 15.3423C19.761 13.0347 17.8632 11.1584 15.5219 11.1584Z" fill="#0D4715" stroke="#0D4715" stroke-width="2" />
+                      </svg>
+
+                      <input
+                        type="file"
+                        id="imageFile"
+                        accept="image/png, image/jpeg"
+                        onChange={handleFileChange}
+                        hidden
+                      />
+                      <label
+                        htmlFor="imageFile"
+                        className="text-sm text-green-800 underline hover:text-green-900 hover:cursor-pointer"
+                      >
+                        Upload from Device
+                      </label>
+                      <p className="text-xs text-gray-400 mt-2">Max file size: 12 mb (png, jpeg)</p>
+                    </>
                   )}
-                  <input
-                    type="file"
-                    id="imageFile"
-                    accept="image/png, image/jpeg"
-                    onChange={handleFileChange}
-                    hidden
-                  />
-                  <label
-                    htmlFor="imageFile"
-                    className="text-sm text-green-600 underline hover:text-green-700 cursor-pointer"
-                  >
-                    Upload from Device
-                  </label>
-                  <p className="text-xs text-gray-400 mt-2">Max file size: 12 mb (png, jpeg)</p>
+
                 </div>
               </div>
             </div>
@@ -265,9 +313,9 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
             <div className="pt-4">
               <button
                 type="submit"
-                className="w-full bg-green-600 text-white py-3 px-4 rounded-md text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                className="w-full bg-green-800 text-white py-3 px-4 rounded-sm text-md font-medium hover:bg-green-900 hover:cursor-pointer  focus:ring-offset-2"
               >
-                Update
+                Update User
               </button>
             </div>
           </form>
