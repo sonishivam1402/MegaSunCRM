@@ -1,14 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getAllUserType } from '../../api/userApi';
 import { useAuth } from '../../context/AuthContext';
+import EditUserTypeModal from './EditUserTypeModal';
 
-const AllUserTypesTab = () => {
-    const {user} = useAuth();
-    const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('');
+const AllUserTypesTab = ({ refreshKey }) => {
+    const { user } = useAuth();
+    const navigate = useNavigate();
     const [userTypes, setUserTypes] = useState([]);
+    const [userTypeInfo, setUserTypeInfo] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [recordsPerPage, setRecordsPerPage] = useState(10);
+    const [activeDropdown, setActiveDropdown] = useState(null);
+    const [isEditUserTypeModalOpen, setIsEditUserTypeModalOpen] = useState(false);
+    const dropdownRefs = useRef({});
 
     // Fetch user types data
     const getUserTypes = async () => {
@@ -22,29 +27,35 @@ const AllUserTypesTab = () => {
 
     useEffect(() => {
         getUserTypes();
-    }, []);
+    }, [refreshKey]);
 
-    // Filter user types based on search and filters
-    const filteredUserTypes = userTypes.filter(userType => {
-        const matchesSearch = userType.Name.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = statusFilter === '' ||
-            (statusFilter === 'Active' && userType.IsActive) ||
-            (statusFilter === 'Inactive' && !userType.IsActive);
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (activeDropdown && dropdownRefs.current[activeDropdown]) {
+                if (!dropdownRefs.current[activeDropdown].contains(event.target)) {
+                    setActiveDropdown(null);
+                }
+            }
+        };
 
-        return matchesSearch && matchesStatus;
-    });
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [activeDropdown]);
 
     // Calculate pagination
-    const totalRecords = filteredUserTypes.length;
+    const totalRecords = userTypes.length;
     const totalPages = Math.ceil(totalRecords / recordsPerPage);
     const startIndex = (currentPage - 1) * recordsPerPage;
     const endIndex = startIndex + recordsPerPage;
-    const currentUserTypes = filteredUserTypes.slice(startIndex, endIndex);
+    const currentUserTypes = userTypes.slice(startIndex, endIndex);
 
     // Reset to first page when filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, statusFilter, recordsPerPage]);
+    }, [recordsPerPage]);
 
     const handlePageChange = (page) => {
         if (page >= 1 && page <= totalPages) {
@@ -57,55 +68,32 @@ const AllUserTypesTab = () => {
         setCurrentPage(1);
     };
 
+    const toggleDropdown = (userTypeId) => {
+        setActiveDropdown(activeDropdown === userTypeId ? null : userTypeId);
+    };
+
+    // Handle Edit Modal
+    const handleEdit = (userType) => {
+        setUserTypeInfo(userType.UserTypeId);
+        setIsEditUserTypeModalOpen(true);
+        setActiveDropdown(null);
+    };
+    
+    // Handle details page
+    const handleDetails = (userTypeId) => {
+        navigate(`/userTypes/${userTypeId}/details`);
+        setActiveDropdown(null);
+    };
+
     return (
         <div className="h-full">
-            {/* Filter Controls */}
-            <div className="px-6 py-4">
-                <div className="flex items-center gap-4">
-                    {/* Search */}
-                    <div className="relative flex-1 max-w-2xs">
-                        <img src="/icons/Search.png" alt="Search" className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 opacity-50" />
-                        <input
-                            type="text"
-                            placeholder="Search user type name"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 bg-btn-gray rounded-s-xs text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                    </div>
-
-                    {/* Status Filter */}
-                    <div className="relative">
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            className="appearance-none bg-btn-gray rounded-s-xs px-4 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                            <option value="">Status</option>
-                            <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
-                        </select>
-                        <img src="/icons/Dropdown.png" alt="Dropdown" className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-2 pointer-events-none opacity-50" />
-                    </div>
-
-                    {/* Sort and Filter Icons */}
-                    {/* <div className="flex items-center gap-2 ml-auto">
-                        <button className="p-2 hover:bg-gray-100 rounded">
-                            <img src="/icons/Sort.png" alt="Sort" className="w-4 h-5 opacity-50" />
-                        </button>
-                        <button className="p-2 hover:bg-gray-100 rounded">
-                            <img src="/icons/Filter.png" alt="Filter" className="w-4 h-5 opacity-50" />
-                        </button>
-                    </div> */}
-                </div>
-            </div>
-
             {/* Table */}
-            <div className="px-6 h-100 overflow-y-auto">
+            <div className="px-6 h-120 overflow-y-auto">
                 <table className="w-full">
                     <thead className="bg-w-primary border-b border-b-color">
                         <tr>
-                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">USER TYPE NAME</th>
+                            <th className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">USER TYPE NAME</th>
+                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Access</th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
                             <th className="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
                         </tr>
@@ -124,19 +112,44 @@ const AllUserTypesTab = () => {
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
-                                        userType.IsActive
-                                            ? 'bg-green-100 text-green-800'
-                                            : 'bg-red-100 text-red-800'
-                                    }`}>
+                                    <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium`}>
+                                        {userType.IsAdmin === true ? "Admin" : "Limited"}
+                                    </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${userType.IsActive
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-red-100 text-red-800'
+                                        }`}>
                                         {userType.IsActive ? "Active" : "Inactive"}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <div className="relative">
-                                        <button className="p-1 hover:bg-gray-100 rounded">
+                                    <div className="relative" ref={el => dropdownRefs.current[userType.UserTypeId] = el}>
+                                        <button className="p-1 hover:bg-gray-100 rounded"
+                                            onClick={() => toggleDropdown(userType.UserTypeId)}>
                                             <img src="/icons/Meatball_menu.png" alt="More options" className="w-4 h-1 opacity-50" />
                                         </button>
+
+                                        {/* Dropdown Menu */}
+                                        {activeDropdown === userType.UserTypeId && (
+                                            <div className="absolute right-0 mt-1 w-24 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+                                                <div className="py-1">
+                                                    <button
+                                                        onClick={() => handleDetails(userType.UserTypeId)}
+                                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                                    >
+                                                        Details
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleEdit(userType)}
+                                                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </td>
                             </tr>
@@ -193,6 +206,12 @@ const AllUserTypesTab = () => {
                     </button>
                 </div>
             </div>
+            <EditUserTypeModal
+                isOpen={isEditUserTypeModalOpen}
+                onClose={() => setIsEditUserTypeModalOpen(false)}
+                userData={userTypeInfo}
+                onUserTypeEdited={getUserTypes}
+            />
         </div>
     );
 };

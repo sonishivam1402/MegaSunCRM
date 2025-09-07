@@ -81,6 +81,7 @@ export const getAllUserTypeNames = async () => {
   }
 };
 
+// Update Password
 export const updateUserPassword = async (newPassword) => {
   try {
     const res = await API.post("/user/updatePassword", {newPassword});
@@ -92,3 +93,46 @@ export const updateUserPassword = async (newPassword) => {
     throw err;
   }
 };
+
+// Create User Type
+export const createUserType = async (payload) => {
+  try {
+    const res = await API.post("/user/createUserType", payload);
+    //console.log(res);
+    return res;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Create User Type failed:", err);
+    }
+    throw err;
+  }  
+}
+
+
+// Create User Type
+export const updateUserType = async (id, payload) => {
+  try {
+    const res = await API.post(`/user/userTypes/${id}`, payload);
+    //console.log(res);
+    return res;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Updating User Type failed:", err);
+    }
+    throw err;
+  }  
+}
+
+// Get User Type By Id
+export const getUserTypeById = async (id) => {
+  try {
+    const res = await API.get(`/user/userTypes/${id}`);
+    //console.log(res);
+    return res;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Get User Type  by Id failed:", err);
+    }
+    throw err;
+  }  
+}
