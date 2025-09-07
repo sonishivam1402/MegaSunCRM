@@ -1,9 +1,11 @@
 import API from "./axios";
 
 // Get All Users
-export const getAllUsers = async () => {
+export const getAllUsers = async ({ search = "", limit = 10, offset = 0 }) => {
   try {
-    const res = await API.get("/user");
+    const res = await API.get("/user", {
+      params: { search, limit, offset },
+    });
     return res.data;
   } catch (err) {
     if (err.response && err.response.status !== 401) {
@@ -12,6 +14,7 @@ export const getAllUsers = async () => {
     throw err;
   }
 };
+
 
 // Get User By Id
 export const getUserById = async (id) => {
