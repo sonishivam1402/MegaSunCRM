@@ -33,12 +33,36 @@ const SideMenu = () => {
 
   useEffect(() => {
     if (menus && menus.length > 0) {
-      // Find the menu item that matches the current location
-      const currentMenu = menus.find(menu => menu.NavigationPath === location.pathname);
+      // Function to check if current path matches a menu item (including dynamic routes)
+      const findMatchingMenu = () => {
+        // First, check for exact matches
+        let currentMenu = menus.find(menu => menu.NavigationPath === location.pathname);
+        
+        if (currentMenu) {
+          return currentMenu;
+        }
+        
+        // Check for dynamic route patterns
+        const pathname = location.pathname;
+        
+        // Check if current path matches user management patterns
+        if (pathname.match(/^\/users\/[^/]+\/details$/) || pathname.match(/^\/userTypes\/[^/]+\/details$/)) {
+          return menus.find(menu => menu.NavigationPath === '/usermanagement');
+        }
+        
+        // Add more dynamic route checks here as needed
+        // Example: if (pathname.match(/^\/products\/[^/]+$/)) {
+        //   return menus.find(menu => menu.NavigationPath === '/products');
+        // }
+        
+        return null;
+      };
       
-      if (currentMenu) {
+      const matchedMenu = findMatchingMenu();
+      
+      if (matchedMenu) {
         // If current route matches a menu item, select it
-        setSelectedMenu(currentMenu.PermissionId);
+        setSelectedMenu(matchedMenu.PermissionId);
       } else if (!selectedMenu) {
         // If no match and no selected menu, default to first menu item
         if (orderedSections.length > 0 && groupedMenus[orderedSections[0]]?.length > 0) {

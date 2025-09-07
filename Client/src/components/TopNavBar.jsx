@@ -22,6 +22,7 @@ export default function TopNavbar() {
         '/': 'Dashboard',
         '/usermanagement': 'User Management',
         '/users/:userId/details': 'User Management',
+        '/userTypes/:userTypeId/details': 'User Management',
         '/analytics': 'Analytics',
         '/reports': 'Reports',
         '/settings': 'Settings',
@@ -29,10 +30,10 @@ export default function TopNavbar() {
         '/notifications': 'Notifications'
     };
 
-    let currentPageTitle = pageNames[location.pathname] || 'Dashboard';
+    let currentPageTitle =  'Dashboard';
 
     for (const path in pageNames) {
-        if (matchPath({ path, end: true }, location.pathname)) {
+        if (matchPath({ path, exact: true }, location.pathname)) {
             currentPageTitle = pageNames[path];
             break;
         }
