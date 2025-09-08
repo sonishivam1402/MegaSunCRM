@@ -1,14 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getUserById } from '../../api/userApi'; // Assuming you have this API function
+import { getUserById } from '../../api/userApi';
+import { useAuth } from "../../context/AuthContext";
+import EditUserModal from './EditUserModal';
+import ImageUploadModal from '../../components/ImageUploadModal';
 
 const UserDetailsPage = () => {
     const { userId } = useParams();
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('userDetails');
     const [userDetails, setUserDetails] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
+    const [isEditImageModalOpen, setIsEditImageModalOpen] = useState(false);
 
     const tabs = [
         { id: 'userDetails', label: 'User Details' },
@@ -23,7 +29,7 @@ const UserDetailsPage = () => {
         try {
             setLoading(true);
             const response = await getUserById(userId);
-            //console.log("Details Page : ",response);
+            console.log("Details Page : ", response);
             setUserDetails(response);
             setError(null);
         } catch (err) {
@@ -41,19 +47,18 @@ const UserDetailsPage = () => {
     }, [userId]);
 
     const handleBackClick = () => {
-        navigate(-1); 
+        navigate(-1);
     };
 
     const handleEditClick = () => {
-        console.log('Edit user:', userId);
-        // navigate(`/users/${userId}/edit`);
+        setIsEditUserModalOpen(true);
     };
 
     if (loading) {
         return (
-            <div className="bg-white h-full flex items-center justify-center">
+            <div className="h-full flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-800 mx-auto"></div>
                     <p className="mt-4 text-gray-600">Loading user details...</p>
                 </div>
             </div>
@@ -62,12 +67,12 @@ const UserDetailsPage = () => {
 
     if (error) {
         return (
-            <div className="bg-white h-full flex items-center justify-center">
+            <div className="h-full flex items-center justify-center">
                 <div className="text-center">
                     <p className="text-red-600 mb-4">{error}</p>
-                    <button 
+                    <button
                         onClick={handleBackClick}
-                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        className="px-4 py-2 bg-green-800 text-white rounded hover:bg-green-900"
                     >
                         Go Back
                     </button>
@@ -78,12 +83,12 @@ const UserDetailsPage = () => {
 
     if (!userDetails) {
         return (
-            <div className="bg-white h-full flex items-center justify-center">
+            <div className="h-full flex items-center justify-center">
                 <div className="text-center">
                     <p className="text-gray-600 mb-4">User not found</p>
-                    <button 
+                    <button
                         onClick={handleBackClick}
-                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        className="px-4 py-2 bg-green-800 text-white rounded hover:bg-green-900"
                     >
                         Go Back
                     </button>
@@ -93,12 +98,12 @@ const UserDetailsPage = () => {
     }
 
     return (
-        <div className="bg-white h-full">
+        <div className="h-full">
             {/* Header with Back Button and User Name */}
-            <div className="px-6 py-4 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <button 
+            <div className="px-6 py-2">
+                <div className="flex items-center gap-3 pt-3">
+                    {user.IsAdmin && (
+                        <button
                             onClick={handleBackClick}
                             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                         >
@@ -106,46 +111,47 @@ const UserDetailsPage = () => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                             </svg>
                         </button>
-                        <h1 className="text-xl font-semibold text-gray-900">{userDetails.Name}</h1>
-                    </div>
-                    <button 
-                        onClick={handleEditClick}
-                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        Edit
-                    </button>
+                    )}
+                    <h1 className="text-xl font-semibold text-gray-900">{userDetails.Name}</h1>
                 </div>
             </div>
 
             {/* Tab Navigation */}
-            <div className="px-6 py-0 border-b border-gray-200">
+            <div className="mx-6 py-0 border-b flex items-center justify-between">
                 <div className="flex gap-8">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`py-4 text-sm font-medium border-b-2 transition-colors ${
-                                activeTab === tab.id
-                                    ? 'text-blue-600 border-blue-600'
-                                    : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300'
-                            }`}
+                            className={`py-4 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id
+                                ? 'border-green-900'
+                                : 'text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300'
+                                }`}
                         >
                             {tab.label}
                         </button>
                     ))}
                 </div>
+                <button
+                    onClick={handleEditClick}
+                    className="flex items-center gap-2 px-4 py-1  border border-green-900 text-green-900 font-medium rounded-sm hover:bg-gray-50 transition-colors"
+                >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2.05882 11.9412H2.94929L10.1751 4.71541L9.28459 3.82494L2.05882 11.0507V11.9412ZM1 13V10.6109L10.3109 1.30406C10.4176 1.20712 10.5355 1.13224 10.6644 1.07941C10.7935 1.02647 10.9288 1 11.0703 1C11.2118 1 11.3489 1.02512 11.4815 1.07535C11.6142 1.12559 11.7316 1.20547 11.8339 1.315L12.6959 2.18782C12.8055 2.29006 12.8835 2.40771 12.9301 2.54076C12.9767 2.67382 13 2.80688 13 2.93994C13 3.08194 12.9758 3.21741 12.9273 3.34635C12.8788 3.47541 12.8017 3.59329 12.6959 3.7L3.38906 13H1ZM9.72206 4.27794L9.28459 3.82494L10.1751 4.71541L9.72206 4.27794Z" fill="#0D4715" />
+                        <path d="M10.1751 4.71541L2.94929 11.9412H2.05882V11.0507L9.28459 3.82494M10.1751 4.71541L9.28459 3.82494M10.1751 4.71541L9.72206 4.27794L9.28459 3.82494M11.9479 2.93853L11.0615 2.05212M1 13V10.6109L10.3109 1.30406C10.4176 1.20712 10.5355 1.13224 10.6644 1.07941C10.7935 1.02647 10.9288 1 11.0703 1C11.2118 1 11.3489 1.02512 11.4815 1.07535C11.6142 1.12559 11.7316 1.20547 11.8339 1.315L12.6959 2.18782C12.8055 2.29006 12.8835 2.40771 12.9301 2.54076C12.9767 2.67382 13 2.80688 13 2.93994C13 3.08194 12.9758 3.21741 12.9273 3.34635C12.8788 3.47541 12.8017 3.59329 12.6959 3.7L3.38906 13H1Z" stroke="#0D4715" strokeWidth="0.2" />
+                    </svg>
+
+                    Edit
+                </button>
             </div>
 
             {/* Tab Content */}
             <div className="p-6">
                 {activeTab === 'userDetails' && (
-                    <div className="flex gap-8">
+                    <div className="flex gap-15">
                         {/* Profile Image */}
                         <div className="flex-shrink-0">
-                            <div className="relative w-64 h-80 rounded-lg overflow-hidden bg-gray-100">
+                            <div className="relative w-[320px] h-[325px] rounded-lg overflow-hidden bg-gray-100">
                                 {userDetails.ProfileImagePath ? (
                                     <img
                                         src={userDetails.ProfileImagePath}
@@ -160,9 +166,10 @@ const UserDetailsPage = () => {
                                     </div>
                                 )}
                                 {/* Edit Icon on Image */}
-                                <button className="absolute bottom-3 right-3 p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-shadow">
-                                    <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                <button onClick={()=>setIsEditImageModalOpen(true)} className="absolute bottom-3 right-3 p-2 border rounded-sm shadow-md hover:shadow-lg transition-shadow">
+                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M2.05882 11.9412H2.94929L10.1751 4.71541L9.28459 3.82494L2.05882 11.0507V11.9412ZM1 13V10.6109L10.3109 1.30406C10.4176 1.20712 10.5355 1.13224 10.6644 1.07941C10.7935 1.02647 10.9288 1 11.0703 1C11.2118 1 11.3489 1.02512 11.4815 1.07535C11.6142 1.12559 11.7316 1.20547 11.8339 1.315L12.6959 2.18782C12.8055 2.29006 12.8835 2.40771 12.9301 2.54076C12.9767 2.67382 13 2.80688 13 2.93994C13 3.08194 12.9758 3.21741 12.9273 3.34635C12.8788 3.47541 12.8017 3.59329 12.6959 3.7L3.38906 13H1ZM9.72206 4.27794L9.28459 3.82494L10.1751 4.71541L9.72206 4.27794Z" fill="#0D4715" />
+                                        <path d="M10.1751 4.71541L2.94929 11.9412H2.05882V11.0507L9.28459 3.82494M10.1751 4.71541L9.28459 3.82494M10.1751 4.71541L9.72206 4.27794L9.28459 3.82494M11.9479 2.93853L11.0615 2.05212M1 13V10.6109L10.3109 1.30406C10.4176 1.20712 10.5355 1.13224 10.6644 1.07941C10.7935 1.02647 10.9288 1 11.0703 1C11.2118 1 11.3489 1.02512 11.4815 1.07535C11.6142 1.12559 11.7316 1.20547 11.8339 1.315L12.6959 2.18782C12.8055 2.29006 12.8835 2.40771 12.9301 2.54076C12.9767 2.67382 13 2.80688 13 2.93994C13 3.08194 12.9758 3.21741 12.9273 3.34635C12.8788 3.47541 12.8017 3.59329 12.6959 3.7L3.38906 13H1Z" stroke="#0D4715" strokeWidth="0.2" />
                                     </svg>
                                 </button>
                             </div>
@@ -170,59 +177,65 @@ const UserDetailsPage = () => {
 
                         {/* User Information */}
                         <div className="flex-1 space-y-6">
-                            <div className="grid grid-cols-1 gap-6">
-                                <div className="flex">
+                            <div className="grid grid-cols-1 gap-3">
+                                <div className="flex gap-5">
                                     <span className="w-32 text-gray-600 font-medium">First name</span>
-                                    <span className="text-gray-900">: {userDetails.FirstName || userDetails.Name?.split(' ')[0] || 'N/A'}</span>
+                                    <span className="text-gray-900">:</span>
+                                    <span className="text-gray-900">{userDetails.FirstName || userDetails.Name?.split(' ')[0] || 'N/A'}</span>
                                 </div>
-                                
-                                <div className="flex">
+
+                                <div className="flex gap-5">
                                     <span className="w-32 text-gray-600 font-medium">Last name</span>
-                                    <span className="text-gray-900">: {userDetails.LastName || userDetails.Name?.split(' ')[1] || 'N/A'}</span>
+                                    <span className="text-gray-900">:</span>
+                                    <span className="text-gray-900">{userDetails.LastName || userDetails.Name?.split(' ')[1] || 'N/A'}</span>
                                 </div>
-                                
-                                <div className="flex">
+
+                                <div className="flex gap-5">
                                     <span className="w-32 text-gray-600 font-medium">User type</span>
-                                    <span className="text-gray-900">: {userDetails.UserType || 'N/A'}</span>
+                                    <span className="text-gray-900">:</span>
+                                    <span className="text-gray-900">{userDetails.UserType || 'N/A'}</span>
                                 </div>
-                                
-                                <div className="flex">
+
+                                <div className="flex gap-5">
                                     <span className="w-32 text-gray-600 font-medium">Email address</span>
-                                    <span className="text-gray-900">: {userDetails.Email || 'N/A'}</span>
+                                    <span className="text-gray-900">:</span>
+                                    <span className="text-gray-900">{userDetails.Email || 'N/A'}</span>
                                 </div>
-                                
-                                <div className="flex">
+
+                                <div className="flex gap-5">
                                     <span className="w-32 text-gray-600 font-medium">Phone no.</span>
-                                    <span className="text-gray-900">: {userDetails.Contact || userDetails.Phone || 'N/A'}</span>
+                                    <span className="text-gray-900">:</span>
+                                    <span className="text-gray-900">{userDetails.Contact || userDetails.Phone || 'N/A'}</span>
                                 </div>
-                                
-                                <div className="flex">
+
+                                <div className="flex gap-5">
                                     <span className="w-32 text-gray-600 font-medium">GST no.</span>
-                                    <span className="text-gray-900">: {userDetails.GSTNumber || 'N/A'}</span>
+                                    <span className="text-gray-900">:</span>
+                                    <span className="text-gray-900">{userDetails.GSTNumber || 'N/A'}</span>
                                 </div>
-                                
-                                <div className="flex">
+
+                                <div className="flex gap-5">
                                     <span className="w-32 text-gray-600 font-medium">Address</span>
-                                    <span className="text-gray-900">: {userDetails.Address || 'N/A'}</span>
+                                    <span className="text-gray-900">:</span>
+                                    <span className="text-gray-900">{userDetails.Address || 'N/A'}</span>
                                 </div>
-                                
-                                <div className="flex items-center">
+
+                                <div className="flex items-center gap-5">
                                     <span className="w-32 text-gray-600 font-medium">Status</span>
                                     <div className="flex items-center gap-2">
                                         <span className="text-gray-900">:</span>
-                                        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
-                                            userDetails.IsActive
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-red-100 text-red-800'
-                                        }`}>
+                                        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${userDetails.IsActive
+                                            ? 'bg-green-200 text-green-900'
+                                            : 'bg-red-100 text-red-800'
+                                            }`}>
                                             {userDetails.IsActive ? 'Active' : 'Inactive'}
                                         </span>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             {/* User since */}
-                            <div className="pt-4 border-t border-gray-200">
+                            <div>
                                 <p className="text-sm text-gray-500">
                                     User since {userDetails.CreatedOn ? new Date(userDetails.CreatedOn).getFullYear() : new Date().getFullYear()}
                                 </p>
@@ -255,6 +268,19 @@ const UserDetailsPage = () => {
                     </div>
                 )}
             </div>
+            <EditUserModal
+                isOpen={isEditUserModalOpen}
+                onClose={() => setIsEditUserModalOpen(false)}
+                userData={userDetails}
+                onUserEdited={fetchUserDetails}
+            />
+
+            <ImageUploadModal
+                isOpen={isEditImageModalOpen}
+                onClose={()=>setIsEditImageModalOpen(false)}
+                userData={userDetails}
+                onUserEdit={fetchUserDetails}
+            />
         </div>
     );
 };
