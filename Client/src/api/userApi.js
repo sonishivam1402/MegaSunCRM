@@ -57,6 +57,20 @@ export const updateUserById = async (id, data) => {
   }
 };
 
+// Update User Image By Id
+export const updateImageByUserId = async (data) => {
+  try {
+    //console.log(data);
+    const res = await API.post("/user/updateImage", data );
+    return res;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Image update failed:", err);
+    }
+    throw err;
+  }
+};
+
 // Get All User Types
 export const getAllUserType = async (UserTypeId) => {
   try {

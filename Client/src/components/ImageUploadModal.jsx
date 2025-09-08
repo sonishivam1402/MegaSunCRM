@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { updateImageByUserId } from '../api/userApi';
 
 const ImageUploadModal = ({ isOpen, onClose, userData, onUserEdit }) => {
     const [previewImage, setPreviewImage] = useState(null);
@@ -67,19 +68,24 @@ const ImageUploadModal = ({ isOpen, onClose, userData, onUserEdit }) => {
         setIsLoading(true);
 
         try {
-            // Create FormData for file upload
-            const submitData = new FormData();
+            const data = new FormData();
 
             if (formData.imageFile) {
-                submitData.append('profileImage', formData.imageFile);
+                data.append('imageFile', formData.imageFile);
+                data.append('id', userData.UserId);
             } else if (formData.profileImagePath) {
-                submitData.append('profileImagePath', formData.profileImagePath);
+                data.append('profileImagePath', formData.profileImagePath);
             }
 
-            //await onUserEdit(submitData);
-            // need to add api call 
-
-            onClose();
+            const res = await updateImageByUserId(data);
+            if (res?.status === 201) {
+                alert("Image updated successfully:");
+                onUserEdit();
+                onClose();
+            } else {
+                console.warn(res.data.Message);
+                alert(res.data.Message);
+            }
         } catch (error) {
             console.error('Error updating profile image:', error);
             alert('Failed to update profile image. Please try again.');

@@ -155,7 +155,7 @@ export default function TopNavbar() {
 
                         {/* Dropdown Menu - Fixed positioning */}
                         {isDropdownOpen && (
-                            <div className="absolute right-0 top-full mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                            <div className="absolute right-0 top-full mt-1 w-64 bg-[#f1f0e9] rounded-sm shadow-lg border border-gray-200 z-50">
                                 {/* User Info Section */}
                                 <div className="px-4 py-3 border-b border-gray-200">
                                     <div className="flex items-center space-x-3">

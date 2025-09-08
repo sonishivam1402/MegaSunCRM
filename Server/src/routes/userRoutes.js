@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authenticate } from "../middlewares/authMiddleware.js";
 import { checkPermission } from "../middlewares/checkPermission.js";
-import { createNewUser, createUserType, getAllUsers, getUserById, getUserType, getUserTypeById, getUserTypeNames, updatePassword, updateUserbyId, updateUserTypeById } from "../controllers/user.controller.js";
+import { createNewUser, createUserType, getAllUsers, getUserById, getUserType, getUserTypeById, getUserTypeNames, updateImageByUserId, updatePassword, updateUserbyId, updateUserTypeById } from "../controllers/user.controller.js";
 import multer from "multer";
 
 const userRouter = Router();
@@ -19,6 +19,7 @@ userRouter.get("/userTypes/:id", authenticate, checkPermission("ReadAccess","Use
 userRouter.post("/userTypes/:id", authenticate, checkPermission("UpdateAccess","User Management"), updateUserTypeById);
 userRouter.post("/createUserType", authenticate, checkPermission("CreateAccess","User Management"), createUserType);
 userRouter.post("/updatePassword", authenticate, checkPermission("UpdateAccess","User Management"), updatePassword);
+userRouter.post("/updateImage", authenticate, checkPermission("UpdateAccess","User Management"), upload.single("imageFile"), updateImageByUserId);
 
 // Core user routes
 userRouter.get("/", authenticate, checkPermission("ReadAccess","User Management"), getAllUsers);
