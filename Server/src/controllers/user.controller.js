@@ -48,13 +48,15 @@ export const createNewUser = async (req, res, next) => {
 // All Users
 export const getAllUsers = async (req, res, next) => {
   try {
-    const { search = "", limit = 10, offset = 0 } = req.query;
+    const { search = "", limit = 10, offset = 0, status, userTypeId } = req.query;
     const pool = await poolPromise;
     const result = await pool
       .request()
       .input("SearchParameter", sql.NVarChar(100), search)
       .input("LimitParameter", sql.Int, parseInt(limit))
       .input("OffsetParameter", sql.Int, parseInt(offset))
+      .input("StatusParam", sql.Bit, status)
+      .input("UserTypeId", sql.UniqueIdentifier, userTypeId)
       .execute("sp_GetUsers");
 
     res.json({users : result.recordsets[0], totalRecords:result.recordsets[1]});
