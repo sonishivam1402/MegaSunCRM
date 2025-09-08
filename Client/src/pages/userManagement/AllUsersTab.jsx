@@ -31,30 +31,40 @@ const AllUsersTab = ({ refreshKey }) => {
     // Calculate total pages
     const totalPages = Math.ceil(totalRecords / pageSize);
 
-    // Fetch users with pagination and search
-    const fetchUsers = useCallback(async (search = '', page = 1, limit = 10) => {
+    // Fetch users with pagination, search, and filters
+    const fetchUsers = useCallback(async (search = '', page = 1, limit = 10, status = '', userTypeId = '') => {
         console.log('API CALL TRIGGERED:', {
             search: search,
             page: page,
             limit: limit,
             offset: (page - 1) * limit,
+            status: status,
+            userTypeId: userTypeId,
             timestamp: new Date().toISOString()
         });
         
         try {
             setLoading(true);
             const offset = (page - 1) * limit;
-            const response = await getAllUsers({ 
+            
+            // Build API parameters
+            const apiParams = { 
                 search: search, 
                 limit: limit, 
-                offset: offset 
-            });
+                offset: offset  
+            };
             
-            // console.log('API RESPONSE:', {
-            //     usersCount: response?.users?.length || 0,
-            //     totalCount: response?.totalRecords?.[0]?.["Total Count"] || 0,
-            //     timestamp: new Date().toISOString()
-            // });
+            // Add status filter if provided
+            if (status !== '') {
+                apiParams.status = status === 'Active';
+            }
+            
+            // Add userTypeId filter if provided
+            if (userTypeId !== '') {
+                apiParams.userTypeId = userTypeId;
+            }
+            
+            const response = await getAllUsers(apiParams);
             
             // Handle the actual API response structure
             if (response && response.users) {
@@ -89,16 +99,8 @@ const AllUsersTab = ({ refreshKey }) => {
 
     // Debounced search function
     const debouncedSearch = useCallback((searchValue, page = 1, limit = pageSize) => {
-        // console.log('SEARCH INPUT:', {
-        //     searchValue: searchValue,
-        //     length: searchValue.length,
-        //     willTriggerAPI: searchValue.length >= 3,
-        //     timestamp: new Date().toISOString()
-        // });
-        
         // Clear existing timeout
         if (searchTimeoutRef.current) {
-            //console.log('CLEARING EXISTING TIMEOUT');
             clearTimeout(searchTimeoutRef.current);
         }
 
@@ -112,27 +114,20 @@ const AllUsersTab = ({ refreshKey }) => {
         console.log('SETTING 1-SECOND TIMEOUT FOR SEARCH');
         searchTimeoutRef.current = setTimeout(() => {
             console.log('TIMEOUT COMPLETED - Making API call');
-            fetchUsers(searchValue, page, limit);
+            fetchUsers(searchValue, page, limit, statusFilter, userTypeFilter);
         }, 1000);
-    }, [pageSize, fetchUsers]);
+    }, [pageSize, fetchUsers, statusFilter, userTypeFilter]);
 
     // Handle search input change
     const handleSearchChange = (e) => {
         const value = e.target.value;
-        // console.log('SEARCH CHANGE:', {
-        //     oldValue: searchTerm,
-        //     newValue: value,
-        //     isEmpty: value === '',
-        //     timestamp: new Date().toISOString()
-        // });
-        
         setSearchTerm(value);
         setPageNumber(1); // Reset to first page on search
         
         // If search is cleared (empty), fetch all users immediately
         if (value === '') {
             console.log('SEARCH CLEARED - Immediate API call for all users');
-            fetchUsers('', 1, pageSize);
+            fetchUsers('', 1, pageSize, statusFilter, userTypeFilter);
             return;
         }
         
@@ -143,38 +138,42 @@ const AllUsersTab = ({ refreshKey }) => {
     // Handle page change
     const handlePageChange = (page) => {
         if (page >= 1 && page <= totalPages) {
-            // console.log('PAGE CHANGE:', {
-            //     oldPage: pageNumber,
-            //     newPage: page,
-            //     searchTerm: searchTerm,
-            //     timestamp: new Date().toISOString()
-            // });
-            
             setPageNumber(page);
             const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
-            fetchUsers(currentSearch, page, pageSize);
+            fetchUsers(currentSearch, page, pageSize, statusFilter, userTypeFilter);
         }
     };
 
     // Handle page size change
     const handlePageSizeChange = (newPageSize) => {
-        // console.log('PAGE SIZE CHANGE:', {
-        //     oldPageSize: pageSize,
-        //     newPageSize: newPageSize,
-        //     searchTerm: searchTerm,
-        //     timestamp: new Date().toISOString()
-        // });
-        
         setPageSize(newPageSize);
         setPageNumber(1); // Reset to first page
         const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
-        fetchUsers(currentSearch, 1, newPageSize);
+        fetchUsers(currentSearch, 1, newPageSize, statusFilter, userTypeFilter);
+    };
+
+    // Handle user type filter change
+    const handleUserTypeFilterChange = (e) => {
+        const value = e.target.value;
+        setUserTypeFilter(value);
+        setPageNumber(1); // Reset to first page
+        const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
+        fetchUsers(currentSearch, 1, pageSize, statusFilter, value);
+    };
+
+    // Handle status filter change
+    const handleStatusFilterChange = (e) => {
+        const value = e.target.value;
+        setStatusFilter(value);
+        setPageNumber(1); // Reset to first page
+        const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
+        fetchUsers(currentSearch, 1, pageSize, value, userTypeFilter);
     };
 
     // Initial data fetch
     useEffect(() => {
         console.log('INITIAL LOAD - Component mounted or refreshKey changed');
-        fetchUsers('', 1, pageSize);
+        fetchUsers('', 1, pageSize, statusFilter, userTypeFilter);
         getUserTypeNames();
     }, [refreshKey, fetchUsers, pageSize]);
 
@@ -203,15 +202,9 @@ const AllUsersTab = ({ refreshKey }) => {
         };
     }, [activeDropdown]);
 
-    // Filter users client-side (for user type and status filters)
-    const filteredUsers = users.filter(user => {
-        const matchesUserType = userTypeFilter === '' || user.UserType === userTypeFilter;
-        const matchesStatus = statusFilter === '' ||
-            (statusFilter === 'Active' && user.IsActive) ||
-            (statusFilter === 'Inactive' && !user.IsActive);
-
-        return matchesUserType && matchesStatus;
-    });
+    // Since we're now filtering on the server side, we can use the users directly
+    // But keep this for any additional client-side filtering if needed
+    const filteredUsers = users;
 
     // Dropdown and modal handlers
     const toggleDropdown = (userId) => {
@@ -231,7 +224,7 @@ const AllUsersTab = ({ refreshKey }) => {
 
     const handleUserEdited = () => {
         const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
-        fetchUsers(currentSearch, pageNumber, pageSize);
+        fetchUsers(currentSearch, pageNumber, pageSize, statusFilter, userTypeFilter);
     };
 
     // Generate page numbers for pagination
@@ -280,12 +273,12 @@ const AllUsersTab = ({ refreshKey }) => {
                     <div className="relative">
                         <select
                             value={userTypeFilter}
-                            onChange={(e) => setUserTypeFilter(e.target.value)}
+                            onChange={handleUserTypeFilterChange}
                             className="appearance-none bg-btn-gray rounded-s-xs px-4 py-2 pr-8 text-sm hover:cursor-pointer  "
                         >
                             <option value="">User type</option>
                             {userTypeOptions.map((op, index) => (
-                                <option key={index} value={op.Name}>{op.Name}</option>
+                                <option key={index} value={op.UserTypeId}>{op.Name}</option>
                             ))}
                         </select>
                         <img src="/icons/Dropdown.png" alt="Dropdown" className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-2 pointer-events-none opacity-50" />
@@ -295,7 +288,7 @@ const AllUsersTab = ({ refreshKey }) => {
                     <div className="relative">
                         <select
                             value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
+                            onChange={handleStatusFilterChange}
                             className="appearance-none bg-btn-gray rounded-s-xs px-4 py-2 pr-8 text-sm hover:cursor-pointer  "
                         >
                             <option value="">Status</option>
