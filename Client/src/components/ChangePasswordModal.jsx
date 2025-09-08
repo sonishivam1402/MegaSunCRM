@@ -16,8 +16,8 @@ export default function ChangePasswordModal({ isOpen, onClose, onSubmit }) {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-white/30 backdrop-blur-sm bg-opacity-50 z-50">
-            <div className="bg-white rounded-lg shadow-lg w-96 p-6">
+        <div className="fixed inset-0 flex items-center justify-center bg-white/30 backdrop-blur-sm z-50">
+            <div className="bg-[#f1f0e9] rounded-sm shadow-lg w-96 p-6 border">
                 <h2 className="text-xl font-semibold mb-4">Change Password</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <input
@@ -31,13 +31,13 @@ export default function ChangePasswordModal({ isOpen, onClose, onSubmit }) {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
+                            className="px-4 py-2 border border-green-800 hover:bg-gray-100 rounded-sm"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                            className="px-4 py-2 bg-green-800 text-white rounded-sm hover:bg-green-900"
                         >
                             Submit
                         </button>

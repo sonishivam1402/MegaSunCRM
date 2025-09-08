@@ -171,6 +171,39 @@ export const updateUserbyId = async (req, res, next) => {
   }
 };
 
+// Update Image
+export const updateImageByUserId = async (req, res, next) => {
+  try {
+    const data = req.body;
+    //console.log("User Image Info : ", data);
+
+    let fileUrl = data.profileImagePath; // default = old path
+
+    // If new file uploaded, push to S3
+    if (req.file) {
+      const uploadResult = await uploadFile(req.file);
+      fileUrl = uploadResult.Location;
+      //console.log("New File Uploaded to S3 : ", fileUrl);
+    }
+
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("UserId", sql.UniqueIdentifier, data.id)
+      .input("ProfileImagePath", sql.NVarChar(sql.MAX), fileUrl) 
+      .execute("sp_UpdateProfileImage");
+
+    //console.log(result.recordset[0])
+    if (result.recordset[0].Success) {
+      res.status(201).json(result.recordset[0]);
+    } else {
+      res.json(result.recordset[0]);
+    }
+  } catch (err) {
+    console.error("Error in updating image :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 // Update User Password
 export const updatePassword = async (req, res, next) => {
