@@ -126,7 +126,7 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-white/30 backdrop-blur-xs flex items-center justify-end z-50">
+    <div className="fixed inset-0 bg-white/30 backdrop-blur-xs flex items-center justify-end z-50 overflow-y-auto">
       <div className="bg-[#F0EEE4] w-200 h-screen max-w-2xl">
         {/* Header */}
         <div className="p-3 px-6 border-b">
@@ -136,7 +136,10 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
               onClick={onClose}
               className="text-[#242425] text-xl font-light hover:cursor-pointer"
             >
-              ×
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M13 1L1 13M1 1L13 13" stroke="#242425" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+
             </button>
           </div>
           <p className="text-sm text-gray-600">Edit the details of the user.</p>
@@ -170,6 +173,8 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
                   onChange={handleInputChange}
                   placeholder="XXXXXXXXXX"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50"
+                  min={1000000000}
+                  max={9999999999}
                   required
                 />
               </div>
@@ -200,7 +205,6 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
                   onChange={handleInputChange}
                   placeholder="Designation"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50"
-                  required
                 />
               </div>
             </div>

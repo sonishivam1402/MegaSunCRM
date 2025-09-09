@@ -26,7 +26,7 @@ export default function AppRoutes() {
         <Route index element={<Dashboard />} />
 
         {/* add more private pages here */}
-        <Route path="/usermanagement" element={<UserManagementWrapper/>} />
+        <Route path="/users" element={<UserManagementWrapper/>} />
         <Route path="/users/:userId/details" element={<UserDetailsPage />} />
         <Route path="/userTypes/:userTypeId/details" element={<UserTypeDetail />} />
 

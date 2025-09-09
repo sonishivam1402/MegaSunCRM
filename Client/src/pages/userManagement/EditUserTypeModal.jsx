@@ -30,7 +30,7 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
 
   const pageItems = [
     { id: 'lead', name: 'Leads', apiKey: 'lead' },
-    { id: 'invoice', name: 'Invoice', apiKey: 'invoice' },
+    // { id: 'invoice', name: 'Invoice', apiKey: 'invoice' },
     { id: 'quotation', name: 'Quotation', apiKey: 'quotation' },
     { id: 'user', name: 'User Management', apiKey: 'user' },
     { id: 'followUps', name: 'Follow ups', apiKey: 'followUps' },
@@ -59,14 +59,14 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
       setError(null);
       const response = await getUserTypeById(userData); // userData is userTypeId
       console.log("Modal Response: ", response.data);
-      
+
       if (response?.status === 200 && response.data) {
         // Set the 4 separate states based on nested array structure
         setBasicInfo(response.data[0]?.[0] || null);
         setPermissions(response.data[1] || []);
         setDashboardCards(response.data[2]?.[0] || null);
         setApiResponse(response.data[3]?.[0] || null);
-        
+
         // Prefill form data
         prefillFormData(response.data[0]?.[0], response.data[1]);
       } else {
@@ -86,7 +86,7 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
 
     // Determine access type from existing user data
     const accessType = basicInfo.IsAdmin ? 'full' : 'limited';
-    
+
     // Convert permissions back to pageAccess format for limited users
     const pageAccess = {};
     if (!basicInfo.IsAdmin && permissions && permissions.length > 0) {
@@ -98,7 +98,7 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
 
       pageItems.forEach(item => {
         // Try to match permission by name (case insensitive)
-        const matchingPerm = permissions.find(perm => 
+        const matchingPerm = permissions.find(perm =>
           perm.Name?.toLowerCase().includes(item.name.toLowerCase()) ||
           item.name.toLowerCase().includes(perm.Name?.toLowerCase())
         );
@@ -128,7 +128,7 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
     if (userData && isOpen && typeof userData === 'object' && userData.Name) {
       // This is the old format where userData is the full user object
       const accessType = userData.IsAdmin ? 'full' : 'limited';
-      
+
       const pageAccess = {};
       if (!userData.IsAdmin && userData.permissions) {
         pageItems.forEach(item => {
@@ -186,7 +186,7 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
 
   const buildPermissionsPayload = () => {
     const permissions = {};
-    
+
     pageItems.forEach(item => {
       if (formData.accessType === 'full') {
         // For full access (admin), all permissions are true
@@ -228,7 +228,7 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
         alert(response.data.Message || 'User type updated successfully');
         onClose();
         onUserTypeEdited();
-        
+
         // Reset form
         setFormData({
           accessName: '',
@@ -237,7 +237,7 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
           dashboardAccess: {},
           pageAccess: {}
         });
-        
+
         // Reset API data states
         setBasicInfo(null);
         setPermissions([]);
@@ -302,9 +302,11 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
       <div className="bg-[#F0EEE4] w-full max-w-2xl h-screen overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-5">
             <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-              <img src="Left_arrow.png" alt="left-arrow" className='w-5 h-5' />
+              <svg width="12" height="20" viewBox="0 0 12 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9.65375 19.6532L0 9.99945L9.65375 0.345703L11.073 1.76495L2.83825 9.99945L11.073 18.234L9.65375 19.6532Z" fill="#1C1B1F" />
+              </svg>
             </button>
             <div>
               <h2 className="text-lg font-semibold">Edit user type</h2>
@@ -312,7 +314,9 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
             </div>
           </div>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            ✕
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 1L1 13M1 1L13 13" stroke="#242425" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
           </button>
         </div>
 
