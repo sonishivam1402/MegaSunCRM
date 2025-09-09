@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { updateUserType, getUserTypeById } from '../../api/userApi.js';
+import { toast } from 'react-toastify';
 
 const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
   const [formData, setFormData] = useState({
@@ -225,7 +226,7 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
       const response = await updateUserType(payload.UserTypeId, payload);
 
       if (response?.status === 201) {
-        alert(response.data.Message || 'User type updated successfully');
+        toast.success(response.data.Message || 'User type updated successfully');
         onClose();
         onUserTypeEdited();
 
@@ -244,11 +245,11 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
         setDashboardCards(null);
         setApiResponse(null);
       } else {
-        alert(response.data.Message || 'Failed to update user type');
+        toast.error(response.data.Message || 'Failed to update user type');
       }
     } catch (error) {
       console.error('Error updating user type:', error);
-      alert('Failed to update user type. Please try again.');
+      toast.error('Failed to update user type. Please try again.');
     }
   };
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 export default function ChangePasswordModal({ isOpen, onClose, onSubmit }) {
     const [newPassword, setNewPassword] = useState("");
@@ -6,7 +7,7 @@ export default function ChangePasswordModal({ isOpen, onClose, onSubmit }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!newPassword.trim()) {
-            alert("Password cannot be empty");
+            toast.error("Password cannot be empty");
             return;
         }
         onSubmit(newPassword);

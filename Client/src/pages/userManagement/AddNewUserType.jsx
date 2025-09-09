@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { createUserType } from '../../api/userApi.js';
+import { toast } from 'react-toastify';
 
 const AddNewUserTypeModal = ({ isOpen, onClose, onUserCreated }) => {
   const [formData, setFormData] = useState({
@@ -126,18 +127,18 @@ const AddNewUserTypeModal = ({ isOpen, onClose, onUserCreated }) => {
       const response = await createUserType(payload);
 
       if (response?.status === 201) {
-        alert(response.data.Message);
+        toast.success(response.data.Message);
         onClose();
         onUserCreated();
 
         // Reset form
         resetForm();
       } else {
-        alert(response.data.Message)
+        toast.error(response.data.Message)
       }
     } catch (error) {
       console.error('Error creating user type:', error);
-      alert('Failed to create user type. Please try again.');
+      toast.error('Failed to create user type. Please try again.');
     }
   };
 
