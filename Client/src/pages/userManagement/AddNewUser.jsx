@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createNewUser, getAllUserTypeNames } from '../../api/userApi';
+import { toast } from 'react-toastify';
 
 const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
 
@@ -62,24 +63,24 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
       const res = await createNewUser(data);
 
       if (res?.status === 201) {
-        alert("User created successfully:");
+        toast.success("User created successfully:");
         onUserCreated();
         onClose();
         setFormData(initialFormData);
       } else {
         console.warn(res.data.Message);
-        alert(res.data.Message);
+        toast.error(res.data.Message);
       }
     } catch (err) {
       console.error("Error creating user:", err);
       if (err.response) {
-        alert(err.response.data?.message || "Failed to create user.");
+        toast.error(err.response.data?.message || "Failed to create user.");
       }
       else if (err.request) {
-        alert("No response from server. Please check your connection.");
+        toast.error("No response from server. Please check your connection.");
       }
       else {
-        alert("An unexpected error occurred.");
+        toast.error("An unexpected error occurred.");
       }
     }
   };

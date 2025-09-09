@@ -3,6 +3,7 @@ import { useLocation, matchPath } from 'react-router-dom';
 import { useAuth } from "../context/AuthContext";
 import ChangePasswordModal from "./ChangePasswordModal";
 import { updateUserPassword } from '../api/userApi';
+import { toast } from 'react-toastify';
 
 export default function TopNavbar() {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -104,15 +105,15 @@ export default function TopNavbar() {
             const res = await updateUserPassword(newPassword)
             console.log("res: ", res)
             if (res?.status === 201) {
-                alert("Password updated successfully");
+                toast.success("Password updated successfully");
                 setIsChangePasswordOpen(false);
             } else {
                 console.warn(res.data.MESSAGE);
-                alert(res.data.MESSAGE);
+                toast.error(res.data.MESSAGE);
             }
         } catch (error) {
             console.error("Error changing password:", error);
-            alert("Something went wrong");
+            toast.error("Something went wrong");
         }
     };
 

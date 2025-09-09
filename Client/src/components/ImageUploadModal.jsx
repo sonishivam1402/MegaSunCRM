@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { updateImageByUserId } from '../api/userApi';
+import { toast } from 'react-toastify';
 
 const ImageUploadModal = ({ isOpen, onClose, userData, onUserEdit }) => {
     const [previewImage, setPreviewImage] = useState(null);
@@ -24,13 +25,13 @@ const ImageUploadModal = ({ isOpen, onClose, userData, onUserEdit }) => {
         if (file) {
             // Validate file size (12MB limit)
             if (file.size > 12 * 1024 * 1024) {
-                alert('File size must be less than 12MB');
+                toast.error('File size must be less than 12MB');
                 return;
             }
 
             // Validate file type
             if (!file.type.match(/^image\/(png|jpeg|jpg)$/)) {
-                alert('Only PNG and JPEG files are allowed');
+                toast.error('Only PNG and JPEG files are allowed');
                 return;
             }
 
@@ -79,16 +80,16 @@ const ImageUploadModal = ({ isOpen, onClose, userData, onUserEdit }) => {
 
             const res = await updateImageByUserId(data);
             if (res?.status === 201) {
-                alert("Image updated successfully:");
+                toast.success("Image updated successfully:");
                 onUserEdit();
                 onClose();
             } else {
                 console.warn(res.data.Message);
-                alert(res.data.Message);
+                toast.error(res.data.Message);
             }
         } catch (error) {
             console.error('Error updating profile image:', error);
-            alert('Failed to update profile image. Please try again.');
+            toast.error('Failed to update profile image. Please try again.');
         } finally {
             setIsLoading(false);
         }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAllUserTypeNames, updateUserById } from '../../api/userApi';
+import { toast } from 'react-toastify';
 
 const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
   const [userTypeOptions, setUserTypeOptions] = useState([]);
@@ -89,8 +90,8 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
     e.preventDefault();
 
     // Simple validation
-    if (!formData.name || !formData.contact || !formData.email || !formData.userTypeId || !formData.designation) {
-      alert("Please fill in all required fields.");
+    if (!formData.name || !formData.contact || !formData.email || !formData.userTypeId) {
+      toast.error("Please fill in all required fields.");
       return;
     }
 
@@ -104,21 +105,21 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
 
       const res = await updateUserById(formData.id, data);
       if (res?.status === 201) {
-        alert("User updated successfully:");
+        toast.success("User updated successfully.");
         onUserEdited();
         onClose();
       } else {
         console.warn(res.data.Message);
-        alert(res.data.Message);
+        toast.error(res.data.Message);
       }
     } catch (err) {
       console.error("Error updating user:", err);
       if (err.response) {
-        alert(err.response.data?.message || "Failed to update user.");
+        toast.error(err.response.data?.message || "Failed to update user.");
       } else if (err.request) {
-        alert("No response from server. Please check your connection.");
+        toast.error("No response from server. Please check your connection.");
       } else {
-        alert("An unexpected error occurred.");
+        toast.error("An unexpected error occurred.");
       }
     }
   };
