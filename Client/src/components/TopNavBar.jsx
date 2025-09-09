@@ -20,7 +20,7 @@ export default function TopNavbar() {
     const location = useLocation();
     const pageNames = {
         '/': 'Dashboard',
-        '/usermanagement': 'User Management',
+        '/users': 'User Management',
         '/users/:userId/details': 'User Management',
         '/userTypes/:userTypeId/details': 'User Management',
         '/analytics': 'Analytics',

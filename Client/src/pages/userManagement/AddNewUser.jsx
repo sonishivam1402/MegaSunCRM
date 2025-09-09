@@ -113,7 +113,10 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
               onClick={() => { onClose(), setFormData(initialFormData) }}
               className="text-[#242425] text-xl font-light hover:cursor-pointer"
             >
-              x
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M13 1L1 13M1 1L13 13" stroke="#242425" stroke-width="1.5" stroke-linecap="round" />
+              </svg>
+
             </button>
           </div>
           <p className="text-sm text-gray-600">Add in the details of the new user.</p>
@@ -148,12 +151,14 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
                     Mobile Number
                   </label>
                   <input
-                    type="text"
+                    type="number"
                     name="contact"
                     value={formData.contact}
                     onChange={handleInputChange}
                     placeholder="XXXXXXXXXX"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50"
+                    min={1000000000}
+                    max={9999999999}
                     required
                   />
                 </div>
@@ -206,12 +211,11 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
                     onChange={handleInputChange}
                     placeholder="Designation"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50"
-                    required
                   />
                 </div>
 
                 {/*GST Id*/}
-                <div className='w-full'>
+                {/* <div className='w-full'>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     GST Id
                   </label>
@@ -224,10 +228,8 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50"
                     required
                   />
-                </div>
-              </div>
+                </div> */}
 
-              <div className='w-full xs: flex justify-between items-center gap-5'>
                 {/* Address */}
                 <div className='w-full'>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -243,6 +245,10 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
                     required
                   />
                 </div>
+              </div>
+
+              <div className='w-full xs: flex justify-between items-center gap-5'>
+
 
                 {/* User type */}
                 <div className='w-full'>

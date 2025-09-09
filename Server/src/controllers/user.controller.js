@@ -2,6 +2,7 @@ import { sql, poolPromise } from "../database/db.js";
 import bcrypt from "bcryptjs";
 import uploadFile from '../database/s3.js';
 import validateBit from "../utils/validateBit.js";
+import validator from "validator";
 
 // Create New User
 export const createNewUser = async (req, res, next) => {
@@ -13,6 +14,16 @@ export const createNewUser = async (req, res, next) => {
       const uploadResult = await uploadFile(req.file);
       fileUrl = uploadResult.Location;
       //console.log("File Url : ", fileUrl);
+    }
+
+    const isEmailValid = validator.isEmail(data.email);
+
+    const isContactValid = validator.isMobilePhone(data.contact, 'any', {
+      strictMode: true,
+    });
+
+    if(!isEmailValid && !isContactValid){
+      return {message : "Please check email and contact details."}
     }
 
     const hashPassword = await bcrypt.hash(data.password, 10);
@@ -59,7 +70,7 @@ export const getAllUsers = async (req, res, next) => {
       .input("UserTypeId", sql.UniqueIdentifier, userTypeId)
       .execute("sp_GetUsers");
 
-    res.json({users : result.recordsets[0], totalRecords:result.recordsets[1]});
+    res.json({ users: result.recordsets[0], totalRecords: result.recordsets[1] });
 
   } catch (err) {
     console.error("Error in fetching all users :", err);
@@ -192,7 +203,7 @@ export const updateImageByUserId = async (req, res, next) => {
     const result = await pool
       .request()
       .input("UserId", sql.UniqueIdentifier, data.id)
-      .input("ProfileImagePath", sql.NVarChar(sql.MAX), fileUrl) 
+      .input("ProfileImagePath", sql.NVarChar(sql.MAX), fileUrl)
       .execute("sp_UpdateProfileImage");
 
     //console.log(result.recordset[0])
@@ -255,7 +266,6 @@ export const createUserType = async (req, res) => {
     // Validate all permissions
     const modules = [
       "lead",
-      "invoice",
       "quotation",
       "user",
       "followUps",
@@ -296,10 +306,10 @@ export const createUserType = async (req, res) => {
       .input("LeadDeleteAccess", sql.Bit, permissions.lead.delete)
 
       // Invoices
-      .input("InvoiceReadAccess", sql.Bit, permissions.invoice.read)
-      .input("InvoiceCreateAccess", sql.Bit, permissions.invoice.create)
-      .input("InvoiceUpdateAccess", sql.Bit, permissions.invoice.update)
-      .input("InvoiceDeleteAccess", sql.Bit, permissions.invoice.delete)
+      // .input("InvoiceReadAccess", sql.Bit, permissions.invoice.read)
+      // .input("InvoiceCreateAccess", sql.Bit, permissions.invoice.create)
+      // .input("InvoiceUpdateAccess", sql.Bit, permissions.invoice.update)
+      // .input("InvoiceDeleteAccess", sql.Bit, permissions.invoice.delete)
 
       // Quotation
       .input("QuotationReadAccess", sql.Bit, permissions.quotation.read)
@@ -355,7 +365,7 @@ export const createUserType = async (req, res) => {
 export const updateUserTypeById = async (req, res) => {
   try {
     const pool = await poolPromise;
-    console.log("update user : ",req.body)
+    console.log("update user : ", req.body)
     const {
       UserTypeId,
       Name,
@@ -378,7 +388,6 @@ export const updateUserTypeById = async (req, res) => {
     // Validate all permissions
     const modules = [
       "lead",
-      "invoice",
       "quotation",
       "user",
       "followUps",
@@ -419,10 +428,10 @@ export const updateUserTypeById = async (req, res) => {
       .input("LeadDeleteAccess", sql.Bit, permissions.lead.delete)
 
       // Invoice
-      .input("InvoiceReadAccess", sql.Bit, permissions.invoice.read)
-      .input("InvoiceCreateAccess", sql.Bit, permissions.invoice.create)
-      .input("InvoiceUpdateAccess", sql.Bit, permissions.invoice.update)
-      .input("InvoiceDeleteAccess", sql.Bit, permissions.invoice.delete)
+      // .input("InvoiceReadAccess", sql.Bit, permissions.invoice.read)
+      // .input("InvoiceCreateAccess", sql.Bit, permissions.invoice.create)
+      // .input("InvoiceUpdateAccess", sql.Bit, permissions.invoice.update)
+      // .input("InvoiceDeleteAccess", sql.Bit, permissions.invoice.delete)
 
       // Quotation
       .input("QuotationReadAccess", sql.Bit, permissions.quotation.read)
@@ -461,7 +470,7 @@ export const updateUserTypeById = async (req, res) => {
       .input("ProductDeleteAccess", sql.Bit, permissions.product.delete)
 
       .execute("sp_UpdateUserTypeByUserTypeId");
-    
+
     console.log(result.recordset[0])
 
     if (result.recordset[0].Success) {
