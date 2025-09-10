@@ -9,7 +9,7 @@ export const authenticate = async (req, res, next) => {
 
   try {
     const decoded = verifyToken(token);
-    req.user = { id: decoded.id, email: decoded.email };
+    req.user = { id: decoded.id, isAdmin: decoded.isAdmin };
     
     try {
       const pool = await poolPromise;
