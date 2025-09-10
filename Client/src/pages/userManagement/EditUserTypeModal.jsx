@@ -30,14 +30,14 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
   ];
 
   const pageItems = [
-    { id: 'lead', name: 'Leads', apiKey: 'lead' },
-    // { id: 'invoice', name: 'Invoice', apiKey: 'invoice' },
+    { id: 'lead', name: 'My Leads', apiKey: 'lead' },
+    // { id: 'invoice', name: 'Invoices', apiKey: 'invoice' },
     { id: 'quotation', name: 'Quotation', apiKey: 'quotation' },
     { id: 'user', name: 'User Management', apiKey: 'user' },
-    { id: 'followUps', name: 'Follow ups', apiKey: 'followUps' },
+    { id: 'followUps', name: 'Followups', apiKey: 'followUps' },
     { id: 'target', name: 'Target', apiKey: 'target' },
     { id: 'orders', name: 'Orders', apiKey: 'orders' },
-    { id: 'product', name: 'Products', apiKey: 'product' }
+    { id: 'product', name: 'Product Management', apiKey: 'product' }
   ];
 
   const crudOperations = [
@@ -59,7 +59,7 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
       setLoading(true);
       setError(null);
       const response = await getUserTypeById(userData); // userData is userTypeId
-      console.log("Modal Response: ", response.data);
+      //console.log("Modal Response: ", response.data);
 
       if (response?.status === 200 && response.data) {
         // Set the 4 separate states based on nested array structure
