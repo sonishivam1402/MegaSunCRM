@@ -5,7 +5,7 @@ import EditUserModal from './EditUserModal';
 
 const AllUsersTab = ({ refreshKey }) => {
     const navigate = useNavigate();
-    
+
     // State management
     const [users, setUsers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -13,18 +13,18 @@ const AllUsersTab = ({ refreshKey }) => {
     const [pageNumber, setPageNumber] = useState(1);
     const [totalRecords, setTotalRecords] = useState(0);
     const [loading, setLoading] = useState(false);
-    
+
     // Filters
     const [userTypeFilter, setUserTypeFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [userTypeOptions, setUserTypeOptions] = useState([]);
-    
+
     // Modal and dropdown states
     const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
     const [userInfo, setUserInfo] = useState();
     const [activeDropdown, setActiveDropdown] = useState(null);
     const dropdownRefs = useRef({});
-    
+
     // Debounce timer ref
     const searchTimeoutRef = useRef(null);
 
@@ -42,34 +42,34 @@ const AllUsersTab = ({ refreshKey }) => {
             userTypeId: userTypeId,
             timestamp: new Date().toISOString()
         });
-        
+
         try {
             setLoading(true);
             const offset = (page - 1) * limit;
-            
+
             // Build API parameters
-            const apiParams = { 
-                search: search, 
-                limit: limit, 
-                offset: offset  
+            const apiParams = {
+                search: search,
+                limit: limit,
+                offset: offset
             };
-            
+
             // Add status filter if provided
             if (status !== '') {
                 apiParams.status = status === 'Active';
             }
-            
+
             // Add userTypeId filter if provided
             if (userTypeId !== '') {
                 apiParams.userTypeId = userTypeId;
             }
-            
+
             const response = await getAllUsers(apiParams);
-            
+
             // Handle the actual API response structure
             if (response && response.users) {
                 setUsers(response.users);
-                
+
                 // Extract total count from the response structure
                 const totalCount = response.totalRecords?.[0]?.["Total Count"] || 0;
                 setTotalRecords(totalCount);
@@ -123,14 +123,14 @@ const AllUsersTab = ({ refreshKey }) => {
         const value = e.target.value;
         setSearchTerm(value);
         setPageNumber(1); // Reset to first page on search
-        
+
         // If search is cleared (empty), fetch all users immediately
         if (value === '') {
             console.log('SEARCH CLEARED - Immediate API call for all users');
             fetchUsers('', 1, pageSize, statusFilter, userTypeFilter);
             return;
         }
-        
+
         // Otherwise, use debounced search (only calls API for 3+ chars)
         debouncedSearch(value, 1, pageSize);
     };
@@ -232,25 +232,25 @@ const AllUsersTab = ({ refreshKey }) => {
         const pageNumbers = [];
         const maxVisiblePages = 5;
         const halfVisible = Math.floor(maxVisiblePages / 2);
-        
+
         let startPage = Math.max(1, pageNumber - halfVisible);
         let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-        
+
         if (endPage - startPage + 1 < maxVisiblePages) {
             startPage = Math.max(1, endPage - maxVisiblePages + 1);
         }
-        
+
         for (let i = startPage; i <= endPage; i++) {
             pageNumbers.push(i);
         }
-        
+
         return pageNumbers;
     };
 
     return (
-        <div className="h-full">
+        <div className="flex flex-col h-full">
             {/* Filter Controls */}
-            <div className="px-6 py-4">
+            <div className="px-6 py-4 flex-shrink-0">
                 <div className="flex items-center gap-4">
                     {/* Search */}
                     <div className="relative flex-1 max-w-2xs">
@@ -301,7 +301,7 @@ const AllUsersTab = ({ refreshKey }) => {
             </div>
 
             {/* Table */}
-            <div className="px-6 h-100 overflow-y-auto">
+            <div className="px-6 flex-1 overflow-y-auto">
                 <table className="w-full">
                     <thead className=" border-b border-b-color">
                         <tr>
@@ -363,7 +363,7 @@ const AllUsersTab = ({ refreshKey }) => {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div className="relative" ref={el => dropdownRefs.current[user.UserId] = el}>
-                                            <button 
+                                            <button
                                                 className="p-1 hover:bg-gray-100 rounded"
                                                 onClick={() => toggleDropdown(user.UserId)}
                                             >
@@ -399,7 +399,7 @@ const AllUsersTab = ({ refreshKey }) => {
             </div>
 
             {/* Records per page and total count */}
-            <div className="px-6 py-4">
+            <div className="px-6 py-4 flex-shrink-0">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-600">Show</span>
@@ -421,36 +421,33 @@ const AllUsersTab = ({ refreshKey }) => {
                     <div className="text-sm text-gray-600">
                         Showing {totalRecords === 0 ? 0 : ((pageNumber - 1) * pageSize) + 1} to {Math.min(pageNumber * pageSize, totalRecords)} of {totalRecords} entries
                     </div>
-                </div>
-            </div>
+                    <div className="flex items-center border border-gray-300 rounded">
+                        {/* Previous button */}
+                        <button
+                            onClick={() => handlePageChange(pageNumber - 1)}
+                            disabled={pageNumber === 1 || loading}
+                            className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 disabled:!opacity-50 disabled:!cursor-not-allowed border-r border-gray-300"
+                        >
+                            <img src="/icons/Left_arrow.png" alt="Previous" className="w-2 h-3" />
+                        </button>
 
-            {/* Pagination */}
-            <div className="flex items-center justify-end px-6 pb-4">
-                <div className="flex items-center border border-gray-300 rounded">
-                    {/* Previous button */}
-                    <button
-                        onClick={() => handlePageChange(pageNumber - 1)}
-                        disabled={pageNumber === 1 || loading}
-                        className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed border-r border-gray-300"
-                    >
-                        <img src="/icons/Left_arrow.png" alt="Previous" className="w-2 h-3" />
-                    </button>
+                        {/* Current page info */}
+                        <div className="px-4 py-2 text-sm text-gray-700 min-w-[60px] text-center">
+                            {pageNumber}/{totalPages || 1}
+                        </div>
 
-                    {/* Current page info */}
-                    <div className="px-4 py-2 text-sm text-gray-700 min-w-[60px] text-center">
-                        {pageNumber}/{totalPages || 1}
+                        {/* Next button */}
+                        <button
+                            onClick={() => handlePageChange(pageNumber + 1)}
+                            disabled={pageNumber === totalPages || totalPages === 0 || loading}
+                            className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 disabled:!opacity-50 disabled:!cursor-not-allowed border-l border-gray-300"
+                        >
+                            <img src="/icons/Right_arrow.png" alt="Previous" className="w-2 h-3" />
+                        </button>
                     </div>
-
-                    {/* Next button */}
-                    <button
-                        onClick={() => handlePageChange(pageNumber + 1)}
-                        disabled={pageNumber === totalPages || totalPages === 0 || loading}
-                        className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed border-l border-gray-300"
-                    >
-                        <img src="/icons/Right_arrow.png" alt="Previous" className="w-2 h-3" />
-                    </button>
                 </div>
             </div>
+
 
             <EditUserModal
                 isOpen={isEditUserModalOpen}
