@@ -11,7 +11,8 @@ function App() {
           <AppRoutes />
         </AuthProvider>
       </Router>
-      <ToastContainer />
+      <ToastContainer 
+      theme="colored" />
     </>
   );
 }

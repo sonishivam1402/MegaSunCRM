@@ -168,7 +168,7 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
               <div className='w-full'>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
                 <input
-                  type="text"
+                  type="number"
                   name="contact"
                   value={formData.contact}
                   onChange={handleInputChange}
