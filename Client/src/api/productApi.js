@@ -1,14 +1,13 @@
-import axios from 'axios';
+import API from "./axios";
 
 // Get All Products
 export const getAllProducts = async ({
   SearchTerm = "",
   PageNumber = 1,
   PageSize = 10,
-  token
 }) => {
   try {
-    const res = await axios.get("https://devapi.megakitchensystem.in/Product/GetProducts", {
+    const res = await API.get("/products", {
       params: {
         SearchTerm,
         PageNumber,
