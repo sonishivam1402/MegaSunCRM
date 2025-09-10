@@ -1,23 +1,22 @@
-import { useContext, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import UserManagement from "./UserManagement";
 
 export default function UserManagementWrapper() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const { user, loading } = useAuth();
 
-  useEffect(() => {
-    // Redirect regular users to their own profile
-    if (user && !user.IsAdmin) {
-      navigate(`/users/${user.UserId}/details`);
-    }
-  }, [user, navigate]);
-  
-  // Only render UserManagement for admins
-  if (user?.IsAdmin) {
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (user.IsAdmin) {
     return <UserManagement />;
   }
-  
-  return null;
+
+  // Regular user → force redirect to their details page
+  return <Navigate to={`/users/${user.UserId}/details`} replace />;
 }

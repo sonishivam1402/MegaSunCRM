@@ -10,21 +10,8 @@ const Products = () => {
   const [pageSize, setPageSize] = useState(10);
   const [totalRecords, setTotalRecords] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('All products');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  // Categories for sidebar
-  const categories = [
-    'All products',
-    'Applicances',
-    'Cookware',
-    'Bakeware',
-    'Serveware',
-    'Cookware',
-    'Tableware',
-    'Storage & containers'
-  ];
   
   // Debounce timer ref
   const searchTimeoutRef = useRef(null);
@@ -34,7 +21,7 @@ const Products = () => {
 
   // Fetch products function
   const fetchProducts = useCallback(async (search = '', page = 1, size = 20) => {
-    console.log('Fetching products:', { search, page, size });
+    //console.log('Fetching products:', { search, page, size });
     
     try {
       setLoading(true);
@@ -45,7 +32,7 @@ const Products = () => {
         PageSize: size
       });
 
-      console.log('API Response:', response);
+     // console.log('API Response:', response);
       
       // Handle the API response structure
       if (response.data && response.data.items) {
