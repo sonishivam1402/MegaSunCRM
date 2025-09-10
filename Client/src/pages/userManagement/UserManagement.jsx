@@ -22,8 +22,7 @@ const UserManagement = () => {
     const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component;
 
     return (
-        <div className=" h-full">
-            <div className="h-full p-4  relative">
+            <div className="flex flex-col h-full  relative">
                 {/* Header with Tabs and Action Buttons */}
                 <div className="px-6 py-4 flex-shrink-0">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -75,7 +74,6 @@ const UserManagement = () => {
                 <div className="flex-1">
                     {ActiveComponent && <ActiveComponent refreshKey={refreshKey}/>}
                 </div>
-            </div>
 
             {/* Modals */}
             <AddUserModal

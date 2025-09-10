@@ -86,9 +86,9 @@ const AllUserTypesTab = ({ refreshKey }) => {
     };
 
     return (
-        <div className="h-full">
+        <div className="flex flex-col h-full">
             {/* Table */}
-            <div className="px-6 h-120 overflow-y-auto">
+            <div className="px-6 h-120 flex-1 overflow-y-auto">
                 <table className="w-full">
                     <thead className=" border-b border-b-color">
                         <tr>
@@ -159,7 +159,7 @@ const AllUserTypesTab = ({ refreshKey }) => {
             </div>
 
             {/* Records per page and total count */}
-            <div className="px-6 py-2">
+            <div className="px-6 py-2 flex-shrink-0">
                 <div className="flex items-center justify-between">
                     <div className="w-100 flex justify-start items-center gap-2">
                         <span className="text-sm text-gray-600">Show</span>
@@ -181,12 +181,8 @@ const AllUserTypesTab = ({ refreshKey }) => {
                     <div className="text-sm text-gray-600">
                         Showing {startIndex + 1} to {Math.min(endIndex, totalRecords)} of {totalRecords} entries
                     </div>
-                </div>
-            </div>
 
-            {/* Pagination */}
-            <div className="flex item-centers justify-end px-6">
-                <div className=" flex items-center gap-2 px-2 border border-b-color">
+                    <div className=" flex items-center gap-2 px-2 border border-b-color">
                     <button
                         onClick={() => handlePageChange(currentPage - 1)}
                         disabled={currentPage === 1}
@@ -205,7 +201,9 @@ const AllUserTypesTab = ({ refreshKey }) => {
                         &gt;
                     </button>
                 </div>
+                </div>
             </div>
+
             <EditUserTypeModal
                 isOpen={isEditUserTypeModalOpen}
                 onClose={() => setIsEditUserTypeModalOpen(false)}
