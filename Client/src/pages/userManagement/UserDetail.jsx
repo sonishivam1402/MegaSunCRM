@@ -29,11 +29,11 @@ const UserDetailsPage = () => {
         try {
             setLoading(true);
             const response = await getUserById(userId);
-            console.log("Details Page : ", response);
+            //console.log("Details Page : ", response);
             setUserDetails(response);
             setError(null);
         } catch (err) {
-            setError('Failed to fetch user details');
+            setError(err.response.data.message);
             console.error('Error fetching user details:', err);
         } finally {
             setLoading(false);

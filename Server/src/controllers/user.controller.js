@@ -22,8 +22,8 @@ export const createNewUser = async (req, res, next) => {
       strictMode: true,
     });
 
-    if(!isEmailValid && !isContactValid){
-      return {message : "Please check email and contact details."}
+    if (!isEmailValid && !isContactValid) {
+      return { message: "Please check email and contact details." }
     }
 
     const hashPassword = await bcrypt.hash(data.password, 10);
@@ -82,6 +82,12 @@ export const getAllUsers = async (req, res, next) => {
 export const getUserById = async (req, res, next) => {
   try {
     const userId = req.params.id;
+    const loggedInUser = req.user; 
+
+    if (!loggedInUser.isAdmin && loggedInUser.id !== userId) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
     const pool = await poolPromise;
     const result = await pool
       .request()

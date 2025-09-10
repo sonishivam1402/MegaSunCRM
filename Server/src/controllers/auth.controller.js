@@ -35,7 +35,7 @@ export const signIn = async (req, res) => {
     // Generate tokens
     const accessToken = generateAccessToken({
       id: user.UserId,
-      email: user.Email,
+      isAdmin: user.IsAdmin,
       userTypeId: user.UserTypeId,
     });
 
