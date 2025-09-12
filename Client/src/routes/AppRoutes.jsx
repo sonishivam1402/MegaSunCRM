@@ -7,6 +7,8 @@ import UserDetailsPage from "../pages/userManagement/UserDetail";
 import UserTypeDetail from "../pages/userManagement/UserTypeDetail";
 import UserManagementWrapper from "../pages/userManagement/UserManagementWrapper";
 import Products from "../pages/productManagement/products";
+import NotFound from "../pages/NotFound";
+import Unauthorized from "../pages/Unauthorized";
 
 export default function AppRoutes() {
 
@@ -27,11 +29,12 @@ export default function AppRoutes() {
         <Route index element={<Dashboard />} />
 
         {/* add more private pages here */}
-        <Route path="/users" element={<UserManagementWrapper/>} />
+        <Route path="/users" element={<UserManagementWrapper />} />
         <Route path="/users/:userId/details" element={<UserDetailsPage />} />
         <Route path="/userTypes/:userTypeId/details" element={<UserTypeDetail />} />
         <Route path="/products" element={<Products />} />
-
+        <Route path="/unauthorized" element={<Unauthorized />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );

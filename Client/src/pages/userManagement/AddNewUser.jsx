@@ -19,6 +19,7 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
   };
 
   const [formData, setFormData] = useState(initialFormData);
+  const [submitted, setSubmitted] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -53,6 +54,13 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitted(true);
+
+    if (!formData.name || !formData.email || !formData.contact || !formData.address || !formData.password || !formData.userTypeId) {
+      return;
+    }
+
+
     try {
       // Prepare FormData for multipart request
       const data = new FormData();
@@ -67,6 +75,7 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
         onUserCreated();
         onClose();
         setFormData(initialFormData);
+        setSubmitted(false);
       } else {
         console.warn(res.data.Message);
         toast.error(res.data.Message);
@@ -111,7 +120,7 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
           <div className='flex items-center justify-between'>
             <h2 className="text-[32px] font-bold">Add New User</h2>
             <button
-              onClick={() => { onClose(), setFormData(initialFormData) }}
+              onClick={() => { onClose(), setFormData(initialFormData), setSubmitted(false) }}
               className="text-[#242425] text-xl font-light hover:cursor-pointer"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -128,12 +137,12 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
 
           <div>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className='w-full xs: flex justify-between items-center gap-5'>
+              <div className='w-full flex justify-between items-center gap-5'>
 
                 {/* User's full name */}
                 <div className='w-full'>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    User's Full Name
+                    <span className="text-red-500">*</span> User's Full Name
                   </label>
                   <input
                     type="text"
@@ -141,27 +150,31 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
                     value={formData.name}
                     onChange={handleInputChange}
                     placeholder="John Doe"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50"
-                    required
+                    className={`w-full px-3 py-2 border rounded-md text-sm placeholder-gray-400   bg-gray-50
+                      ${submitted && !formData.name ? "!border-red-500" : "border-gray-300"}`}
                   />
                 </div>
 
                 {/* Mobile Number */}
                 <div className='w-full'>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Mobile Number
+                    <span className="text-red-500">*</span> Mobile Number
                   </label>
                   <input
-                    type="number"
+                    type="tel"
                     name="contact"
                     value={formData.contact}
                     onChange={handleInputChange}
                     placeholder="XXXXXXXXXX"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50"
-                    min={1000000000}
-                    max={9999999999}
-                    required
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50
+                     ${submitted && !formData.contact ? "!border-red-500" : "border-gray-300"} `}
                   />
+                  {/* Error message */}
+                  {submitted && !/^[0-9]{10}$/.test(formData.contact) && (
+                    <p className="mt-1 text-xs text-red-500">
+                      Please enter a valid 10-digit mobile number.
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -169,7 +182,7 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
                 {/* Email Id */}
                 <div className='w-full'>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Id
+                    <span className="text-red-500">*</span>  Email Id
                   </label>
                   <input
                     type="email"
@@ -177,15 +190,20 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
                     value={formData.email}
                     onChange={handleInputChange}
                     placeholder="john.doe@gmail.com"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50"
-                    required
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50
+                     ${submitted && !formData.email ? "!border-red-500" : "border-gray-300"} `}
                   />
+                  {submitted && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && (
+                    <p className="mt-1 text-xs text-red-500">
+                      Please enter a valid email address.
+                    </p>
+                  )}
                 </div>
 
                 {/*Password*/}
                 <div className='w-full'>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Password
+                    <span className="text-red-500">*</span>  Password
                   </label>
                   <input
                     type="password"
@@ -193,8 +211,8 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
                     value={formData.password}
                     onChange={handleInputChange}
                     placeholder="Password"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50"
-                    required
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50
+                     ${submitted && !formData.password ? "!border-red-500" : "border-gray-300"} `}
                   />
                 </div>
               </div>
@@ -234,7 +252,7 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
                 {/* Address */}
                 <div className='w-full'>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Address
+                    <span className="text-red-500">*</span>  Address
                   </label>
                   <input
                     type="text"
@@ -242,8 +260,8 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
                     value={formData.address}
                     onChange={handleInputChange}
                     placeholder="City, State"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50"
-                    required
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50
+                     ${submitted && !formData.address ? "!border-red-500" : "border-gray-300"} `}
                   />
                 </div>
               </div>
@@ -254,26 +272,26 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
                 {/* User type */}
                 <div className='w-full'>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    User Type
+                    <span className="text-red-500">*</span>  User Type
                   </label>
                   <div className="relative">
                     <select
                       name="userTypeId"
                       value={formData.userTypeId}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm appearance-none   text-gray-500 bg-gray-50"
-                      required
+                      className={`w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50
+                     ${submitted && !formData.userTypeId ? "!border-red-500" : "border-gray-300"} `}
                     >
                       <option value="">Select Role</option>
                       {userTypeOptions.map((op, index) => (
                         <option key={index} value={op.UserTypeId}>{op.Name}</option>
                       ))}
                     </select>
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    {/* <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                       <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                       </svg>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>
