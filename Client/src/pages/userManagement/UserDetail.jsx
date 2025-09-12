@@ -209,12 +209,6 @@ const UserDetailsPage = () => {
                                 </div>
 
                                 <div className="flex gap-5">
-                                    <span className="w-32 text-gray-600 font-medium">GST no.</span>
-                                    <span className="text-gray-900">:</span>
-                                    <span className="text-gray-900">{userDetails.GSTNumber || 'N/A'}</span>
-                                </div>
-
-                                <div className="flex gap-5">
                                     <span className="w-32 text-gray-600 font-medium">Address</span>
                                     <span className="text-gray-900">:</span>
                                     <span className="text-gray-900">{userDetails.Address || 'N/A'}</span>

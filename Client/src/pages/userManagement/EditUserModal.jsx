@@ -16,6 +16,7 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
     profileImagePath: '',
     imageFile: null
   });
+  const [submitted, setSubmitted] = useState(false);
 
   const getUserTypeNames = async () => {
     try {
@@ -88,10 +89,10 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitted(true);
 
     // Simple validation
-    if (!formData.name || !formData.contact || !formData.email || !formData.userTypeId) {
-      toast.error("Please fill in all required fields.");
+    if (!formData.name || !formData.contact || !formData.email || !formData.userTypeId || !formData.isActive) {
       return;
     }
 
@@ -108,6 +109,7 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
         toast.success("User updated successfully.");
         onUserEdited();
         onClose();
+        setSubmitted(false);
       } else {
         console.warn(res.data.Message);
         toast.error(res.data.Message);
@@ -134,7 +136,7 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
           <div className='flex items-center justify-between'>
             <h2 className="text-[32px] font-bold">Edit User</h2>
             <button
-              onClick={onClose}
+              onClick={() => { onClose(), setSubmitted(false) }}
               className="text-[#242425] text-xl font-light hover:cursor-pointer"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -152,48 +154,59 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
             <div className='w-full flex justify-between items-center gap-5'>
               {/* User's full name */}
               <div className='w-full'>
-                <label className="block text-sm font-medium text-gray-700 mb-2">User's Full Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <span className="text-red-500">*</span>User's Full Name</label>
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
                   placeholder="John Doe"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400  "
-                  required
+                  className={`w-full px-3 py-2 border rounded-md text-sm placeholder-gray-400   bg-gray-50
+                      ${submitted && !formData.name ? "!border-red-500" : "border-gray-300"}`}
                 />
               </div>
 
               {/* Mobile Number */}
               <div className='w-full'>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <span className="text-red-500">*</span>Mobile Number</label>
                 <input
-                  type="number"
+                  type="tel"
                   name="contact"
                   value={formData.contact}
                   onChange={handleInputChange}
                   placeholder="XXXXXXXXXX"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50"
-                  min={1000000000}
-                  max={9999999999}
-                  required
+                  className={`w-full px-3 py-2 border rounded-md text-sm placeholder-gray-400   bg-gray-50
+                      ${submitted && !formData.contact ? "!border-red-500" : "border-gray-300"}`}
                 />
+                {submitted && !/^[0-9]{10}$/.test(formData.contact) && (
+                  <p className="mt-1 text-xs text-red-500">
+                    Please enter a valid 10-digit mobile number.
+                  </p>
+                )}
               </div>
             </div>
 
             <div className='w-full flex justify-between items-center gap-5'>
               {/* Email Id */}
               <div className='w-full'>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email Id</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <span className="text-red-500">*</span>Email Id</label>
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="john.doe@gmail.com"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50"
-                  required
+                  className={`w-full px-3 py-2 border rounded-md text-sm placeholder-gray-400   bg-gray-50
+                      ${submitted && !formData.email ? "!border-red-500" : "border-gray-300"}`}
                 />
+                {submitted && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && (
+                  <p className="mt-1 text-xs text-red-500">
+                    Please enter a valid email address.
+                  </p>
+                )}
               </div>
 
               {/* Designation */}
@@ -213,13 +226,15 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
             <div className='w-full flex justify-between items-center gap-5'>
               {/* User type */}
               <div className='w-full'>
-                <label className="block text-sm font-medium text-gray-700 mb-2">User type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <span className="text-red-500">*</span>User type</label>
                 <select
                   name="userTypeId"
                   value={formData.userTypeId}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm   bg-gray-50"
-                  required
+                  className={`w-full px-3 py-2 border rounded-md text-sm placeholder-gray-400   bg-gray-50
+                      ${submitted && !formData.userTypeId ? "!border-red-500" : "border-gray-300"}`}
+
                 >
                   <option value="">Select Role</option>
                   {userTypeOptions.map((op, index) => (
@@ -230,7 +245,8 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
 
               {/* Status */}
               <div className='w-full'>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <span className="text-red-500">*</span>Status</label>
                 <select
                   name="isActive"
                   value={formData.isActive ? "true" : "false"}
@@ -240,8 +256,9 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
                       isActive: e.target.value === "true",
                     }))
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm   bg-gray-50"
-                  required
+                  className={`w-full px-3 py-2 border rounded-md text-sm placeholder-gray-400   bg-gray-50
+                      ${submitted && !formData.isActive ? "!border-red-500" : "border-gray-300"}`}
+
                 >
                   <option value="">Select Status</option>
                   <option value="true">Active</option>

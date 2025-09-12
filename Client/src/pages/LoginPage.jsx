@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { login } from "../api/authApi.js";
 import FrameBg from "/FrameBg.png";
 import Frame from "/Frame.png";
@@ -10,10 +10,16 @@ import { useAuth } from "../context/AuthContext";
 export default function LoginPage() {
 
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, token } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (token) {
+      navigate("/");
+    }
+  }, [token, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

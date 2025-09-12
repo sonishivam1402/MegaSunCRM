@@ -4,7 +4,7 @@ export const getProducts = async (req, res, next) => {
   try {
     const { SearchTerm = "", PageSize = 10, PageNumber = 1 } = req.query;
 
-    const response = await axios.get("https://devapi.megakitchensystem.in/Product/GetProducts", {
+    const response = await axios.get("https://api.megakitchensystem.in/Product/GetProducts", {
       params: {
         SearchTerm,
         PageNumber,
