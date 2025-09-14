@@ -19,16 +19,20 @@ export const getLeadSources = async (req, res, next) => {
 // Create Lead Source
 export const createLeadSource = async (req, res, next) => {
     try {
-        const { name, isActive } = req.body
+        const { data } = req.body
         const pool = await poolPromise;
         const result = await pool
             .request()
-            .input("Name", sql.NVarChar(100), name)
-            .input("IsActive", sql.Bit, isActive)
+            .input("Name", sql.NVarChar(100), data.Name)
+            .input("IsActive", sql.Bit, data.Status)
             .input("CreatedBy", sql.UniqueIdentifier, req.user.id)
             .execute("sp_CreateLeadSource");
 
-        res.json(result.recordsets[0]);
+        if (result.recordset[0].Success) {
+            res.status(201).json(result.recordsets[0]);
+        } else {
+            res.json(result.recordsets[0]);
+        }
 
     } catch (err) {
         console.error("Error in creating lead sources :", err);
@@ -100,16 +104,20 @@ export const getLeadStatus = async (req, res, next) => {
 // Create Lead Status
 export const createLeadStatus = async (req, res, next) => {
     try {
-        const { name, isActive } = req.body
+        const { data } = req.body
         const pool = await poolPromise;
         const result = await pool
             .request()
-            .input("Name", sql.NVarChar(100), name)
-            .input("IsActive", sql.Bit, isActive)
+            .input("Name", sql.NVarChar(100), data.Name)
+            .input("IsActive", sql.Bit, data.Status)
             .input("CreatedBy", sql.UniqueIdentifier, req.user.id)
             .execute("sp_CreateLeadStatus");
 
-        res.json(result.recordsets[0]);
+        if (result.recordset[0].Success) {
+            res.status(201).json(result.recordsets[0]);
+        } else {
+            res.json(result.recordsets[0]);
+        }
 
     } catch (err) {
         console.error("Error in creating lead status :", err);
@@ -180,17 +188,21 @@ export const getLeadTypes = async (req, res, next) => {
 // Create Lead types
 export const createLeadType = async (req, res, next) => {
     try {
-        const { name, isActive } = req.body
+        const { data } = req.body
         const pool = await poolPromise;
         const result = await pool
             .request()
-            .input("Name", sql.NVarChar(100), name)
-            .input("IsActive", sql.Bit, isActive)
+            .input("Name", sql.NVarChar(100), data.Name)
+            .input("IsActive", sql.Bit, data.Status)
             .input("CreatedBy", sql.UniqueIdentifier, req.user.id)
             .execute("sp_CreateLeadType");
 
-        res.json(result.recordsets[0]);
-
+        if (result.recordset[0].Success) {
+            res.status(201).json(result.recordsets[0]);
+        } else {
+            res.json(result.recordsets[0]);
+        }
+        
     } catch (err) {
         console.error("Error in creating lead type :", err);
         res.status(500).json({ message: "Server error" });
