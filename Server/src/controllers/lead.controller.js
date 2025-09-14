@@ -19,7 +19,7 @@ export const getLeadSources = async (req, res, next) => {
 // Create Lead Source
 export const createLeadSource = async (req, res, next) => {
     try {
-        const {name, isActive} = req.body
+        const { name, isActive } = req.body
         const pool = await poolPromise;
         const result = await pool
             .request()
@@ -39,21 +39,44 @@ export const createLeadSource = async (req, res, next) => {
 // Update Lead Source
 export const updateLeadSource = async (req, res, next) => {
     try {
-        const {name, isActive} = req.body;
+        const { data } = req.body;
         const leadId = req.params.id;
         const pool = await poolPromise;
         const result = await pool
             .request()
             .input("LeadSourceId", sql.UniqueIdentifier, leadId)
-            .input("Name", sql.NVarChar(100), name)
-            .input("IsActive", sql.Bit, isActive)
+            .input("Name", sql.NVarChar(100), data.Name)
+            .input("IsActive", sql.Bit, data.Status)
             .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
             .execute("sp_UpdateLeadSource");
+
+        if (result.recordset[0].Success) {
+            res.status(201).json(result.recordsets[0]);
+        } else {
+            res.json(result.recordsets[0]);
+        }
+
+    } catch (err) {
+        console.error("Error in updating lead sources :", err);
+        res.status(500).json({ message: "Server error" });
+    }
+}
+
+// Delete Lead Source
+export const deleteLeadSource = async (req, res, next) => {
+    try {
+        const leadId = req.params.id;
+        const pool = await poolPromise;
+        const result = await pool
+            .request()
+            .input("LeadSourceId", sql.UniqueIdentifier, leadId)
+            .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
+            .execute("sp_DeleteLeadSource");
 
         res.json(result.recordsets[0]);
 
     } catch (err) {
-        console.error("Error in updating lead sources :", err);
+        console.error("Error in deleting lead sources :", err);
         res.status(500).json({ message: "Server error" });
     }
 }
@@ -77,7 +100,7 @@ export const getLeadStatus = async (req, res, next) => {
 // Create Lead Status
 export const createLeadStatus = async (req, res, next) => {
     try {
-        const {name, isActive} = req.body
+        const { name, isActive } = req.body
         const pool = await poolPromise;
         const result = await pool
             .request()
@@ -97,21 +120,43 @@ export const createLeadStatus = async (req, res, next) => {
 // Update Lead Status
 export const updateLeadStatus = async (req, res, next) => {
     try {
-        const {name, isActive} = req.body;
+        const { data } = req.body;
         const leadId = req.params.id;
         const pool = await poolPromise;
         const result = await pool
             .request()
             .input("LeadStatusId", sql.UniqueIdentifier, leadId)
-            .input("Name", sql.NVarChar(100), name)
-            .input("IsActive", sql.Bit, isActive)
+            .input("Name", sql.NVarChar(100), data.Name)
+            .input("IsActive", sql.Bit, data.Status)
             .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
             .execute("sp_UpdateLeadStatus");
+
+        if (result.recordset[0].Success) {
+            res.status(201).json(result.recordsets[0]);
+        } else {
+            res.json(result.recordsets[0]);
+        }
+    } catch (err) {
+        console.error("Error in updating lead status :", err);
+        res.status(500).json({ message: "Server error" });
+    }
+}
+
+// Delete Lead Status
+export const deleteLeadStatus = async (req, res, next) => {
+    try {
+        const leadId = req.params.id;
+        const pool = await poolPromise;
+        const result = await pool
+            .request()
+            .input("LeadStatusId", sql.UniqueIdentifier, leadId)
+            .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
+            .execute("sp_DeleteLeadStatus");
 
         res.json(result.recordsets[0]);
 
     } catch (err) {
-        console.error("Error in updating lead status :", err);
+        console.error("Error in deleting lead status :", err);
         res.status(500).json({ message: "Server error" });
     }
 }
@@ -135,7 +180,7 @@ export const getLeadTypes = async (req, res, next) => {
 // Create Lead types
 export const createLeadType = async (req, res, next) => {
     try {
-        const {name, isActive} = req.body
+        const { name, isActive } = req.body
         const pool = await poolPromise;
         const result = await pool
             .request()
@@ -155,21 +200,45 @@ export const createLeadType = async (req, res, next) => {
 // Update Lead types
 export const updateLeadType = async (req, res, next) => {
     try {
-        const {name, isActive} = req.body;
+        const { data } = req.body;
+        console.log(data);
         const leadId = req.params.id;
         const pool = await poolPromise;
         const result = await pool
             .request()
             .input("LeadTypeId", sql.UniqueIdentifier, leadId)
-            .input("Name", sql.NVarChar(100), name)
-            .input("IsActive", sql.Bit, isActive)
+            .input("Name", sql.NVarChar(100), data.Name)
+            .input("IsActive", sql.Bit, data.Status)
             .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
             .execute("sp_UpdateLeadType");
+
+        if (result.recordset[0].Success) {
+            res.status(201).json(result.recordsets[0]);
+        } else {
+            res.json(result.recordsets[0]);
+        }
+
+    } catch (err) {
+        console.error("Error in updating lead type :", err);
+        res.status(500).json({ message: "Server error" });
+    }
+}
+
+// Delete Lead Type
+export const deleteLeadType = async (req, res, next) => {
+    try {
+        const leadId = req.params.id;
+        const pool = await poolPromise;
+        const result = await pool
+            .request()
+            .input("LeadTypeId", sql.UniqueIdentifier, leadId)
+            .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
+            .execute("sp_DeleteLeadType");
 
         res.json(result.recordsets[0]);
 
     } catch (err) {
-        console.error("Error in updating lead type :", err);
+        console.error("Error in deleting lead type :", err);
         res.status(500).json({ message: "Server error" });
     }
 }
