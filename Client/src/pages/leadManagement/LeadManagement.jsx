@@ -4,50 +4,96 @@ import LeadTypeTab from './LeadTypeTab';
 import LeadSourceTab from './LeadSourceTab';
 import { LeadStatusTab } from './LeadStatusTab';
 import AddIcon from '../../assets/icons/AddIcon';
+import AddLeadTypeModal from './AddLeadTypeModal';
+// import AddLeadModal from './AddLeadModal';
+import AddLeadSourceModal from './AddLeadSourceModal';
+import AddLeadStatusModal from './AddLeadStatusModal';
 
 const LeadManagement = () => {
 
     const [activeTab, setActiveTab] = useState('leads');
-    
+    const [addLeadModalOpen, setAddLeadModalOpen] = useState(false);
+    const [addTypeModalOpen, setAddTypeModalOpen] = useState(false);
+    const [addStatusModalOpen, setAddStatusModalOpen] = useState(false);
+    const [addSourceModalOpen, setAddSourceModalOpen] = useState(false);
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    const handleNewCreatedData = () => {
+        setRefreshKey(prev => prev + 1);
+    };
+
     const tabs = [
-        { id: 'leads', label: 'All Leads', component: LeadsTab, btnLabel : "Create New Lead" },
-        { id: 'leadTypes', label: 'Lead Types', component: LeadTypeTab, btnLabel : "Create New Type"  },
-        { id: 'leadSources', label: 'Lead Sources', component: LeadSourceTab, btnLabel : "Create New Source"  },
-        { id: 'leadStatus', label: 'Lead Status', component: LeadStatusTab, btnLabel : "Create New Status"  }
+        { id: 'leads', label: 'All Leads', component: LeadsTab, btnLabel: "Create New Lead", openModal: () => setAddLeadModalOpen(true) },
+        { id: 'leadTypes', label: 'Lead Types', component: LeadTypeTab, btnLabel: "Create New Type", openModal: () => setAddTypeModalOpen(true) },
+        { id: 'leadSources', label: 'Lead Sources', component: LeadSourceTab, btnLabel: "Create New Source", openModal: () => setAddSourceModalOpen(true) },
+        { id: 'leadStatus', label: 'Lead Status', component: LeadStatusTab, btnLabel: "Create New Status", openModal: () => setAddStatusModalOpen(true) }
     ];
 
     const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component;
-    
+    const currentTab = tabs.find(tab => tab.id === activeTab);
+
     return (
-        <div className="flex flex-col h-full  relative">
-                {/* Header with Tabs and Action Buttons */}
-                <div className="px-6 py-4 flex-shrink-0">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        {/* Tabs */}
-                        <div className="flex items-center gap-6">
-                            {tabs.map((tab) => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className={`text-lg font-medium transition-colors duration-200 pb-2 hover:cursor-pointer border-b-2 ${activeTab === tab.id
-                                            ? 'text-gray-900 border-green-900'
-                                            : 'text-gray-500 border-transparent hover:text-gray-700'
-                                        }`}
-                                >
-                                    {tab.label}
-                                </button>
-                            ))}
-                        </div>
-                        <div>
-                            <button className='p-2 border text-green-900 text-sm flex items-center gap-2'><AddIcon size={10}/> {tabs.find(tab => tab.id === activeTab)?.btnLabel}</button>
-                        </div>
+        <div className="flex flex-col h-full relative">
+            {/* Header with Tabs and Action Buttons */}
+            <div className="px-6 py-4 flex-shrink-0">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    {/* Tabs */}
+                    <div className="flex items-center gap-6">
+                        {tabs.map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`text-lg font-medium transition-colors duration-200 pb-2 hover:cursor-pointer border-b-2 ${activeTab === tab.id
+                                    ? 'text-gray-900 border-green-900'
+                                    : 'text-gray-500 border-transparent hover:text-gray-700'
+                                    }`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
+                    <div>
+                        <button
+                            className='p-2 border text-green-900 text-sm flex items-center gap-2'
+                            onClick={currentTab?.openModal}
+                        >
+                            <AddIcon size={10} /> {currentTab?.btnLabel}
+                        </button>
                     </div>
                 </div>
+            </div>
 
-                {/* Tab Content */}
-                <div className="flex-1">
-                    {ActiveComponent && <ActiveComponent />}
-                </div>
+            {/* Tab Content */}
+            <div className="flex-1">
+                {ActiveComponent && <ActiveComponent refreshKey={refreshKey} />}
+            </div>
+
+            {/* All Modals */}
+            {/* Add Lead Modal - Uncomment when you create this component */}
+            {/* <AddLeadModal
+                isOpen={addLeadModalOpen}
+                onClose={() => setAddLeadModalOpen(false)}
+            /> */}
+
+            <AddLeadTypeModal
+                isOpen={addTypeModalOpen}
+                onClose={() => setAddTypeModalOpen(false)}
+                onSuccess={handleNewCreatedData}
+            />
+
+            {/* Add Lead Source Modal - Uncomment when you create this component */}
+            <AddLeadSourceModal
+                isOpen={addSourceModalOpen}
+                onClose={() => setAddSourceModalOpen(false)}
+                onSuccess={handleNewCreatedData}
+            />
+
+            {/* Add Lead Status Modal - Uncomment when you create this component */}
+            <AddLeadStatusModal
+                isOpen={addStatusModalOpen}
+                onClose={() => setAddStatusModalOpen(false)}
+                onSuccess={handleNewCreatedData}
+            />
         </div>
     )
 }

@@ -5,7 +5,7 @@ import EditIcon from '../../assets/icons/EditIcon';
 import { toast } from 'react-toastify';
 import CloseIcon from '../../assets/icons/CloseIcon';
 
-const LeadSourceTab = () => {
+const LeadSourceTab = ({refreshKey}) => {
     const [leadSources, setLeadSources] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -32,7 +32,7 @@ const LeadSourceTab = () => {
 
     useEffect(() => {
         getLeadSources();
-    }, [getLeadSources]);
+    }, [getLeadSources, refreshKey]);
 
     // Delete actions
     const handleDeleteClick = (leadSource) => {
@@ -71,7 +71,7 @@ const LeadSourceTab = () => {
         const { name, value, type, checked } = e.target;
         setEditingData((prev) => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value,
+            [name]: type === 'checkbox' ? checked : name === "Status" ? value === "true" : value,
         }));
     };
 
@@ -247,17 +247,20 @@ const LeadSourceTab = () => {
                                     className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
                                 />
                             </div>
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    name="Status"
-                                    checked={editingData.Status}
-                                    onChange={handleEditChange}
-                                    id="statusCheckbox"
-                                />
-                                <label htmlFor="statusCheckbox" className="text-sm text-gray-700">
-                                    Active
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Status
                                 </label>
+                                <select
+                                    name="Status"
+                                    value={editingData.Status}
+                                    onChange={handleEditChange}
+                                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                                    disabled={saving}
+                                >
+                                    <option value={true}>Active</option>
+                                    <option value={false}>Inactive</option>
+                                </select>
                             </div>
                         </div>
                         <div className="mt-6 shrink-0">

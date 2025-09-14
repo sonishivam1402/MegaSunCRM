@@ -13,6 +13,19 @@ export const getAllLeadSources = async () => {
   }
 }; 
 
+// Create Lead Source
+export const createLeadSource = async (data) => {
+  try {
+    const res = await API.post("/lead/source", {data});
+    return res;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in creating lead source", err);
+    }
+    throw err;
+  }
+};
+
 // Update Lead Source
 export const updateLeadSource = async (id, data) => {
   try {
@@ -53,6 +66,19 @@ export const getAllLeadStatus = async () => {
   }
 }; 
 
+// Create Lead Status
+export const createLeadStatus = async (data) => {
+  try {
+    const res = await API.post("/lead/status", {data});
+    return res;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in creating lead status", err);
+    }
+    throw err;
+  }
+};
+
 // Update Lead Status
 export const updateLeadStatus = async (id, data) => {
   try {
@@ -92,6 +118,19 @@ export const getAllLeadTypes = async () => {
     throw err;
   }
 }; 
+
+// Create Lead Type
+export const createLeadType = async (data) => {
+  try {
+    const res = await API.post("/lead/type", {data});
+    return res;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in creating lead type", err);
+    }
+    throw err;
+  }
+};
 
 // Update Lead Types
 export const updateLeadType = async (id, data) => {
