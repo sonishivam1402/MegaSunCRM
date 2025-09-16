@@ -115,3 +115,22 @@ button:hover {
 .border-r {
   border-color: #1919194d;
 }
+
+/* Prevent layout shifts */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Smooth scrolling for the entire app */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Prevent scroll lag on mobile */
+.overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
