@@ -4,6 +4,7 @@ import TrashIcon from '../../assets/icons/TrashIcon';
 import EditIcon from '../../assets/icons/EditIcon';
 import { toast } from 'react-toastify';
 import CloseIcon from '../../assets/icons/CloseIcon';
+import dayjs from "dayjs";
 
 const LeadTypeTab = ({ refreshKey }) => {
     const [leadTypes, setLeadTypes] = useState([]);
@@ -119,6 +120,9 @@ const LeadTypeTab = ({ refreshKey }) => {
                                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Status
                                 </th>
+                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Created On
+                                </th>
                                 <th className="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Actions
                                 </th>
@@ -144,6 +148,11 @@ const LeadTypeTab = ({ refreshKey }) => {
                                                     }`}
                                             >
                                                 {leadType.Status ? 'Active' : 'Inactive'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                                            <span className="text-sm text-gray-900">
+                                                {dayjs(leadType.CreatedOn).format("DD-MM-YYYY")}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right flex justify-end gap-3">
