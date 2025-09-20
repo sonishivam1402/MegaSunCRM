@@ -513,3 +513,17 @@ export const getUserTypeById = async (req, res, next) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+//Get User for dropdown
+export const getUsersForDropdown = async (req, res, next) => {
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request().execute("sp_GetUsersForAdminDDNLeads");
+
+    res.json(result.recordsets);
+  } catch (err) {
+    console.error("Error in fetching all users :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
