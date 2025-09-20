@@ -1,256 +1,382 @@
 import { sql, poolPromise } from "../database/db.js";
 
+// Create Lead
+export const createLead = async (req, res, next) => {
+  try {
+    const { lead } = req.body;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("Name", sql.NVarChar(100), lead.name)
+      .input("Contact", sql.NVarChar(100), lead.contact)
+      .input("City", sql.NVarChar(100), lead.city)
+      .input("State", sql.NVarChar(100), lead.state)
+      .input("Pincode", sql.Int, parseInt(lead.pincode))
+      .input("Address", sql.NVarChar(100), lead.address)
+      .input("LeadStatus", sql.UniqueIdentifier, lead.leadStatusId)
+      .input("LeadType", sql.UniqueIdentifier, lead.leadTypeId)
+      .input("LeadSource", sql.UniqueIdentifier, lead.leadSourceId)
+      .input("AssignedTo", sql.UniqueIdentifier, lead.userId)
+      .input("CreatedBy", sql.UniqueIdentifier, req.user.id)
+      .input(
+        "ProductMappings",
+        sql.NVarChar(sql.MAX),
+        JSON.stringify(lead.productMappings)
+      )
+      .execute("sp_CreateLead");
+
+    res.json(result.recordsets);
+  } catch (err) {
+    console.error("Error in creating lead :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get all leads
+export const getAllLeads = async (req, res, next) => {
+  try {
+    const {
+      search = "",
+      limit = 10,
+      offset = 0,
+      status,
+      leadTypeId,
+    } = req.query;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("SearchParameter", sql.NVarChar(100), search)
+      .input("LimitParameter", sql.Int, parseInt(limit))
+      .input("OffsetParameter", sql.Int, parseInt(offset))
+      .input("StatusParam", sql.UniqueIdentifier, status)
+      .input("LeadTypeId", sql.UniqueIdentifier, leadTypeId)
+      .execute("sp_GetLeads");
+
+    res.json(result.recordsets);
+  } catch (err) {
+    console.error("Error in fetching all leads :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get all unassigned leads
+export const getAllUnassignedLeads = async (req, res, next) => {
+  try {
+    const {
+      search = "",
+      limit = 10,
+      offset = 0,
+      status,
+      leadTypeId,
+    } = req.query;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("SearchParameter", sql.NVarChar(100), search)
+      .input("LimitParameter", sql.Int, parseInt(limit))
+      .input("OffsetParameter", sql.Int, parseInt(offset))
+      .input("StatusParam", sql.UniqueIdentifier, status)
+      .input("LeadTypeId", sql.UniqueIdentifier, leadTypeId)
+      .execute("sp_GetUnAssignedLeads");
+
+    res.json(result.recordsets);
+  } catch (err) {
+    console.error("Error in fetching all leads :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get Lead by Id
+export const getLeadById = async (req, res, next) => {
+  try {
+    const leadId = req.params.id;
+
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("@LeadId", sql.UniqueIdentifier, leadId)
+      .execute("sp_GetLeadByLeadId");
+
+    res.json(result.recordset[0]);
+  } catch (err) {
+    console.error("Error in fetching lead deatils :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // Get all lead sources
 export const getLeadSources = async (req, res, next) => {
-    try {
-        const pool = await poolPromise;
-        const result = await pool
-            .request()
-            .execute("sp_GetLeadSource");
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request().execute("sp_GetLeadSource");
 
-        res.json(result.recordsets);
-
-    } catch (err) {
-        console.error("Error in fetching all lead sources :", err);
-        res.status(500).json({ message: "Server error" });
-    }
+    res.json(result.recordsets);
+  } catch (err) {
+    console.error("Error in fetching all lead sources :", err);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 // Create Lead Source
 export const createLeadSource = async (req, res, next) => {
-    try {
-        const { data } = req.body
-        const pool = await poolPromise;
-        const result = await pool
-            .request()
-            .input("Name", sql.NVarChar(100), data.Name)
-            .input("IsActive", sql.Bit, data.Status)
-            .input("CreatedBy", sql.UniqueIdentifier, req.user.id)
-            .execute("sp_CreateLeadSource");
+  try {
+    const { data } = req.body;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("Name", sql.NVarChar(100), data.Name)
+      .input("IsActive", sql.Bit, data.Status)
+      .input("CreatedBy", sql.UniqueIdentifier, req.user.id)
+      .execute("sp_CreateLeadSource");
 
-        if (result.recordset[0].Success) {
-            res.status(201).json(result.recordsets[0]);
-        } else {
-            res.json(result.recordsets[0]);
-        }
-
-    } catch (err) {
-        console.error("Error in creating lead sources :", err);
-        res.status(500).json({ message: "Server error" });
+    if (result.recordset[0].Success) {
+      res.status(201).json(result.recordsets[0]);
+    } else {
+      res.json(result.recordsets[0]);
     }
-}
+  } catch (err) {
+    console.error("Error in creating lead sources :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 // Update Lead Source
 export const updateLeadSource = async (req, res, next) => {
-    try {
-        const { data } = req.body;
-        const leadId = req.params.id;
-        const pool = await poolPromise;
-        const result = await pool
-            .request()
-            .input("LeadSourceId", sql.UniqueIdentifier, leadId)
-            .input("Name", sql.NVarChar(100), data.Name)
-            .input("IsActive", sql.Bit, data.Status)
-            .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
-            .execute("sp_UpdateLeadSource");
+  try {
+    const { data } = req.body;
+    const leadId = req.params.id;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("LeadSourceId", sql.UniqueIdentifier, leadId)
+      .input("Name", sql.NVarChar(100), data.Name)
+      .input("IsActive", sql.Bit, data.Status)
+      .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
+      .execute("sp_UpdateLeadSource");
 
-        if (result.recordset[0].Success) {
-            res.status(201).json(result.recordsets[0]);
-        } else {
-            res.json(result.recordsets[0]);
-        }
-
-    } catch (err) {
-        console.error("Error in updating lead sources :", err);
-        res.status(500).json({ message: "Server error" });
+    if (result.recordset[0].Success) {
+      res.status(201).json(result.recordsets[0]);
+    } else {
+      res.json(result.recordsets[0]);
     }
-}
+  } catch (err) {
+    console.error("Error in updating lead sources :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 // Delete Lead Source
 export const deleteLeadSource = async (req, res, next) => {
-    try {
-        const leadId = req.params.id;
-        const pool = await poolPromise;
-        const result = await pool
-            .request()
-            .input("LeadSourceId", sql.UniqueIdentifier, leadId)
-            .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
-            .execute("sp_DeleteLeadSource");
+  try {
+    const leadId = req.params.id;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("LeadSourceId", sql.UniqueIdentifier, leadId)
+      .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
+      .execute("sp_DeleteLeadSource");
 
-        res.json(result.recordsets[0]);
-
-    } catch (err) {
-        console.error("Error in deleting lead sources :", err);
-        res.status(500).json({ message: "Server error" });
-    }
-}
+    res.json(result.recordsets[0]);
+  } catch (err) {
+    console.error("Error in deleting lead sources :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 // Get all lead status
 export const getLeadStatus = async (req, res, next) => {
-    try {
-        const pool = await poolPromise;
-        const result = await pool
-            .request()
-            .execute("sp_GetLeadStatus");
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request().execute("sp_GetLeadStatus");
 
-        res.json(result.recordsets);
-
-    } catch (err) {
-        console.error("Error in fetching all lead status :", err);
-        res.status(500).json({ message: "Server error" });
-    }
+    res.json(result.recordsets);
+  } catch (err) {
+    console.error("Error in fetching all lead status :", err);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 // Create Lead Status
 export const createLeadStatus = async (req, res, next) => {
-    try {
-        const { data } = req.body
-        const pool = await poolPromise;
-        const result = await pool
-            .request()
-            .input("Name", sql.NVarChar(100), data.Name)
-            .input("IsActive", sql.Bit, data.Status)
-            .input("CreatedBy", sql.UniqueIdentifier, req.user.id)
-            .execute("sp_CreateLeadStatus");
+  try {
+    const { data } = req.body;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("Name", sql.NVarChar(100), data.Name)
+      .input("IsActive", sql.Bit, data.Status)
+      .input("CreatedBy", sql.UniqueIdentifier, req.user.id)
+      .execute("sp_CreateLeadStatus");
 
-        if (result.recordset[0].Success) {
-            res.status(201).json(result.recordsets[0]);
-        } else {
-            res.json(result.recordsets[0]);
-        }
-
-    } catch (err) {
-        console.error("Error in creating lead status :", err);
-        res.status(500).json({ message: "Server error" });
+    if (result.recordset[0].Success) {
+      res.status(201).json(result.recordsets[0]);
+    } else {
+      res.json(result.recordsets[0]);
     }
-}
+  } catch (err) {
+    console.error("Error in creating lead status :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 // Update Lead Status
 export const updateLeadStatus = async (req, res, next) => {
-    try {
-        const { data } = req.body;
-        const leadId = req.params.id;
-        const pool = await poolPromise;
-        const result = await pool
-            .request()
-            .input("LeadStatusId", sql.UniqueIdentifier, leadId)
-            .input("Name", sql.NVarChar(100), data.Name)
-            .input("IsActive", sql.Bit, data.Status)
-            .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
-            .execute("sp_UpdateLeadStatus");
+  try {
+    const { data } = req.body;
+    const leadId = req.params.id;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("LeadStatusId", sql.UniqueIdentifier, leadId)
+      .input("Name", sql.NVarChar(100), data.Name)
+      .input("IsActive", sql.Bit, data.Status)
+      .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
+      .execute("sp_UpdateLeadStatus");
 
-        if (result.recordset[0].Success) {
-            res.status(201).json(result.recordsets[0]);
-        } else {
-            res.json(result.recordsets[0]);
-        }
-    } catch (err) {
-        console.error("Error in updating lead status :", err);
-        res.status(500).json({ message: "Server error" });
+    if (result.recordset[0].Success) {
+      res.status(201).json(result.recordsets[0]);
+    } else {
+      res.json(result.recordsets[0]);
     }
-}
+  } catch (err) {
+    console.error("Error in updating lead status :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 // Delete Lead Status
 export const deleteLeadStatus = async (req, res, next) => {
-    try {
-        const leadId = req.params.id;
-        const pool = await poolPromise;
-        const result = await pool
-            .request()
-            .input("LeadStatusId", sql.UniqueIdentifier, leadId)
-            .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
-            .execute("sp_DeleteLeadStatus");
+  try {
+    const leadId = req.params.id;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("LeadStatusId", sql.UniqueIdentifier, leadId)
+      .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
+      .execute("sp_DeleteLeadStatus");
 
-        res.json(result.recordsets[0]);
-
-    } catch (err) {
-        console.error("Error in deleting lead status :", err);
-        res.status(500).json({ message: "Server error" });
-    }
-}
+    res.json(result.recordsets[0]);
+  } catch (err) {
+    console.error("Error in deleting lead status :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 // Get all lead types
 export const getLeadTypes = async (req, res, next) => {
-    try {
-        const pool = await poolPromise;
-        const result = await pool
-            .request()
-            .execute("sp_GetLeadType");
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request().execute("sp_GetLeadType");
 
-        res.json(result.recordsets);
-
-    } catch (err) {
-        console.error("Error in fetching all lead types :", err);
-        res.status(500).json({ message: "Server error" });
-    }
+    res.json(result.recordsets);
+  } catch (err) {
+    console.error("Error in fetching all lead types :", err);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 // Create Lead types
 export const createLeadType = async (req, res, next) => {
-    try {
-        const { data } = req.body
-        const pool = await poolPromise;
-        const result = await pool
-            .request()
-            .input("Name", sql.NVarChar(100), data.Name)
-            .input("IsActive", sql.Bit, data.Status)
-            .input("CreatedBy", sql.UniqueIdentifier, req.user.id)
-            .execute("sp_CreateLeadType");
+  try {
+    const { data } = req.body;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("Name", sql.NVarChar(100), data.Name)
+      .input("IsActive", sql.Bit, data.Status)
+      .input("CreatedBy", sql.UniqueIdentifier, req.user.id)
+      .execute("sp_CreateLeadType");
 
-        if (result.recordset[0].Success) {
-            res.status(201).json(result.recordsets[0]);
-        } else {
-            res.json(result.recordsets[0]);
-        }
-        
-    } catch (err) {
-        console.error("Error in creating lead type :", err);
-        res.status(500).json({ message: "Server error" });
+    if (result.recordset[0].Success) {
+      res.status(201).json(result.recordsets[0]);
+    } else {
+      res.json(result.recordsets[0]);
     }
-}
+  } catch (err) {
+    console.error("Error in creating lead type :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 // Update Lead types
 export const updateLeadType = async (req, res, next) => {
-    try {
-        const { data } = req.body;
-        console.log(data);
-        const leadId = req.params.id;
-        const pool = await poolPromise;
-        const result = await pool
-            .request()
-            .input("LeadTypeId", sql.UniqueIdentifier, leadId)
-            .input("Name", sql.NVarChar(100), data.Name)
-            .input("IsActive", sql.Bit, data.Status)
-            .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
-            .execute("sp_UpdateLeadType");
+  try {
+    const { data } = req.body;
+    console.log(data);
+    const leadId = req.params.id;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("LeadTypeId", sql.UniqueIdentifier, leadId)
+      .input("Name", sql.NVarChar(100), data.Name)
+      .input("IsActive", sql.Bit, data.Status)
+      .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
+      .execute("sp_UpdateLeadType");
 
-        if (result.recordset[0].Success) {
-            res.status(201).json(result.recordsets[0]);
-        } else {
-            res.json(result.recordsets[0]);
-        }
-
-    } catch (err) {
-        console.error("Error in updating lead type :", err);
-        res.status(500).json({ message: "Server error" });
+    if (result.recordset[0].Success) {
+      res.status(201).json(result.recordsets[0]);
+    } else {
+      res.json(result.recordsets[0]);
     }
-}
+  } catch (err) {
+    console.error("Error in updating lead type :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 // Delete Lead Type
 export const deleteLeadType = async (req, res, next) => {
-    try {
-        const leadId = req.params.id;
-        const pool = await poolPromise;
-        const result = await pool
-            .request()
-            .input("LeadTypeId", sql.UniqueIdentifier, leadId)
-            .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
-            .execute("sp_DeleteLeadType");
+  try {
+    const leadId = req.params.id;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("LeadTypeId", sql.UniqueIdentifier, leadId)
+      .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
+      .execute("sp_DeleteLeadType");
 
-        res.json(result.recordsets[0]);
+    res.json(result.recordsets[0]);
+  } catch (err) {
+    console.error("Error in deleting lead type :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
-    } catch (err) {
-        console.error("Error in deleting lead type :", err);
-        res.status(500).json({ message: "Server error" });
-    }
-}
+// Get DD Lead Sources
+export const getLeadSourcesForDropdown = async (req, res, next) => {
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request().execute("sp_GetLeadSourceForLeadDDN");
+
+    res.json(result.recordsets);
+  } catch (err) {
+    console.error("Error in fetching all lead sources :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get DD Lead Types
+export const getLeadTypesForDropdown = async (req, res, next) => {
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request().execute("sp_GetLeadTypeForLeadDDN");
+
+    res.json(result.recordsets);
+  } catch (err) {
+    console.error("Error in fetching all lead types :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get DD Lead Status
+export const getLeadStatusForDropdown = async (req, res, next) => {
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request().execute("sp_GetLeadStatusForLeadDDN");
+
+    res.json(result.recordsets);
+  } catch (err) {
+    console.error("Error in fetching all lead status :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};

@@ -6,7 +6,7 @@ import Layout from "../components/Layout";
 import UserDetailsPage from "../pages/userManagement/UserDetail";
 import UserTypeDetail from "../pages/userManagement/UserTypeDetail";
 import UserManagementWrapper from "../pages/userManagement/UserManagementWrapper";
-import Products from "../pages/productManagement/products";
+import Products from "../pages/productManagement/Products";
 import NotFound from "../pages/NotFound";
 import LeadManagement from "../pages/leadManagement/LeadManagement";
 
