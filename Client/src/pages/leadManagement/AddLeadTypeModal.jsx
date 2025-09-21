@@ -107,7 +107,7 @@ const AddLeadTypeModal = ({ isOpen, onClose, onSuccess }) => {
                             value={formData.Name}
                             onChange={handleInputChange}
                             placeholder="Enter lead type name"
-                            className={`w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                            className={`w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 ${
                                 errors.Name ? 'border-red-300' : 'border-gray-300'
                             }`}
                             disabled={saving}
@@ -125,7 +125,7 @@ const AddLeadTypeModal = ({ isOpen, onClose, onSuccess }) => {
                             name="Status"
                             value={formData.Status}
                             onChange={handleInputChange}
-                            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
                             disabled={saving}
                         >
                             <option value={1}>Active</option>

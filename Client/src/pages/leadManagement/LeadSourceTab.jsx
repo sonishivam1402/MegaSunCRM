@@ -264,7 +264,7 @@ const LeadSourceTab = ({refreshKey}) => {
                                     name="Status"
                                     value={editingData.Status}
                                     onChange={handleEditChange}
-                                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500"
                                     disabled={saving}
                                 >
                                     <option value={true}>Active</option>

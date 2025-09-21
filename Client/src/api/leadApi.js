@@ -30,10 +30,23 @@ export const getAllNewLeads = async ({ search = "", limit = 10, offset = 0, stat
   }
 };
 
-// Create New Lead
-export const createNewLead = async (data) => {
+// Get Lead By Id
+export const getLeadById = async (id) => {
   try {
-    const res = await API.post("/lead", data);
+    const res = await API.get(`/lead/${id}`);
+    return res.data;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error(`Error in fetching lead by ${id}`, err);
+    }
+    throw err;
+  }
+};
+
+// Create New Lead
+export const createNewLead = async (lead) => {
+  try {
+    const res = await API.post("/lead", lead);
     return res;
   } catch (err) {
     if (err.response && err.response.status !== 401) {

@@ -85,7 +85,7 @@ export const refreshToken = async (req, res) => {
     if (!tokenData || new Date(tokenData.ExpiryDate) < new Date()) {
       return res.status(403).json({ message: "Invalid or expired refresh token" });
     }
-    console.log("Refresh Token :", tokenData);
+    //console.log("Refresh Token :", tokenData);
 
     const newAccessToken = generateAccessToken({
       id: tokenData.UserId,

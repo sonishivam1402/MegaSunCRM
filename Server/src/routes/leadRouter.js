@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authenticate } from "../middlewares/authMiddleware.js";
 import { checkPermission } from "../middlewares/checkPermission.js";
-import { createLead, createLeadSource, createLeadStatus, createLeadType, deleteLeadSource, deleteLeadStatus, deleteLeadType, getAllLeads, getAllUnassignedLeads, getLeadSources, getLeadSourcesForDropdown, getLeadStatus, getLeadStatusForDropdown, getLeadTypes, getLeadTypesForDropdown, updateLeadSource, updateLeadStatus, updateLeadType } from "../controllers/lead.controller.js";
+import { createLead, createLeadSource, createLeadStatus, createLeadType, deleteLeadSource, deleteLeadStatus, deleteLeadType, getAllLeads, getAllUnassignedLeads, getLeadById, getLeadSources, getLeadSourcesForDropdown, getLeadStatus, getLeadStatusForDropdown, getLeadTypes, getLeadTypesForDropdown, updateLeadSource, updateLeadStatus, updateLeadType } from "../controllers/lead.controller.js";
 
 const leadRouter = Router();
 
@@ -28,5 +28,6 @@ leadRouter.get("/newLeads", authenticate, checkPermission("ReadAccess", "My Lead
 leadRouter.get("/", authenticate, checkPermission("ReadAccess", "My Leads"), getAllLeads);
 leadRouter.post("/", authenticate, checkPermission("CreateAccess", "My Leads"), createLead);
 
+leadRouter.get("/:id", authenticate, checkPermission("ReadAccess", "My Leads"), getLeadById);
 
 export default leadRouter;

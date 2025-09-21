@@ -99,3 +99,15 @@ export const preloadNextPage = (currentParams) => {
     });
   }
 };
+
+
+// Get Product Options for Dropdown
+export const getProductOptions = async () => {
+  try{
+    const response = await API.get("/products/products");
+    return response.data;
+  }catch(error){
+    console.error("getProductOptions failed:", error);
+    throw error;
+  }
+}
