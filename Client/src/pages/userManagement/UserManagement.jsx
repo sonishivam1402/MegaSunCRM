@@ -71,7 +71,7 @@ const UserManagement = () => {
                 </div>
 
                 {/* Tab Content */}
-                <div className="flex-1">
+                <div className="flex-1 overflow-auto">
                     {ActiveComponent && <ActiveComponent refreshKey={refreshKey}/>}
                 </div>
 

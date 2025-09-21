@@ -8,11 +8,14 @@ import AddLeadTypeModal from './AddLeadTypeModal';
 // import AddLeadModal from './AddLeadModal';
 import AddLeadSourceModal from './AddLeadSourceModal';
 import AddLeadStatusModal from './AddLeadStatusModal';
+import NewLeadsTab from './NewLeadsTab';
+import OpenIcon from '../../assets/icons/OpenIcon';
 
 const LeadManagement = () => {
 
     const [activeTab, setActiveTab] = useState('leads');
     const [addLeadModalOpen, setAddLeadModalOpen] = useState(false);
+    const [importLeadModalOpen, setImportLeadModalOpen] = useState(false);
     const [addTypeModalOpen, setAddTypeModalOpen] = useState(false);
     const [addStatusModalOpen, setAddStatusModalOpen] = useState(false);
     const [addSourceModalOpen, setAddSourceModalOpen] = useState(false);
@@ -24,6 +27,7 @@ const LeadManagement = () => {
 
     const tabs = [
         { id: 'leads', label: 'All Leads', component: LeadsTab, btnLabel: "Create New Lead", openModal: () => setAddLeadModalOpen(true) },
+        { id: 'newLeads', label: 'New Leads', component: NewLeadsTab, btnLabel: "Import New Lead", openModal: () => setImportLeadModalOpen(true) },
         { id: 'leadTypes', label: 'Lead Types', component: LeadTypeTab, btnLabel: "Create New Type", openModal: () => setAddTypeModalOpen(true) },
         { id: 'leadSources', label: 'Lead Sources', component: LeadSourceTab, btnLabel: "Create New Source", openModal: () => setAddSourceModalOpen(true) },
         { id: 'leadStatus', label: 'Lead Status', component: LeadStatusTab, btnLabel: "Create New Status", openModal: () => setAddStatusModalOpen(true) }
@@ -57,14 +61,14 @@ const LeadManagement = () => {
                             className='p-2 border text-green-900 text-sm flex items-center gap-2'
                             onClick={currentTab?.openModal}
                         >
-                            <AddIcon size={10} /> {currentTab?.btnLabel}
+                         {currentTab.btnLabel == "Import New Lead" ? <OpenIcon size={10} /> : <AddIcon size={10} />}    {currentTab?.btnLabel}
                         </button>
                     </div>
                 </div>
             </div>
 
             {/* Tab Content */}
-            <div className="flex-1">
+            <div className="flex-1 overflow-auto">
                 {ActiveComponent && <ActiveComponent refreshKey={refreshKey} />}
             </div>
 

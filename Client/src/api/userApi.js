@@ -153,3 +153,16 @@ export const getUserTypeById = async (id) => {
     throw err;
   }  
 }
+
+// Get All Users for Dropdown
+export const getAllUsersDD = async () => {
+  try {
+    const res = await API.get("/user/userDropdown");
+    return res.data;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in fetching users for dropdown", err);
+    }
+    throw err;
+  }
+}; 
