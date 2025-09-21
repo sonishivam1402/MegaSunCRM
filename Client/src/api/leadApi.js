@@ -1,5 +1,48 @@
 import API from "./axios";
 
+// Get All Leads
+export const getAllLeads = async ({ search = "", limit = 10, offset = 0, status, leadTypeId }) => {
+  try {
+    const res = await API.get("/lead", {
+      params: { search, limit, offset, status, leadTypeId },
+    });
+    return res.data;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in fetching all leads", err);
+    }
+    throw err;
+  }
+};
+
+// Get All New Leads
+export const getAllNewLeads = async ({ search = "", limit = 10, offset = 0, status, leadTypeId }) => {
+  try {
+    const res = await API.get("/lead/newLeads", {
+      params: { search, limit, offset, status, leadTypeId },
+    });
+    return res.data;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in fetching new leads", err);
+    }
+    throw err;
+  }
+};
+
+// Create New Lead
+export const createNewLead = async (data) => {
+  try {
+    const res = await API.post("/lead", data);
+    return res;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Create new lead failed:", err);
+    }
+    throw err;
+  }
+};
+
 // Get All Lead Sources
 export const getAllLeadSources = async () => {
   try {
@@ -8,6 +51,19 @@ export const getAllLeadSources = async () => {
   } catch (err) {
     if (err.response && err.response.status !== 401) {
       console.error("Error in fetching lead sources", err);
+    }
+    throw err;
+  }
+};
+
+// Get All Lead Sources for Dropdown
+export const getAllLeadSourcesDD = async () => {
+  try {
+    const res = await API.get("/lead/sourceDropdown");
+    return res.data;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in fetching lead sources for dropdown", err);
     }
     throw err;
   }
@@ -66,6 +122,19 @@ export const getAllLeadStatus = async () => {
   }
 }; 
 
+// Get All Lead Status for Dropdown
+export const getAllLeadStatusDD = async () => {
+  try {
+    const res = await API.get("/lead/statusDropdown");
+    return res.data;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in fetching lead status for dropdown", err);
+    }
+    throw err;
+  }
+};
+
 // Create Lead Status
 export const createLeadStatus = async (data) => {
   try {
@@ -118,6 +187,19 @@ export const getAllLeadTypes = async () => {
     throw err;
   }
 }; 
+
+// Get All Lead Types for Dropdown
+export const getAllLeadTypesDD = async () => {
+  try {
+    const res = await API.get("/lead/typesDropdown");
+    return res.data;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in fetching lead types for dropdown", err);
+    }
+    throw err;
+  }
+};
 
 // Create Lead Type
 export const createLeadType = async (data) => {

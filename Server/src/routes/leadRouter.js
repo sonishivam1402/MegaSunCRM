@@ -23,7 +23,7 @@ leadRouter.post("/type", authenticate, checkPermission("CreateAccess", "My Leads
 leadRouter.put("/type/:id", authenticate, checkPermission("UpdateAccess", "My Leads"), updateLeadType);
 leadRouter.delete("/type/:id", authenticate, checkPermission("DeleteAccess", "My Leads"), deleteLeadType);
 
-leadRouter.get("/unassigned", authenticate, checkPermission("ReadAccess", "My Leads"), getAllUnassignedLeads);
+leadRouter.get("/newLeads", authenticate, checkPermission("ReadAccess", "My Leads"), getAllUnassignedLeads);
 
 leadRouter.get("/", authenticate, checkPermission("ReadAccess", "My Leads"), getAllLeads);
 leadRouter.post("/", authenticate, checkPermission("CreateAccess", "My Leads"), createLead);

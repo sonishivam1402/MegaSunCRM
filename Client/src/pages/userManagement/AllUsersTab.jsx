@@ -227,26 +227,6 @@ const AllUsersTab = ({ refreshKey }) => {
         fetchUsers(currentSearch, pageNumber, pageSize, statusFilter, userTypeFilter);
     };
 
-    // Generate page numbers for pagination
-    const getPageNumbers = () => {
-        const pageNumbers = [];
-        const maxVisiblePages = 5;
-        const halfVisible = Math.floor(maxVisiblePages / 2);
-
-        let startPage = Math.max(1, pageNumber - halfVisible);
-        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-        if (endPage - startPage + 1 < maxVisiblePages) {
-            startPage = Math.max(1, endPage - maxVisiblePages + 1);
-        }
-
-        for (let i = startPage; i <= endPage; i++) {
-            pageNumbers.push(i);
-        }
-
-        return pageNumbers;
-    };
-
     return (
         <div className="flex flex-col h-full">
             {/* Filter Controls */}
