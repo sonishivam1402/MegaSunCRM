@@ -5,7 +5,7 @@ import LeadSourceTab from './LeadSourceTab';
 import { LeadStatusTab } from './LeadStatusTab';
 import AddIcon from '../../assets/icons/AddIcon';
 import AddLeadTypeModal from './AddLeadTypeModal';
-// import AddLeadModal from './AddLeadModal';
+import AddLeadModal from './AddLeadModal';
 import AddLeadSourceModal from './AddLeadSourceModal';
 import AddLeadStatusModal from './AddLeadStatusModal';
 import NewLeadsTab from './NewLeadsTab';
@@ -74,10 +74,11 @@ const LeadManagement = () => {
 
             {/* All Modals */}
             {/* Add Lead Modal - Uncomment when you create this component */}
-            {/* <AddLeadModal
+            <AddLeadModal
                 isOpen={addLeadModalOpen}
                 onClose={() => setAddLeadModalOpen(false)}
-            /> */}
+                onSuccess={handleNewCreatedData}
+            />
 
             <AddLeadTypeModal
                 isOpen={addTypeModalOpen}

@@ -158,3 +158,32 @@ export const getCacheStats = (req, res) => {
     cacheKeys: cache.keys().length
   });
 };
+
+export const getProductOptions = async (req, res, next) => {
+ try{
+  const products = await axios.get("https://api.megakitchensystem.in/Product/GetProductOptions/lookup", {
+    timeout: 10000, // 10 second timeout
+    headers: {
+      'Accept': 'application/json',
+      'User-Agent': 'YourApp/1.0'
+    }
+  });
+  return res.json(products.data);
+ }catch(err){
+  console.error("Error fetching product options:", err.message);
+    
+    // Return appropriate error based on type
+    if (err.code === 'ECONNABORTED') {
+      return res.status(504).json({ message: "Request timeout" });
+    }
+    
+    if (err.response) {
+      return res.status(err.response.status).json({ 
+        message: "External API error",
+        details: err.response.data?.message || err.message
+      });
+    }
+    
+    return res.status(500).json({ message: "Internal server error" });
+ }
+}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllLeads, getAllLeadSourcesDD, getAllLeadStatusDD, getAllLeadTypesDD } from '../../api/leadApi';
+import LeadDetailModal from './LeadDetailModal';
 
 const LeadsTab = ({ refreshKey }) => {
   const navigate = useNavigate();
@@ -23,6 +24,8 @@ const LeadsTab = ({ refreshKey }) => {
 
   // Modal and dropdown states
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [selectedLeadId, setSelectedLeadId] = useState(null);
   const dropdownRefs = useRef({});
 
   // Debounce timer ref
@@ -71,7 +74,7 @@ const LeadsTab = ({ refreshKey }) => {
       }
 
       const response = await getAllLeads(apiParams);
-      console.log("leads : ", response);
+      // console.log("leads : ", response);
       // Handle the actual API response structure
       // Response is an array with [leads_array, total_count_array, success_message_array]
       if (response && Array.isArray(response) && response.length >= 2) {
@@ -253,7 +256,8 @@ const LeadsTab = ({ refreshKey }) => {
   };
 
   const handleDetails = (leadId) => {
-    navigate(`/leads/${leadId}/details`);
+    setDetailModalOpen(true);
+    setSelectedLeadId(leadId);
     setActiveDropdown(null);
   };
 
@@ -382,7 +386,7 @@ const LeadsTab = ({ refreshKey }) => {
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">LEAD DETAILS</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">LAST FOLLOWUP DATE</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ITEM</th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-50">ITEM</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ASSIGNED TO</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">LEAD SOURCE</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
@@ -427,7 +431,7 @@ const LeadsTab = ({ refreshKey }) => {
                   </td>
 
                   {/* Item */}
-                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                  <td className="px-6 py-4 break-words whitespace-normal text-center text-sm text-gray-900">
                     {formatProducts(lead.Products)}
                   </td>
 
@@ -443,11 +447,11 @@ const LeadsTab = ({ refreshKey }) => {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-white text-xs font-medium bg-[#0d4715]">
-                            {lead.AssignedTo?.Name ? lead.AssignedTo.Name.charAt(0).toUpperCase() : '?'}
+                            {lead.AssignedTo ? lead.AssignedTo.charAt(0).toUpperCase() : '?'}
                           </div>
                         )}
                       </div>
-                      <span className="text-sm text-gray-900">{lead.AssignedTo?.Name || 'N/A'}</span>
+                      <span className="text-sm text-gray-900">{lead.AssignedTo || 'N/A'}</span>
                     </div>
                   </td>
 
@@ -583,6 +587,12 @@ const LeadsTab = ({ refreshKey }) => {
           </div>
         </div>
       </div>
+      
+      <LeadDetailModal
+        isOpen={detailModalOpen}
+        onClose={() => setDetailModalOpen(false)}
+        leadId={selectedLeadId}
+      />
     </div>
   );
 };

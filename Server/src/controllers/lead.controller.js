@@ -11,8 +11,6 @@ export const createLead = async (req, res, next) => {
       .input("Contact", sql.NVarChar(100), lead.contact)
       .input("City", sql.NVarChar(100), lead.city)
       .input("State", sql.NVarChar(100), lead.state)
-      .input("Pincode", sql.Int, parseInt(lead.pincode))
-      .input("Address", sql.NVarChar(100), lead.address)
       .input("LeadStatus", sql.UniqueIdentifier, lead.leadStatusId)
       .input("LeadType", sql.UniqueIdentifier, lead.leadTypeId)
       .input("LeadSource", sql.UniqueIdentifier, lead.leadSourceId)
@@ -90,14 +88,13 @@ export const getAllUnassignedLeads = async (req, res, next) => {
 export const getLeadById = async (req, res, next) => {
   try {
     const leadId = req.params.id;
-
     const pool = await poolPromise;
     const result = await pool
       .request()
-      .input("@LeadId", sql.UniqueIdentifier, leadId)
+      .input("LeadId", sql.UniqueIdentifier, leadId)
       .execute("sp_GetLeadByLeadId");
 
-    res.json(result.recordset[0]);
+    res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching lead deatils :", err);
     res.status(500).json({ message: "Server error" });
