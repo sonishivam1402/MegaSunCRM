@@ -30,6 +30,38 @@ export const createLead = async (req, res, next) => {
   }
 };
 
+// Update Lead By Id
+export const updateLeadById = async (req, res, next) => {
+  try {
+    const { lead } = req.body;
+    const leadId = req.params.id;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("LeadId", sql.UniqueIdentifier, leadId)
+      .input("Name", sql.NVarChar(100), lead.name)
+      .input("Contact", sql.NVarChar(100), lead.contact)
+      .input("City", sql.NVarChar(100), lead.city)
+      .input("State", sql.NVarChar(100), lead.state)
+      .input("LeadStatus", sql.UniqueIdentifier, lead.leadStatusId)
+      .input("LeadType", sql.UniqueIdentifier, lead.leadTypeId)
+      .input("LeadSource", sql.UniqueIdentifier, lead.leadSourceId)
+      .input("AssignedTo", sql.UniqueIdentifier, lead.userId)
+      .input("CreatedBy", sql.UniqueIdentifier, req.user.id)
+      .input(
+        "ProductMappings",
+        sql.NVarChar(sql.MAX),
+        JSON.stringify(lead.productMappings)
+      )
+      .execute("sp_UpdateLeadByLeadId");
+
+    res.json(result.recordsets);
+  } catch (err) {
+    console.error("Error in updating lead :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // Get all leads
 export const getAllLeads = async (req, res, next) => {
   try {
@@ -374,6 +406,24 @@ export const getLeadStatusForDropdown = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all lead status :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Delete Lead by Id
+export const deleteLead = async (req, res, next) => {
+  try {
+    const leadId = req.params.id;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("LeadId", sql.UniqueIdentifier, leadId)
+      .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
+      .execute("sp_DeleteLeadsByLeadId");
+
+    res.json(result.recordsets[0]);
+  } catch (err) {
+    console.error("Error in deleting lead :", err);
     res.status(500).json({ message: "Server error" });
   }
 };

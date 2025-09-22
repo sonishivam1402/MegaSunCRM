@@ -56,6 +56,19 @@ export const createNewLead = async (lead) => {
   }
 };
 
+// Delete Lead By Id
+export const deleteLeadById = async (id) => {
+  try {
+    const res = await API.delete(`/lead/${id}`);
+    return res.data;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in deleting lead by Id", err);
+    }
+    throw err;
+  }
+}; 
+
 // Get All Lead Sources
 export const getAllLeadSources = async () => {
   try {

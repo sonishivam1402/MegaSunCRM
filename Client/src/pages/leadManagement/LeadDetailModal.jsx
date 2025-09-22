@@ -8,31 +8,10 @@ const LeadDetailModal = ({ isOpen, onClose, leadId }) => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('Details');
 
-  // Mock API call - replace with your actual API
   const getData = async (id) => {
     setLoading(true);
     try {
-      // Simulating API call
       const response = await getLeadById(id);
-      
-      // Mock data - replace with actual API call
-    //   const mockData = {
-    //     name: 'Rakesh Gupta',
-    //     phone: 'XXXXXXXXXX',
-    //     address: 'Madhya Pradesh',
-    //     type: 'Retail',
-    //     assignedTo: {
-    //       name: 'Ramesh Patel',
-    //       avatar: 'RP'
-    //     },
-    //     source: 'Facebook',
-    //     status: 'Interested',
-    //     items: [
-    //       { name: 'Spoon and fork set', quantity: 12, icon: 'utensils' },
-    //       { name: 'Knife set', quantity: 8, icon: 'chef-hat' },
-    //       { name: 'Cutting board', quantity: 5, icon: 'square' }
-    //     ]
-    //   };
       console.log("Response", response)
       setLeadData(response[0][0]);
       setProductData(response[1] || []);
@@ -44,7 +23,6 @@ const LeadDetailModal = ({ isOpen, onClose, leadId }) => {
   };
 
   useEffect(() => {
-    console.log("Open")
     if (isOpen && leadId) {
       getData(leadId);
     }
@@ -139,7 +117,7 @@ const LeadDetailModal = ({ isOpen, onClose, leadId }) => {
                     <span className="text-sm text-gray-600">Assigned to</span>
                     <div className="flex items-center space-x-2">
                       <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center text-xs text-white font-medium">
-                        {leadData.AssignedTo}
+                        {leadData.AssignedTo ? leadData.AssignedTo.charAt(0).toUpperCase() : ""}
                       </div>
                       <span className="text-sm font-medium">{leadData.AssignedTo}</span>
                     </div>

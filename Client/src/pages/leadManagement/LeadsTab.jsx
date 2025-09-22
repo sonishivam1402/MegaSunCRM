@@ -1,11 +1,14 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getAllLeads, getAllLeadSourcesDD, getAllLeadStatusDD, getAllLeadTypesDD } from '../../api/leadApi';
+import { deleteLeadById, getAllLeads, getAllLeadSourcesDD, getAllLeadStatusDD, getAllLeadTypesDD } from '../../api/leadApi';
 import LeadDetailModal from './LeadDetailModal';
+import EditIcon from "../../assets/icons/EditIcon";
+import AddIcon from "../../assets/icons/AddIcon";
+import HistoryIcon from '../../assets/icons/HistoryIcon';
+import WhatsAppIcon from '../../assets/icons/WhatsAppIcon';
+import ThreeDotIcon from '../../assets/icons/ThreeDotIcon';
+import { toast } from 'react-toastify';
 
 const LeadsTab = ({ refreshKey }) => {
-  const navigate = useNavigate();
-
   // State management
   const [leads, setLeads] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,6 +28,8 @@ const LeadsTab = ({ refreshKey }) => {
   // Modal and dropdown states
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedLeadId, setSelectedLeadId] = useState(null);
   const dropdownRefs = useRef({});
 
@@ -36,16 +41,16 @@ const LeadsTab = ({ refreshKey }) => {
 
   // Fetch leads with pagination, search, and filters
   const fetchLeads = useCallback(async (search = '', page = 1, limit = 10, status = '', leadTypeId = '', sourceId = '') => {
-    console.log('API CALL TRIGGERED:', {
-      search: search,
-      page: page,
-      limit: limit,
-      offset: (page - 1) * limit,
-      status: status,
-      leadTypeId: leadTypeId,
-      sourceId: sourceId,
-      timestamp: new Date().toISOString()
-    });
+    // console.log('API CALL TRIGGERED:', {
+    //   search: search,
+    //   page: page,
+    //   limit: limit,
+    //   offset: (page - 1) * limit,
+    //   status: status,
+    //   leadTypeId: leadTypeId,
+    //   sourceId: sourceId,
+    //   timestamp: new Date().toISOString()
+    // });
 
     try {
       setLoading(true);
@@ -74,7 +79,7 @@ const LeadsTab = ({ refreshKey }) => {
       }
 
       const response = await getAllLeads(apiParams);
-      // console.log("leads : ", response);
+      console.log("leads : ", response);
       // Handle the actual API response structure
       // Response is an array with [leads_array, total_count_array, success_message_array]
       if (response && Array.isArray(response) && response.length >= 2) {
@@ -137,14 +142,14 @@ const LeadsTab = ({ refreshKey }) => {
 
     // If search term is less than 3 characters, don't make any API call
     if (searchValue.length < 3) {
-      console.log('NO API CALL - Less than 3 characters');
+      //console.log('NO API CALL - Less than 3 characters');
       return;
     }
 
     // Only set timeout and make API call if 3+ characters
-    console.log('SETTING 1-SECOND TIMEOUT FOR SEARCH');
+    // console.log('SETTING 1-SECOND TIMEOUT FOR SEARCH');
     searchTimeoutRef.current = setTimeout(() => {
-      console.log('TIMEOUT COMPLETED - Making API call');
+      //console.log('TIMEOUT COMPLETED - Making API call');
       fetchLeads(searchValue, page, limit, statusFilter, leadTypeFilter, sourceFilter);
     }, 1000);
   }, [pageSize, fetchLeads, statusFilter, leadTypeFilter, sourceFilter]);
@@ -157,7 +162,7 @@ const LeadsTab = ({ refreshKey }) => {
 
     // If search is cleared (empty), fetch all leads immediately
     if (value === '') {
-      console.log('SEARCH CLEARED - Immediate API call for all leads');
+      //console.log('SEARCH CLEARED - Immediate API call for all leads');
       fetchLeads('', 1, pageSize, statusFilter, leadTypeFilter, sourceFilter);
       return;
     }
@@ -212,7 +217,7 @@ const LeadsTab = ({ refreshKey }) => {
 
   // Initial data fetch
   useEffect(() => {
-    console.log('INITIAL LOAD - Component mounted or refreshKey changed');
+    //console.log('INITIAL LOAD - Component mounted or refreshKey changed');
     fetchLeads('', 1, pageSize, statusFilter, leadTypeFilter, sourceFilter);
     getLeadTypes();
     getSources();
@@ -261,6 +266,12 @@ const LeadsTab = ({ refreshKey }) => {
     setActiveDropdown(null);
   };
 
+  const handleDelete = (leadId) => {
+    setDeleteModalOpen(true);
+    setSelectedLeadId(leadId);
+    setActiveDropdown(null);
+  };
+
   const handleCall = (lead) => {
     console.log('Call lead:', lead);
     // Implement call functionality
@@ -271,6 +282,23 @@ const LeadsTab = ({ refreshKey }) => {
     console.log('WhatsApp lead:', lead);
     // Implement WhatsApp functionality
     setActiveDropdown(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedLeadId) return;
+    setDeleting(true);
+    try {
+      await deleteLeadById(selectedLeadId);
+      setSelectedLeadId(null)
+      setDeleteModalOpen(false);
+      toast.success('Deleted Successfully.');
+      await fetchLeads();
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to delete lead status.');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const getStatusColor = (status) => {
@@ -386,7 +414,7 @@ const LeadsTab = ({ refreshKey }) => {
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">LEAD DETAILS</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">LAST FOLLOWUP DATE</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-50">ITEM</th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">ITEM</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ASSIGNED TO</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">LEAD SOURCE</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
@@ -476,7 +504,7 @@ const LeadsTab = ({ refreshKey }) => {
                         className="p-2 hover:bg-gray-100 rounded-full"
                         title="Call"
                       >
-                        <img src="/icons/History.png" alt="Call" className="w-4 h-4 opacity-70" />
+                        <HistoryIcon size={16} />
                       </button>
 
                       {/* Edit Button */}
@@ -485,7 +513,7 @@ const LeadsTab = ({ refreshKey }) => {
                         className="p-2 hover:bg-gray-100 rounded-full"
                         title="Edit"
                       >
-                        <img src="/icons/Edit.png" alt="Edit" className="w-4 h-4 opacity-70" />
+                        <EditIcon size={16} />
                       </button>
 
                       {/* Add Button */}
@@ -494,7 +522,7 @@ const LeadsTab = ({ refreshKey }) => {
                         className="p-2 hover:bg-gray-100 rounded-full"
                         title="Edit"
                       >
-                        <img src="/icons/Add.png" alt="Edit" className="w-4 h-4 opacity-70" />
+                        <AddIcon size={16} />
                       </button>
 
                       {/* WhatsApp Button */}
@@ -503,7 +531,7 @@ const LeadsTab = ({ refreshKey }) => {
                         className="p-2 hover:bg-gray-100 rounded-full"
                         title="WhatsApp"
                       >
-                        <img src="/icons/Whatsapp.png" alt="WhatsApp" className="w-4 h-4 opacity-70" />
+                        <WhatsAppIcon size={16} />
                       </button>
 
                       {/* More Options */}
@@ -512,7 +540,7 @@ const LeadsTab = ({ refreshKey }) => {
                           className="p-1 hover:bg-gray-100 rounded"
                           onClick={() => toggleDropdown(lead.LeadId)}
                         >
-                          <img src="/icons/Meatball_menu.png" alt="More options" className="w-4 h-1 opacity-50 hover:cursor-pointer" />
+                          <ThreeDotIcon />
                         </button>
 
                         {/* Dropdown Menu */}
@@ -524,6 +552,12 @@ const LeadsTab = ({ refreshKey }) => {
                                 className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
                               >
                                 Details
+                              </button>
+                              <button
+                                onClick={() => handleDelete(lead.LeadId)}
+                                className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
+                              >
+                                Delete
                               </button>
                             </div>
                           </div>
@@ -587,12 +621,45 @@ const LeadsTab = ({ refreshKey }) => {
           </div>
         </div>
       </div>
-      
+
+      {deleteModalOpen && (
+        <div className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-[#f1f0e9] border rounded-lg shadow-lg p-6 w-full max-w-sm">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">
+              Confirm Delete
+            </h2>
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to delete ?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                className="px-4 py-2 text-sm rounded bg-gray-200 hover:bg-gray-300"
+                onClick={() => {
+                  setSelectedLeadId(null);
+                  setDeleteModalOpen(false);
+                }}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 text-sm rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+                onClick={confirmDelete}
+                disabled={deleting}
+              >
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <LeadDetailModal
         isOpen={detailModalOpen}
         onClose={() => setDetailModalOpen(false)}
         leadId={selectedLeadId}
       />
+
     </div>
   );
 };
