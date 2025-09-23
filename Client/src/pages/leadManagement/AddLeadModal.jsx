@@ -169,9 +169,14 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
 
             try {
                 const response = await createNewLead(submitData);
-                toast.success("Lead created successfully");
-                onSuccess();
-                handleClose();
+                if (response.status == 201) {
+                    toast.success(response.data[0].Message);
+                    onSuccess();
+                    handleClose();
+                }
+                else {
+                    toast.error(response.data[0].Message);
+                }
             } catch (error) {
                 console.error("Error creating lead:", error);
             }

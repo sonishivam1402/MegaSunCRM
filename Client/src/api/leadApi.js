@@ -56,6 +56,19 @@ export const createNewLead = async (lead) => {
   }
 };
 
+// Update Lead By Id
+export const updateLeadById = async (id, lead) => {
+  try {
+    const res = await API.put(`/lead/${id}`, lead);
+    return res;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("update lead failed:", err);
+    }
+    throw err;
+  }
+};
+
 // Delete Lead By Id
 export const deleteLeadById = async (id) => {
   try {

@@ -23,7 +23,11 @@ export const createLead = async (req, res, next) => {
       )
       .execute("sp_CreateLead");
 
-    res.json(result.recordsets);
+    if (result.recordset[0].Success) {
+      res.status(201).json(result.recordsets[0]);
+    } else {
+      res.json(result.recordsets[0]);
+    }
   } catch (err) {
     console.error("Error in creating lead :", err);
     res.status(500).json({ message: "Server error" });
@@ -47,7 +51,7 @@ export const updateLeadById = async (req, res, next) => {
       .input("LeadType", sql.UniqueIdentifier, lead.leadTypeId)
       .input("LeadSource", sql.UniqueIdentifier, lead.leadSourceId)
       .input("AssignedTo", sql.UniqueIdentifier, lead.userId)
-      .input("CreatedBy", sql.UniqueIdentifier, req.user.id)
+      .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
       .input(
         "ProductMappings",
         sql.NVarChar(sql.MAX),
@@ -55,7 +59,11 @@ export const updateLeadById = async (req, res, next) => {
       )
       .execute("sp_UpdateLeadByLeadId");
 
-    res.json(result.recordsets);
+    if (result.recordset[0].Success) {
+      res.status(201).json(result.recordsets[0]);
+    } else {
+      res.json(result.recordsets[0]);
+    }
   } catch (err) {
     console.error("Error in updating lead :", err);
     res.status(500).json({ message: "Server error" });
