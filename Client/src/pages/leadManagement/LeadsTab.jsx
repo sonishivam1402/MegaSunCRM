@@ -7,6 +7,7 @@ import HistoryIcon from '../../assets/icons/HistoryIcon';
 import WhatsAppIcon from '../../assets/icons/WhatsAppIcon';
 import ThreeDotIcon from '../../assets/icons/ThreeDotIcon';
 import { toast } from 'react-toastify';
+import EditLeadModal from './EditLeadModal';
 
 const LeadsTab = ({ refreshKey }) => {
   // State management
@@ -30,6 +31,7 @@ const LeadsTab = ({ refreshKey }) => {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedLeadId, setSelectedLeadId] = useState(null);
   const dropdownRefs = useRef({});
 
@@ -79,7 +81,6 @@ const LeadsTab = ({ refreshKey }) => {
       }
 
       const response = await getAllLeads(apiParams);
-      console.log("leads : ", response);
       // Handle the actual API response structure
       // Response is an array with [leads_array, total_count_array, success_message_array]
       if (response && Array.isArray(response) && response.length >= 2) {
@@ -254,9 +255,9 @@ const LeadsTab = ({ refreshKey }) => {
     setActiveDropdown(activeDropdown === leadId ? null : leadId);
   };
 
-  const handleEdit = (lead) => {
-    console.log('Edit lead:', lead);
-    // Navigate to edit page or open edit modal
+  const handleEdit = (leadId) => {
+    setEditModalOpen(true);
+    setSelectedLeadId(leadId);
     setActiveDropdown(null);
   };
 
@@ -333,7 +334,7 @@ const LeadsTab = ({ refreshKey }) => {
     if (!products || products.length === 0) return 'N/A';
     const productList = products.split(",").map(p => p.trim());
     const displayed = productList.slice(0, 2).join(", ");
-    const extra = productList.length > 2 ? `, ${productList.length - 2} more` : "";
+    const extra = productList.length > 2 ? `, ${productList.length - 2} more..` : "";
 
     return displayed + extra;
   }
@@ -509,7 +510,7 @@ const LeadsTab = ({ refreshKey }) => {
 
                       {/* Edit Button */}
                       <button
-                        onClick={() => handleEdit(lead)}
+                        onClick={() => handleEdit(lead.LeadId)}
                         className="p-2 hover:bg-gray-100 rounded-full"
                         title="Edit"
                       >
@@ -658,6 +659,13 @@ const LeadsTab = ({ refreshKey }) => {
         isOpen={detailModalOpen}
         onClose={() => setDetailModalOpen(false)}
         leadId={selectedLeadId}
+      />
+
+      <EditLeadModal
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        leadId={selectedLeadId}
+        onSuccess={fetchLeads}
       />
 
     </div>
