@@ -6,11 +6,33 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null); // access token
+  const [token, setToken] = useState(null);
   const [refreshToken, setRefreshToken] = useState(null);
   const [menus, setMenus] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  // Helper function to save auth data
+  const saveAuthData = (authData) => {
+    setToken(authData.accessToken);
+    setRefreshToken(authData.refreshToken);
+    setUser(authData.user);
+    setMenus(authData.menus);
+
+    localStorage.setItem("token", authData.accessToken);
+    localStorage.setItem("refreshToken", authData.refreshToken);
+    localStorage.setItem("user", JSON.stringify(authData.user));
+    localStorage.setItem("menus", JSON.stringify(authData.menus));
+  };
+
+  // Helper function to clear auth data
+  const clearAuthData = () => {
+    setToken(null);
+    setRefreshToken(null);
+    setUser(null);
+    setMenus([]);
+    localStorage.clear();
+  };
 
   // Load user + tokens from localStorage on app start
   useEffect(() => {
@@ -31,18 +53,8 @@ export const AuthProvider = ({ children }) => {
 
   // Login function
   const login = async (credentials) => {
-    const data = await apiLogin(credentials); 
-
-    setToken(data.accessToken);
-    setRefreshToken(data.refreshToken);
-    setUser(data.user);
-    setMenus(data.menus);
-
-    localStorage.setItem("token", data.accessToken);
-    localStorage.setItem("refreshToken", data.refreshToken);
-    localStorage.setItem("user", JSON.stringify(data.user));
-    localStorage.setItem("menus", JSON.stringify(data.menus));
-
+    const data = await apiLogin(credentials);
+    saveAuthData(data); // Use helper function
     navigate("/");
   };
 
@@ -50,22 +62,15 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       if (refreshToken) {
-        await apiLogout(); 
+        await apiLogout();
       }
     } catch (err) {
       console.error("Logout error:", err);
+    } finally {
+      // Always clear data and navigate, even if API call fails
+      clearAuthData(); // Use helper function
+      navigate("/login");
     }
-
-    // clear state
-    setToken(null);
-    setRefreshToken(null);
-    setUser(null);
-    setMenus([]);
-
-    // clear localStorage
-    localStorage.clear();
-
-    navigate("/login");
   };
 
   return (
@@ -83,5 +88,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Custom hook
 export const useAuth = () => useContext(AuthContext);
