@@ -10,10 +10,16 @@ import { toast } from 'react-toastify';
 const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(true);
+    const [attemptedNext, setAttemptedNext] = useState(false); // Track if user clicked Next button
     const [formData, setFormData] = useState({
         name: '',
         contact: '',
+        email: '',
         location: '',
+        country: '',
+        address: '',
+        pincode: '',
+        gst: '',
         leadStatusId: '',
         leadTypeId: '',
         leadSourceId: '',
@@ -34,7 +40,6 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
         try {
             setLoading(true);
             const response = await getLeadById(leadId);
-
             const leadData = response[0][0] || {};
             const productMappings = response[1] || [];
 
@@ -42,7 +47,12 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
             const formDataToSet = {
                 name: leadData.LeadName || '',
                 contact: leadData.LeadPhoneNumber || '',
+                email: leadData.Email || '',
                 location: leadData.LeadAddress || '',
+                country: leadData.Country || '',
+                address: leadData.Address || '',
+                pincode: leadData.Pincode || '',
+                gst: leadData.GSTNumber || '',
                 leadStatusId: leadData.LeadStatusId?.toString() || '',
                 leadTypeId: leadData.LeadTypeId?.toString() || '',
                 leadSourceId: leadData.LeadSourceId?.toString() || '',
@@ -167,7 +177,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
     };
 
     const validateStep1 = () => {
-        const required = ['name', 'contact', 'location', 'leadStatusId', 'leadTypeId', 'leadSourceId', 'userId'];
+        const required = ['name', 'contact', 'email', 'location', 'country', 'pincode', 'address', 'leadStatusId', 'leadTypeId', 'leadSourceId', 'userId'];
         return required.every(field => formData[field] && formData[field].toString().trim() !== '');
     };
 
@@ -176,14 +186,69 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
             formData.productMappings.every(p => p.ProductId && p.Quantity > 0);
     };
 
+    // Check if individual field is invalid
+    const isFieldInvalid = (fieldName) => {
+        return attemptedNext && (!formData[fieldName] || formData[fieldName].toString().trim() === '');
+    };
+
+    // Validate contact number format
+    const isContactValid = () => {
+        return /^[0-9]{10}$/.test(formData.contact);
+    };
+
+    // Validate email format
+    const isEmailValid = () => {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+    };
+
+    // Validate pincode format (6 digits)
+    const isPincodeValid = () => {
+        return /^[0-9]{6}$/.test(formData.pincode);
+    };
+
     const handleNext = () => {
+        setAttemptedNext(true);
+        
+        // Validate contact number format
+        if (formData.contact && !isContactValid()) {
+            toast.error("Please enter a valid 10-digit mobile number.");
+            return;
+        }
+
         if (validateStep1()) {
             setCurrentStep(2);
+            setAttemptedNext(false); // Reset for step 2
+        } else {
+            toast.error("Please fill in all required fields.");
         }
     };
 
     const handleBack = () => {
         setCurrentStep(1);
+        setAttemptedNext(false);
+    };
+
+    const handleStepClick = (step) => {
+        if (step === 1) {
+            setCurrentStep(1);
+            setAttemptedNext(false);
+        } else if (step === 2) {
+            // Only allow going to step 2 if step 1 is valid, but don't show validation errors
+            if (formData.contact && !isContactValid()) {
+                return;
+            }
+            if (formData.email && !isEmailValid()) {
+                return;
+            }
+            if (formData.pincode && !isPincodeValid()) {
+                return;
+            }
+
+            if (validateStep1()) {
+                setCurrentStep(2);
+                setAttemptedNext(false);
+            }
+        }
     };
 
     const handleSubmit = async () => {
@@ -196,8 +261,12 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                     id: leadId,
                     name: formData.name,
                     contact: formData.contact,
+                    email : formData.email,
                     city: locationParts[0] || '',
                     state: locationParts[1] || '',
+                    country: formData.country,
+                    pincode: formData.pincode,
+                    address: formData.address,
                     leadStatusId: formData.leadStatusId,
                     leadTypeId: formData.leadTypeId,
                     leadSourceId: formData.leadSourceId,
@@ -220,15 +289,22 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                 console.error("Error updating lead:", error);
                 toast.error("Failed to update lead");
             }
+        } else {
+            toast.error("Please select at least one product and ensure all quantities are valid.");
         }
     };
 
     const handleClose = () => {
         setCurrentStep(1);
+        setAttemptedNext(false);
         setFormData({
             name: '',
             contact: '',
+            email: '',
             location: '',
+            country: '',
+            pincode: '',
+            gst: '',
             leadStatusId: '',
             leadTypeId: '',
             leadSourceId: '',
@@ -274,15 +350,23 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                         <>
                             {/* Step Indicator */}
                             <div className="flex items-center mb-6">
-                                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium ${currentStep >= 1 ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-600'
-                                    }`}>
+                                <button 
+                                    onClick={() => handleStepClick(1)}
+                                    className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium cursor-pointer transition-colors ${
+                                        currentStep >= 1 ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-300 text-gray-600 hover:bg-gray-400'
+                                    }`}
+                                >
                                     {currentStep > 1 ? '✓' : '1'}
-                                </div>
+                                </button>
                                 <div className={`flex-1 h-0.5 mx-3 ${currentStep > 1 ? 'bg-green-600' : 'bg-gray-300'}`}></div>
-                                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium ${currentStep >= 2 ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-600'
-                                    }`}>
+                                <button 
+                                    onClick={() => handleStepClick(2)}
+                                    className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium cursor-pointer transition-colors ${
+                                        currentStep >= 2 ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-300 text-gray-600 hover:bg-gray-400'
+                                    }`}
+                                >
                                     2
-                                </div>
+                                </button>
                             </div>
 
                             <div className="mb-2 px-2">
@@ -300,41 +384,166 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                                         {/* Lead's full name */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Lead's full name
+                                                <span className="text-red-500">*</span> Lead's full name
                                             </label>
                                             <input
                                                 type="text"
                                                 value={formData.name}
                                                 onChange={(e) => handleInputChange('name', e.target.value)}
                                                 placeholder="John Doe"
-                                                className="w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-500"
+                                                className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${
+                                                    isFieldInvalid('name') 
+                                                        ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
+                                                        : 'bg-gray-200 focus:bg-white'
+                                                }`}
                                             />
                                         </div>
 
                                         {/* Lead's mobile number */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Lead's mobile number
+                                                <span className="text-red-500">*</span> Lead's mobile number
                                             </label>
                                             <input
-                                                type="text"
+                                                type="tel"
                                                 value={formData.contact}
-                                                onChange={(e) => handleInputChange('contact', e.target.value)}
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    // Allow only digits
+                                                    if (/^\d*$/.test(value)) {
+                                                        handleInputChange('contact', value);
+                                                    }
+                                                }}
                                                 placeholder="XXXXXXXXXX"
-                                                className="w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-500"
+                                                className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${
+                                                    isFieldInvalid('contact') || (attemptedNext && formData.contact && !isContactValid())
+                                                        ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
+                                                        : 'bg-gray-200 focus:bg-white'
+                                                }`}
                                             />
+                                            {attemptedNext && formData.contact && !isContactValid() && (
+                                                <p className="mt-1 text-xs text-red-500">
+                                                    Please enter a valid 10-digit mobile number.
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {/* Lead's email */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                <span className="text-red-500">*</span> Lead's email
+                                            </label>
+                                            <input
+                                                type="email"
+                                                value={formData.email}
+                                                onChange={(e) => handleInputChange('email', e.target.value)}
+                                                placeholder="john.doe@example.com"
+                                                className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${
+                                                    isFieldInvalid('email') || (attemptedNext && formData.email && !isEmailValid())
+                                                        ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
+                                                        : 'bg-gray-200 focus:bg-white'
+                                                }`}
+                                            />
+                                            {attemptedNext && formData.email && !isEmailValid() && (
+                                                <p className="mt-1 text-xs text-red-500">
+                                                    Please enter a valid email address.
+                                                </p>
+                                            )}
                                         </div>
 
                                         {/* Lead's location */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Lead's location
+                                                <span className="text-red-500">*</span> Lead's location
                                             </label>
                                             <input
                                                 type="text"
                                                 value={formData.location}
                                                 onChange={(e) => handleInputChange('location', e.target.value)}
-                                                placeholder="Ahmedabad, India"
+                                                placeholder="Ahmedabad, Gujarat"
+                                                className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${
+                                                    isFieldInvalid('location') 
+                                                        ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
+                                                        : 'bg-gray-200 focus:bg-white'
+                                                }`}
+                                            />
+                                        </div>
+
+                                        {/* Lead's country */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                <span className="text-red-500">*</span> Lead's country
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={formData.country}
+                                                onChange={(e) => handleInputChange('country', e.target.value)}
+                                                placeholder="India"
+                                                className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${
+                                                    isFieldInvalid('country') 
+                                                        ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
+                                                        : 'bg-gray-200 focus:bg-white'
+                                                }`}
+                                            />
+                                        </div>
+
+                                        {/* Lead Address */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                <span className="text-red-500">*</span> Lead's Address
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={formData.address}
+                                                onChange={(e) => handleInputChange('address', e.target.value)}
+                                                placeholder="Address"
+                                                className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${
+                                                    isFieldInvalid('address') 
+                                                        ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
+                                                        : 'bg-gray-200 focus:bg-white'
+                                                }`}
+                                            />
+                                        </div>
+
+                                        {/* Lead's pincode */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                <span className="text-red-500">*</span> Lead's pincode
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={formData.pincode}
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    // Allow only digits and limit to 6 characters
+                                                    if (/^\d*$/.test(value) && value.length <= 6) {
+                                                        handleInputChange('pincode', value);
+                                                    }
+                                                }}
+                                                placeholder="380001"
+                                                className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${
+                                                    isFieldInvalid('pincode') || (attemptedNext && formData.pincode && !isPincodeValid())
+                                                        ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
+                                                        : 'bg-gray-200 focus:bg-white'
+                                                }`}
+                                            />
+                                            {attemptedNext && formData.pincode && !isPincodeValid() && (
+                                                <p className="mt-1 text-xs text-red-500">
+                                                    Please enter a valid 6-digit pincode.
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {/* Lead's GST */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                GST Number
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={formData.gst}
+                                                onChange={(e) => handleInputChange('gst', e.target.value)}
+                                                placeholder="GST Number (Optional)"
                                                 className="w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-500"
                                             />
                                         </div>
@@ -342,13 +551,17 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                                         {/* Lead type */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Lead type
+                                                <span className="text-red-500">*</span> Lead type
                                             </label>
                                             <div className="relative">
                                                 <select
                                                     value={formData.leadTypeId}
                                                     onChange={(e) => handleInputChange('leadTypeId', e.target.value)}
-                                                    className="w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-500"
+                                                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-500 ${
+                                                        isFieldInvalid('leadTypeId') 
+                                                            ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
+                                                            : 'bg-gray-200 focus:bg-white'
+                                                    }`}
                                                 >
                                                     <option value="">Select lead type</option>
                                                     {leadTypeOptions.map(type => (
@@ -366,13 +579,17 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                                         {/* Lead source */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Lead source
+                                                <span className="text-red-500">*</span> Lead source
                                             </label>
                                             <div className="relative">
                                                 <select
                                                     value={formData.leadSourceId}
                                                     onChange={(e) => handleInputChange('leadSourceId', e.target.value)}
-                                                    className="w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-500"
+                                                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-500 ${
+                                                        isFieldInvalid('leadSourceId') 
+                                                            ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
+                                                            : 'bg-gray-200 focus:bg-white'
+                                                    }`}
                                                 >
                                                     <option value="">Select source</option>
                                                     {sourceOptions.map(source => (
@@ -390,13 +607,17 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                                         {/* Lead status */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Lead status
+                                                <span className="text-red-500">*</span> Lead status
                                             </label>
                                             <div className="relative">
                                                 <select
                                                     value={formData.leadStatusId}
                                                     onChange={(e) => handleInputChange('leadStatusId', e.target.value)}
-                                                    className="w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-500"
+                                                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-500 ${
+                                                        isFieldInvalid('leadStatusId') 
+                                                            ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
+                                                            : 'bg-gray-200 focus:bg-white'
+                                                    }`}
                                                 >
                                                     <option value="">Select status</option>
                                                     {statusOptions.map(status => (
@@ -414,13 +635,17 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                                         {/* User */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                User
+                                                <span className="text-red-500">*</span> User
                                             </label>
                                             <div className="relative">
                                                 <select
                                                     value={formData.userId}
                                                     onChange={(e) => handleInputChange('userId', e.target.value)}
-                                                    className="w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-500"
+                                                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-500 ${
+                                                        isFieldInvalid('userId') 
+                                                            ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
+                                                            : 'bg-gray-200 focus:bg-white'
+                                                    }`}
                                                 >
                                                     <option value="">Select user</option>
                                                     {usersOptions.map(user => (
@@ -498,8 +723,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                                 {currentStep === 1 ? (
                                     <button
                                         onClick={handleNext}
-                                        disabled={!validateStep1()}
-                                        className="w-full py-3 bg-green-800 text-white rounded font-medium hover:bg-green-900 transition-colors disabled:!bg-gray-400 disabled:!cursor-not-allowed"
+                                        className="w-full py-3 bg-green-800 text-white rounded font-medium hover:bg-green-900 transition-colors"
                                     >
                                         Next
                                     </button>

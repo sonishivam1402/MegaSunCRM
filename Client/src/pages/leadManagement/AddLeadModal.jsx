@@ -9,11 +9,17 @@ import { toast } from 'react-toastify';
 
 const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
     const [currentStep, setCurrentStep] = useState(1);
+    const [attemptedNext, setAttemptedNext] = useState(false); // Track if user clicked Next button
     const [formData, setFormData] = useState({
         name: '',
         contact: '',
+        email: '',
         location: '',
-        leadStatusId: '',
+        address: '',
+        country: '',
+        pincode: '',
+        gst: '',
+        // leadStatusId: '',
         leadTypeId: '',
         leadSourceId: '',
         userId: '',
@@ -57,7 +63,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
     const getUsers = async () => {
         try {
             const res = await getAllUsersDD();
-            console.log(res);
+            //console.log(res);
             setUsersOptions(res.data[0]);
         } catch (err) {
             console.error('Error fetching users:', err);
@@ -78,7 +84,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
         if (isOpen) {
             getLeadTypes();
             getSources();
-            getStatuses();
+            //getStatuses();
             getUsers();
             getProducts();
         }
@@ -129,7 +135,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
     };
 
     const validateStep1 = () => {
-        const required = ['name', 'contact', 'location', 'leadStatusId', 'leadTypeId', 'leadSourceId', 'userId'];
+        const required = ['name', 'contact', 'email', 'location', 'country', 'address', 'pincode', 'gst', 'leadTypeId', 'leadSourceId', 'userId'];
         return required.every(field => formData[field] && formData[field].toString().trim() !== '');
     };
 
@@ -138,14 +144,61 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
             formData.productMappings.every(p => p.ProductId && p.Quantity > 0);
     };
 
+    // Check if individual field is invalid
+    const isFieldInvalid = (fieldName) => {
+        return attemptedNext && (!formData[fieldName] || formData[fieldName].toString().trim() === '');
+    };
+
+    // Validate contact number format
+    const isContactValid = () => {
+        return /^[0-9]{10}$/.test(formData.contact);
+    };
+
+    const isEmailValid = () => {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+    };
+
     const handleNext = () => {
+        setAttemptedNext(true);
+
+        // Validate contact number format
+        if (formData.contact && !isContactValid()) {
+            toast.error("Please enter a valid 10-digit mobile number.");
+            return;
+        }
+
         if (validateStep1()) {
             setCurrentStep(2);
+            setAttemptedNext(false); // Reset for step 2
+        } else {
+            toast.error("Please fill in all required fields.");
         }
     };
 
     const handleBack = () => {
         setCurrentStep(1);
+        setAttemptedNext(false);
+    };
+
+    const handleStepClick = (step) => {
+        if (step === 1) {
+            setCurrentStep(1);
+            setAttemptedNext(false);
+        } else if (step === 2) {
+            // Only allow going to step 2 if step 1 is valid, but don't show validation errors
+            if (formData.contact && !isContactValid()) {
+                return;
+            }
+
+            if (formData.email && !isEmailValid()) {
+                return;
+            }
+
+            if (validateStep1()) {
+                setCurrentStep(2);
+                setAttemptedNext(false);
+            }
+        }
     };
 
     const handleSubmit = async () => {
@@ -157,9 +210,14 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                 lead: {
                     name: formData.name,
                     contact: formData.contact,
+                    email: formData.email,
                     city: locationParts[0] || '',
                     state: locationParts[1] || '',
-                    leadStatusId: formData.leadStatusId,
+                    country: formData.country,
+                    address: formData.address,
+                    pincode: formData.pincode,
+                    gst: formData.gst,
+                    // leadStatusId: formData.leadStatusId,
                     leadTypeId: formData.leadTypeId,
                     leadSourceId: formData.leadSourceId,
                     userId: formData.userId,
@@ -175,22 +233,30 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                     handleClose();
                 }
                 else {
-                    toast.error(response.data[0].Message);
+                    toast.error(response.data?.[0]?.Message || response.data?.Message || "Something went wrong");
                 }
             } catch (error) {
                 console.error("Error creating lead:", error);
+                toast.error("Failed to create lead. Please try again.");
             }
+        } else {
+            toast.error("Please select at least one product and ensure all quantities are valid.");
         }
     };
 
-
     const handleClose = () => {
         setCurrentStep(1);
+        setAttemptedNext(false);
         setFormData({
             name: '',
             contact: '',
+            email: '',
             location: '',
-            leadStatusId: '',
+            address: '',
+            country: '',
+            pincode: '',
+            gst: '',
+            // leadStatusId: '',
             leadTypeId: '',
             leadSourceId: '',
             userId: '',
@@ -228,15 +294,21 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                 <div className="p-4">
                     {/* Step Indicator */}
                     <div className="flex items-center mb-6">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium ${currentStep >= 1 ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-600'
-                            }`}>
+                        <button
+                            onClick={() => handleStepClick(1)}
+                            className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium cursor-pointer transition-colors ${currentStep >= 1 ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-300 text-gray-600 hover:bg-gray-400'
+                                }`}
+                        >
                             {currentStep > 1 ? '✓' : '1'}
-                        </div>
+                        </button>
                         <div className={`flex-1 h-0.5 mx-3 ${currentStep > 1 ? 'bg-green-600' : 'bg-gray-300'}`}></div>
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium ${currentStep >= 2 ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-600'
-                            }`}>
+                        <button
+                            onClick={() => handleStepClick(2)}
+                            className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium cursor-pointer transition-colors ${currentStep >= 2 ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-300 text-gray-600 hover:bg-gray-400'
+                                }`}
+                        >
                             2
-                        </div>
+                        </button>
                     </div>
 
                     <div className="mb-2 px-2">
@@ -254,55 +326,170 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                                 {/* Lead's full name */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Lead's full name
+                                        <span className="text-red-500">*</span> Lead's full name
                                     </label>
                                     <input
                                         type="text"
                                         value={formData.name}
                                         onChange={(e) => handleInputChange('name', e.target.value)}
                                         placeholder="John Doe"
-                                        className="w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-500"
+                                        className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('name')
+                                            ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                            : 'bg-gray-200 focus:bg-white'
+                                            }`}
                                     />
                                 </div>
 
                                 {/* Lead's mobile number */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Lead's mobile number
+                                        <span className="text-red-500">*</span> Lead's mobile number
                                     </label>
                                     <input
-                                        type="text"
+                                        type="tel"
                                         value={formData.contact}
-                                        onChange={(e) => handleInputChange('contact', e.target.value)}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            // Allow only digits
+                                            if (/^\d*$/.test(value)) {
+                                                handleInputChange('contact', value);
+                                            }
+                                        }}
                                         placeholder="XXXXXXXXXX"
-                                        className="w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-500"
+                                        className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('contact') || (attemptedNext && formData.contact && !isContactValid())
+                                            ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                            : 'bg-gray-200 focus:bg-white'
+                                            }`}
                                     />
+                                    {attemptedNext && formData.contact && !isContactValid() && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            Please enter a valid 10-digit mobile number.
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Lead's Email */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <span className="text-red-500">*</span> Lead's Email
+                                    </label>
+                                    <input
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            handleInputChange('email', value);
+                                        }}
+                                        placeholder="Email"
+                                        className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('email') || (attemptedNext && formData.email && !isEmailValid())
+                                            ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                            : 'bg-gray-200 focus:bg-white'
+                                            }`}
+                                    />
+                                    {attemptedNext && formData.email && !isEmailValid() && (
+                                        <p className="mt-1 text-xs text-red-500">
+                                            Please enter a valid email address.
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Lead's location */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Lead's location
+                                        <span className="text-red-500">*</span> Lead's location
                                     </label>
                                     <input
                                         type="text"
                                         value={formData.location}
                                         onChange={(e) => handleInputChange('location', e.target.value)}
-                                        placeholder="Ahmedabad, India"
-                                        className="w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-500"
+                                        placeholder="Vadodara, Gujarat"
+                                        className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('location')
+                                            ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                            : 'bg-gray-200 focus:bg-white'
+                                            }`}
+                                    />
+                                </div>
+                                {/* Lead Country */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <span className="text-red-500">*</span> Lead's Country
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.country}
+                                        onChange={(e) => handleInputChange('country', e.target.value)}
+                                        placeholder="India"
+                                        className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('country')
+                                            ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                            : 'bg-gray-200 focus:bg-white'
+                                            }`}
+                                    />
+                                </div>
+
+                                {/* Lead Address */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <span className="text-red-500">*</span> Lead's Address
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.address}
+                                        onChange={(e) => handleInputChange('address', e.target.value)}
+                                        placeholder="Address"
+                                        className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('address')
+                                            ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                            : 'bg-gray-200 focus:bg-white'
+                                            }`}
+                                    />
+                                </div>
+
+                                {/* Lead Pincode */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <span className="text-red-500">*</span> Pincode
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.pincode}
+                                        onChange={(e) => handleInputChange('pincode', e.target.value)}
+                                        placeholder="390001"
+                                        className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('pincode')
+                                            ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                            : 'bg-gray-200 focus:bg-white'
+                                            }`}
+                                    />
+                                </div>
+
+                                {/* Lead Gst */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <span className="text-red-500">*</span> GST Number
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.gst}
+                                        onChange={(e) => handleInputChange('gst', e.target.value)}
+                                        placeholder="GST Number"
+                                        className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('gst')
+                                            ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                            : 'bg-gray-200 focus:bg-white'
+                                            }`}
                                     />
                                 </div>
 
                                 {/* Lead type */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Lead type
+                                        <span className="text-red-500">*</span> Lead type
                                     </label>
                                     <div className="relative">
                                         <select
                                             value={formData.leadTypeId}
                                             onChange={(e) => handleInputChange('leadTypeId', e.target.value)}
-                                            className="w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-500"
+                                            className={`w-full px-4 py-3 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('leadTypeId')
+                                                ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                                : 'bg-gray-200 focus:bg-white'
+                                                }`}
                                         >
                                             <option value="">Select lead type</option>
                                             {leadTypeOptions.map(type => (
@@ -320,13 +507,16 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                                 {/* Lead source */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Lead source
+                                        <span className="text-red-500">*</span> Lead source
                                     </label>
                                     <div className="relative">
                                         <select
                                             value={formData.leadSourceId}
                                             onChange={(e) => handleInputChange('leadSourceId', e.target.value)}
-                                            className="w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-500"
+                                            className={`w-full px-4 py-3 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('leadSourceId')
+                                                ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                                : 'bg-gray-200 focus:bg-white'
+                                                }`}
                                         >
                                             <option value="">Select source</option>
                                             {sourceOptions.map(source => (
@@ -344,13 +534,36 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                                 {/* Lead status */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Lead status
+                                        <span className="text-red-500">*</span> Lead status
+                                    </label>
+                                    <div className="relative">
+                                        <select
+                                            value="New Lead"
+                                            // onChange={(e) => handleInputChange('leadStatusId', e.target.value)}
+                                            className="w-full px-4 py-3 border-0 rounded text-gray-500 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-500"
+                                            disabled
+                                        >
+                                            <option value="New Lead">Fresh Lead</option>
+                                        </select>
+                                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                {/* <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <span className="text-red-500">*</span> Lead status
                                     </label>
                                     <div className="relative">
                                         <select
                                             value={formData.leadStatusId}
                                             onChange={(e) => handleInputChange('leadStatusId', e.target.value)}
-                                            className="w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-500"
+                                            className={`w-full px-4 py-3 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('leadStatusId')
+                                                ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                                : 'bg-gray-200 focus:bg-white'
+                                                }`}
                                         >
                                             <option value="">Select status</option>
                                             {statusOptions.map(status => (
@@ -363,18 +576,21 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                                             </svg>
                                         </div>
                                     </div>
-                                </div>
+                                </div> */}
 
                                 {/* User */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        User
+                                        <span className="text-red-500">*</span> User
                                     </label>
                                     <div className="relative">
                                         <select
                                             value={formData.userId}
                                             onChange={(e) => handleInputChange('userId', e.target.value)}
-                                            className="w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-500"
+                                            className={`w-full px-4 py-3 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('userId')
+                                                ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                                : 'bg-gray-200 focus:bg-white'
+                                                }`}
                                         >
                                             <option value="">Select user</option>
                                             {usersOptions.map(user => (
@@ -405,7 +621,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                                                     onChange={(e) => updateProduct(index, 'ProductId', e.target.value)}
                                                     className="w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-500 max-h-40 overflow-y-auto"
                                                 >
-                                                    <option value="">Select lead type</option>
+                                                    <option value="">Select product</option>
                                                     {productOptions.map(prod => (
                                                         <option key={prod.productId} value={prod.productId}>{prod.productName}</option>
                                                     ))}
@@ -452,19 +668,26 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                         {currentStep === 1 ? (
                             <button
                                 onClick={handleNext}
-                                disabled={!validateStep1()}
-                                className="w-full py-3 bg-green-800 text-white rounded font-medium hover:bg-green-900 transition-colors disabled:!bg-gray-400 disabled:!cursor-not-allowed"
+                                className="w-full py-3 bg-green-800 text-white rounded font-medium hover:bg-green-900 transition-colors"
                             >
                                 Next
                             </button>
                         ) : (
-                            <button
-                                onClick={handleSubmit}
-                                disabled={!validateStep2()}
-                                className="w-full py-3 bg-green-800 text-white rounded font-medium hover:bg-green-900 transition-colors disabled:!bg-gray-400 disabled:!cursor-not-allowed"
-                            >
-                                Confirm
-                            </button>
+                            <div className="flex gap-3">
+                                {/* <button
+                                    onClick={handleBack}
+                                    className="flex-1 py-3 bg-gray-300 text-gray-700 rounded font-medium hover:bg-gray-400 transition-colors"
+                                >
+                                    Back
+                                </button> */}
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={!validateStep2()}
+                                    className="flex-1 py-3 bg-green-800 text-white rounded font-medium hover:bg-green-900 transition-colors disabled:!bg-gray-400 disabled:!cursor-not-allowed"
+                                >
+                                    Confirm
+                                </button>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -472,6 +695,5 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
         </div>
     );
 };
-
 
 export default AddLeadModal;
