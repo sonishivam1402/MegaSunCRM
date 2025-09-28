@@ -5,6 +5,7 @@ import userRouter from "./routes/userRoutes.js";
 import corsOptions from "./config/corsOptions.js";
 import productRouter from "./routes/productRoutes.js";
 import leadRouter from "./routes/leadRouter.js";
+import followUpRouter from "./routes/followUpRoutes.js";
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 app.use("/api/products", productRouter);
 app.use("/api/lead", leadRouter);
+app.use("/api/followUp", followUpRouter);
 
 app.get("/api/test", (req, res) => {
   res.json({ message: "Hello from backend!" });
