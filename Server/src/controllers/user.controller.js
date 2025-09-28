@@ -18,12 +18,10 @@ export const createNewUser = async (req, res, next) => {
 
     const isEmailValid = validator.isEmail(data.email);
 
-    const isContactValid = validator.isMobilePhone(data.contact, 'any', {
-      strictMode: true,
-    });
+    const isContactValid = validator.isMobilePhone(data.contact, 'any');
 
     if (!isEmailValid && !isContactValid) {
-      return { message: "Please check email and contact details." }
+      return res.json({ message: "Please check email and contact details." });
     }
 
     const hashPassword = await bcrypt.hash(data.password, 10);

@@ -56,10 +56,22 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
     e.preventDefault();
     setSubmitted(true);
 
+    // Validate required fields
     if (!formData.name || !formData.email || !formData.contact || !formData.address || !formData.password || !formData.userTypeId) {
       return;
     }
 
+    // Validate contact number format (10 digits)
+    if (!/^[0-9]{10}$/.test(formData.contact)) {
+      toast.error("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+
+    // Validate email format
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
 
     try {
       // Prepare FormData for multipart request
@@ -78,7 +90,7 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
         setSubmitted(false);
       } else {
         console.warn(res.data.Message);
-        toast.error(res.data.Message);
+        toast.error(response.data?.[0]?.Message || response.data?.Message || "Something went wrong");
       }
     } catch (err) {
       console.error("Error creating user:", err);
@@ -167,10 +179,10 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
                     onChange={handleInputChange}
                     placeholder="XXXXXXXXXX"
                     className={`w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50
-                     ${submitted && !formData.contact ? "!border-red-500" : "border-gray-300"} `}
+                     ${submitted && (!formData.contact || !/^[0-9]{10}$/.test(formData.contact)) ? "!border-red-500" : "border-gray-300"} `}
                   />
                   {/* Error message */}
-                  {submitted && !/^[0-9]{10}$/.test(formData.contact) && (
+                  {submitted && formData.contact && !/^[0-9]{10}$/.test(formData.contact) && (
                     <p className="mt-1 text-xs text-red-500">
                       Please enter a valid 10-digit mobile number.
                     </p>
@@ -191,9 +203,9 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
                     onChange={handleInputChange}
                     placeholder="john.doe@gmail.com"
                     className={`w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50
-                     ${submitted && !formData.email ? "!border-red-500" : "border-gray-300"} `}
+                     ${submitted && (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) ? "!border-red-500" : "border-gray-300"} `}
                   />
-                  {submitted && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && (
+                  {submitted && formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && (
                     <p className="mt-1 text-xs text-red-500">
                       Please enter a valid email address.
                     </p>

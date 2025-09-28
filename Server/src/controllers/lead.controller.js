@@ -1,17 +1,33 @@
 import { sql, poolPromise } from "../database/db.js";
+import validator from "validator";
+
 
 // Create Lead
 export const createLead = async (req, res, next) => {
   try {
     const { lead } = req.body;
+
+    const isEmailValid = validator.isEmail(lead.email);
+
+    const isContactValid = validator.isMobilePhone(lead.contact, 'any');
+
+    if (!isEmailValid && !isContactValid) {
+      return res.json({ message: "Please check email and contact details." });
+    }
+
     const pool = await poolPromise;
     const result = await pool
       .request()
       .input("Name", sql.NVarChar(100), lead.name)
       .input("Contact", sql.NVarChar(100), lead.contact)
+      .input("Email", sql.NVarChar(100), lead.email)
       .input("City", sql.NVarChar(100), lead.city)
       .input("State", sql.NVarChar(100), lead.state)
-      .input("LeadStatus", sql.UniqueIdentifier, lead.leadStatusId)
+      .input("Country", sql.NVarChar(100), lead.country)
+      .input("Address", sql.NVarChar(100), lead.address)
+      .input("Pincode", sql.NVarChar(100), lead.pincode)
+      .input("GSTNumber", sql.NVarChar(100), lead.gst)
+      // .input("LeadStatus", sql.UniqueIdentifier, lead.leadStatusId)
       .input("LeadType", sql.UniqueIdentifier, lead.leadTypeId)
       .input("LeadSource", sql.UniqueIdentifier, lead.leadSourceId)
       .input("AssignedTo", sql.UniqueIdentifier, lead.userId)
@@ -22,7 +38,8 @@ export const createLead = async (req, res, next) => {
         JSON.stringify(lead.productMappings)
       )
       .execute("sp_CreateLead");
-
+    
+    console.log(result.recordsets);
     if (result.recordset[0].Success) {
       res.status(201).json(result.recordsets[0]);
     } else {
@@ -39,14 +56,28 @@ export const updateLeadById = async (req, res, next) => {
   try {
     const { lead } = req.body;
     const leadId = req.params.id;
+
+    const isEmailValid = validator.isEmail(lead.email);
+
+    const isContactValid = validator.isMobilePhone(lead.contact, 'any');
+
+    if (!isEmailValid && !isContactValid) {
+      return res.json({ message: "Please check email and contact details." });
+    }
+
     const pool = await poolPromise;
     const result = await pool
       .request()
       .input("LeadId", sql.UniqueIdentifier, leadId)
       .input("Name", sql.NVarChar(100), lead.name)
       .input("Contact", sql.NVarChar(100), lead.contact)
+      .input("Email", sql.NVarChar(100), lead.email)
       .input("City", sql.NVarChar(100), lead.city)
       .input("State", sql.NVarChar(100), lead.state)
+      .input("Country", sql.NVarChar(100), lead.country)
+      .input("Address", sql.NVarChar(100), lead.address)
+      .input("Pincode", sql.NVarChar(100), lead.pincode)
+      .input("GSTNumber", sql.NVarChar(100), lead.gst)
       .input("LeadStatus", sql.UniqueIdentifier, lead.leadStatusId)
       .input("LeadType", sql.UniqueIdentifier, lead.leadTypeId)
       .input("LeadSource", sql.UniqueIdentifier, lead.leadSourceId)
