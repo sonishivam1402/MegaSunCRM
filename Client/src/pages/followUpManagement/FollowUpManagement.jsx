@@ -139,14 +139,30 @@ const FollowUpManagement = () => {
 
     const handleAdd = (followUp) => {
         setAddFollowUpModalOpen(true);
-        setSelectedFollowUp(followUp); 
+        setSelectedFollowUp(followUp);
         setActiveDropdown(null);
     };
 
     const handleWhatsApp = (followUp) => {
-        console.log('WhatsApp:', followUp);
+        if (!followUp?.Contact) {
+            console.error("No contact found for this follow-up");
+            return;
+        }
+
+        // Ensure correct format (without spaces, etc.)
+        const phone = followUp.Contact.replace(/\D/g, "");
+
+        // Optional: prefill a message
+        const message = encodeURIComponent("Hello, I'm following up regarding your inquiry.");
+
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${message}`;
+
+        // Open in new tab
+        window.open(whatsappUrl, "_blank");
+
         setActiveDropdown(null);
     };
+
 
     const handleExport = () => {
         console.log('Export follow-ups');
@@ -579,7 +595,7 @@ const FollowUpManagement = () => {
                     isOpen={addFollowUpModalOpen}
                     onClose={() => setAddFollowUpModalOpen(false)}
                     onSuccess={() => fetchFollowUps()}
-                    followUp = {selectedFollowUp}
+                    followUp={selectedFollowUp}
                 />
             )}
 
