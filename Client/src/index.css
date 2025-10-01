@@ -92,7 +92,7 @@ body {
   font-style: normal;
 }
 
-input {
+input, textarea {
   background-color: #00000012;
 }
 

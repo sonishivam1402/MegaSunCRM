@@ -3,11 +3,13 @@ import { sql, poolPromise } from "../database/db.js";
 // Get all FollowUps
 export const getFollowUps = async (req, res, next) => {
   try {
-    const { filter } = req.body;
+    const { filter, limit = 10, offset = 0 } = req.query;
     const pool = await poolPromise;
     const result = await pool
       .request()
       .input("FilterType", sql.NVarChar(50), filter)
+      .input("LimitParameter", sql.Int, parseInt(limit))
+      .input("OffsetParameter", sql.Int, parseInt(offset))
       .execute("sp_GetFollowups");
 
     res.json(result.recordsets);
@@ -25,20 +27,23 @@ export const createNewFollowUp = async (req, res, next) => {
     const result = await pool
       .request()
       .input("LeadId", sql.UniqueIdentifier, leadId)
-      .input("LeadStatusId", sql.UniqueIdentifier, leadStatusId)
+      .input("FollowupStatus", sql.UniqueIdentifier, leadStatusId)
       .input("Comments", sql.NVarChar(50), comment)
       .input("NextFollowUpDate", sql.Date, nextFollowUpDate)
       .input("CreatedBy", sql.UniqueIdentifier, req.user.id)
       .execute("sp_CreateNewFollowup");
 
-    res.json(result.recordsets);
+    const response = result.recordset[0];
+    if (response.Success) {
+      res.status(201).json(response);
+    } else {
+      res.status(200).json(response); // Or 400 if it's a failure
+    }
   } catch (err) {
     console.error("Error in creating new follow-up :", err);
     res.status(500).json({ message: "Server error" });
   }
 };
-
-
 
 // Get FollowUp By LeadId
 export const getFollowUpByLeadId = async (req, res, next) => {
@@ -47,7 +52,7 @@ export const getFollowUpByLeadId = async (req, res, next) => {
     const pool = await poolPromise;
     const result = await pool
       .request()
-      .input("LeadId", sql.NVarChar(50), leadId)
+      .input("LeadId", sql.UniqueIdentifier, leadId)
       .execute("sp_GetFollowupsByLeadId");
 
     res.json(result.recordsets);
@@ -57,22 +62,67 @@ export const getFollowUpByLeadId = async (req, res, next) => {
   }
 };
 
+// Get FollowUp By FollowUpId
+export const getFollowUpByFollowUpId = async (req, res, next) => {
+  try {
+    const Id = req.params.id;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("FollowUpId", sql.UniqueIdentifier, Id)
+      .execute("sp_GetFollowupByFollowupId");
+
+    res.json(result.recordsets);
+  } catch (err) {
+    console.error("Error in fetching follow-up deatils by Followup Id :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // Update FollowUp Comment
 export const updateFollowUpComment = async (req, res, next) => {
   try {
     const followUpId = req.params.id;
-    const {comment} = req.body;
+    const { comment } = req.body;
     const pool = await poolPromise;
     const result = await pool
       .request()
       .input("FollowUpId", sql.NVarChar(50), followUpId)
-      .input("Comments", sql.NVarChar(50), comment)
+      .input("Comments", sql.NVarChar(), comment)
       .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
       .execute("sp_EditFollowupComments");
 
-    res.json(result.recordsets);
+    const response = result.recordset[0];
+    if (response.Success) {
+      res.status(201).json(response);
+    } else {
+      res.status(200).json(response); // Or 400 if it's a failure
+    }
   } catch (err) {
     console.error("Error in updating follow-up comment :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Delete FollowUp By FollowUpId
+export const deleteFollowUpByFollowUpId = async (req, res, next) => {
+  try {
+    const Id = req.params.id;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("FollowUpId", sql.UniqueIdentifier, Id)
+      .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
+      .execute("sp_DeleteFollowupByFollowupId");
+
+    const response = result.recordset[0];
+    if (response.Success) {
+      res.status(201).json(response);
+    } else {
+      res.status(200).json(response); // Or 400 if it's a failure
+    }
+  } catch (err) {
+    console.error("Error in deleting follow-up deatils by Followup Id :", err);
     res.status(500).json({ message: "Server error" });
   }
 };

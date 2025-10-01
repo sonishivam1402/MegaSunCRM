@@ -15,6 +15,19 @@ export const getAllLeads = async ({ search = "", limit = 10, offset = 0, status,
   }
 };
 
+// Get All Leads for Dropdown
+export const getLeadsDD = async () => {
+  try {
+    const res = await API.get("/lead/dropdown");
+    return res.data;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in fetching leads for dropdown", err);
+    }
+    throw err;
+  }
+}; 
+
 // Get All New Leads
 export const getAllNewLeads = async ({ search = "", limit = 10, offset = 0, status, leadTypeId }) => {
   try {
