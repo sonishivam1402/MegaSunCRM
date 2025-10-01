@@ -39,7 +39,7 @@ export const createLead = async (req, res, next) => {
       )
       .execute("sp_CreateLead");
     
-    console.log(result.recordsets);
+    // console.log(result.recordsets);
     if (result.recordset[0].Success) {
       res.status(201).json(result.recordsets[0]);
     } else {
@@ -463,6 +463,19 @@ export const deleteLead = async (req, res, next) => {
     res.json(result.recordsets[0]);
   } catch (err) {
     console.error("Error in deleting lead :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get DD Lead Status
+export const getLeadsForDropdown = async (req, res, next) => {
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request().execute("sp_GetLeadsForDDN");
+
+    res.json(result.recordsets);
+  } catch (err) {
+    console.error("Error in fetching all leads for dropdown :", err);
     res.status(500).json({ message: "Server error" });
   }
 };

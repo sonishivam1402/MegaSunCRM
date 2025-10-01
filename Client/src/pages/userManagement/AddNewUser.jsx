@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createNewUser, getAllUserTypeNames } from '../../api/userApi';
 import { toast } from 'react-toastify';
+import CloseIcon from "../../assets/icons/CloseIcon";
 
 const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
 
@@ -135,10 +136,7 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
               onClick={() => { onClose(), setFormData(initialFormData), setSubmitted(false) }}
               className="text-[#242425] text-xl font-light hover:cursor-pointer"
             >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M13 1L1 13M1 1L13 13" stroke="#242425" stroke-width="1.5" stroke-linecap="round" />
-              </svg>
-
+              <CloseIcon />
             </button>
           </div>
           <p className="text-sm text-gray-600">Add in the details of the new user.</p>
@@ -148,7 +146,7 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
         <div className="p-3 px-6">
 
           <div>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className='w-full flex justify-between items-center gap-5'>
 
                 {/* User's full name */}

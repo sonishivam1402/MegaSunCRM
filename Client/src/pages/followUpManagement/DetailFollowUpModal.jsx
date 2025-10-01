@@ -1,0 +1,189 @@
+import React, { useState, useEffect } from 'react';
+import CloseIcon from '../../assets/icons/CloseIcon';
+import { getFollowUpById } from '../../api/followUpApi';
+import dayjs from 'dayjs';
+
+const DetailFollowUpModal = ({ isOpen, onClose, followUp }) => {
+  const [followupData, setFollowUpData] = useState([]);
+  const [productData, setProductData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('Details');
+
+  const getData = async (id) => {
+    setLoading(true);
+    try {
+      const response = await getFollowUpById(id);
+      //console.log("Response", response)
+      setFollowUpData(response[0][0]);
+      setProductData(response[1] || []);
+    } catch (error) {
+      console.error('Error fetching follow-up:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen && followUp) {
+      getData(followUp);
+    }
+  }, [isOpen, followUp]);
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Interested':
+        return 'text-green-600';
+      case 'Fresh Lead':
+        return 'text-blue-600';
+      case 'Not Interested':
+        return 'text-red-600';
+      default:
+        return 'text-gray-600';
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-white/30 backdrop-blur-xs flex items-center justify-end z-50">
+      <div className="bg-[#F0EEE4] w-200 h-screen max-w-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4">
+          <h2 className="text-lg font-semibold text-gray-900">Follow-Up details</h2>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-gray-100 rounded"
+          >
+            <CloseIcon size={16} />
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex border-b">
+          <button
+            onClick={() => setActiveTab('Details')}
+            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'Details'
+                ? 'border-green-800 text-green-900'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+          >
+            Details
+          </button>
+          <button
+            onClick={() => setActiveTab('Items')}
+            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'Items'
+                ? 'border-green-800 text-green-900'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+          >
+            Items
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+            </div>
+          ) : followupData ? (
+            <>
+              {activeTab === 'Details' && (
+                <div className="space-y-6">
+                  {/* Assigned to */}
+                  <div className="flex items-center">
+                    <span className="text-sm text-gray-700 w-32 flex-shrink-0">Assigned To</span>
+                    <span className="text-sm text-gray-500 mx-3">:</span>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-7 h-7 bg-orange-500 rounded-full flex items-center justify-center text-xs text-white font-semibold">
+                        {followupData.AssignedTo ? followupData.AssignedTo.charAt(0).toUpperCase() : "N"}
+                      </div>
+                      <span className="text-sm font-medium text-gray-900">{followupData.AssignedTo || 'Not Assigned'}</span>
+                    </div>
+                  </div>
+
+                  {/* Status */}
+                  <div className="flex items-center">
+                    <span className="text-sm text-gray-700 w-32 flex-shrink-0">Status</span>
+                    <span className="text-sm text-gray-500 mx-3">:</span>
+                    <span className={`text-sm font-semibold ${getStatusColor(followupData.FollowupStatus)}`}>
+                      {followupData.FollowupStatus || 'N/A'}
+                    </span>
+                  </div>
+
+                  {/* Comments */}
+                  <div className="flex items-center">
+                    <span className="text-sm text-gray-700 w-32 flex-shrink-0">Comment</span>
+                    <span className="text-sm text-gray-500 mx-3">:</span>
+                    <span className="text-sm font-medium text-gray-900">{followupData.Comments || 'N/A'}</span>
+                  </div>
+
+                  {/* Last Follow-Up Date */}
+                  <div className="flex items-center">
+                    <span className="text-sm text-gray-700 w-32 flex-shrink-0">Last Follow-Up Date</span>
+                    <span className="text-sm text-gray-500 mx-3">:</span>
+                    <span className="text-sm font-medium text-gray-900">{dayjs(followupData.LastFollowUpDate).format("DD-MM-YYYY") || 'N/A'}</span>
+                  </div>
+
+                  {/* Next Follow-Up Date */}
+                  <div className="flex items-center">
+                    <span className="text-sm text-gray-700 w-32 flex-shrink-0">Next Follow-Up Date</span>
+                    <span className="text-sm text-gray-500 mx-3">:</span>
+                    <span className="text-sm font-medium text-gray-900">{dayjs(followupData.NextFollowUpDate).format("DD-MM-YYYY") || 'N/A'}</span>
+                  </div>
+                  
+                  {/* Created On */}
+                  <div className="flex items-center">
+                    <span className="text-sm text-gray-700 w-32 flex-shrink-0">Created On</span>
+                    <span className="text-sm text-gray-500 mx-3">:</span>
+                    <span className="text-sm font-medium text-gray-900">{dayjs(followupData.CreatedOn).format("DD-MM-YYYY") || 'N/A'}</span>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'Items' && (
+                <div>
+                  {productData.length > 0 ? (
+                    <div className="space-y-4">
+                      {productData.map((item, index) => (
+                        <div key={index} className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            {/* {getItemIcon(item.icon)} */}
+                            <span className="text-sm font-normal">{item.ProductName}</span>
+                          </div>
+                          <span className="text-sm text-gray-600">{item.Quantity}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <div className="text-gray-400 mb-2">
+                        <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                        </svg>
+                      </div>
+                      <p className="text-sm">No products found for this lead</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="bg-white rounded-lg p-6">
+              <div className="text-center py-8 text-gray-500">
+                <div className="text-gray-400 mb-2">
+                  <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <p className="text-sm">No lead data found</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DetailFollowUpModal;

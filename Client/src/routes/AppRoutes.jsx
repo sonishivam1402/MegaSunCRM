@@ -9,6 +9,7 @@ import UserManagementWrapper from "../pages/userManagement/UserManagementWrapper
 import Products from "../pages/productManagement/Products";
 import NotFound from "../pages/NotFound";
 import LeadManagement from "../pages/leadManagement/LeadManagement";
+import FollowUpManagement from "../pages/followUpManagement/FollowUpManagement";
 
 export default function AppRoutes() {
 
@@ -34,6 +35,7 @@ export default function AppRoutes() {
         <Route path="/userTypes/:userTypeId/details" element={<UserTypeDetail />} />
 
         <Route path="/myleads" element={<LeadManagement/>} />
+        <Route path="/Followups" element={<FollowUpManagement/>} />
 
         <Route path="/products" element={<Products />} />
         
