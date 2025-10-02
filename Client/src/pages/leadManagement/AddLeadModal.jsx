@@ -451,7 +451,13 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                                     <input
                                         type="text"
                                         value={formData.pincode}
-                                        onChange={(e) => handleInputChange('pincode', e.target.value)}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            // Allow only digits
+                                            if (/^\d*$/.test(value) && value.length <= 6) {
+                                                handleInputChange('pincode', value);
+                                            }
+                                        }}
                                         placeholder="390001"
                                         className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('pincode')
                                             ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'

@@ -34,7 +34,7 @@ export default function AppRoutes() {
         <Route path="/users/:userId/details" element={<UserDetailsPage />} />
         <Route path="/userTypes/:userTypeId/details" element={<UserTypeDetail />} />
 
-        <Route path="/myleads" element={<LeadManagement/>} />
+        <Route path="/leads" element={<LeadManagement/>} />
         <Route path="/Followups" element={<FollowUpManagement/>} />
 
         <Route path="/products" element={<Products />} />

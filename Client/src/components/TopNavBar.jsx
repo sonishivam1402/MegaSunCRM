@@ -25,7 +25,7 @@ export default function TopNavbar() {
         '/users/:userId/details': 'User Management',
         '/userTypes/:userTypeId/details': 'User Management',
         '/products': 'Product Management',
-        '/myleads': 'My Leads',
+        '/leads': 'My Leads',
         '/Followups': 'Follow-ups',
         '/profile': 'Profile',
         '/notifications': 'Notifications'

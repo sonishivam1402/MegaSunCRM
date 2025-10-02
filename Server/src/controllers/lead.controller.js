@@ -110,6 +110,7 @@ export const getAllLeads = async (req, res, next) => {
       offset = 0,
       status,
       leadTypeId,
+      sourceId
     } = req.query;
     const pool = await poolPromise;
     const result = await pool
@@ -119,6 +120,7 @@ export const getAllLeads = async (req, res, next) => {
       .input("OffsetParameter", sql.Int, parseInt(offset))
       .input("StatusParam", sql.UniqueIdentifier, status)
       .input("LeadTypeId", sql.UniqueIdentifier, leadTypeId)
+      .input("LeadSourceId", sql.UniqueIdentifier, sourceId)
       .execute("sp_GetLeads");
 
     res.json(result.recordsets);

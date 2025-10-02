@@ -454,7 +454,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                                         {/* Lead's location */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                <span className="text-red-500">*</span> Lead's location
+                                                <span className="text-red-500">*</span> Lead's Location (City, State)
                                             </label>
                                             <input
                                                 type="text"
