@@ -37,9 +37,9 @@ const FollowUpManagement = () => {
     const filterTabs = [
         { label: 'All', value: 'All' },
         { label: 'Upcoming', value: 'Upcoming' },
-        { label: 'Deal closed', value: 'Deal closed' },
+        { label: 'Deal Closed', value: 'Deal Closed' },
         { label: 'Expired', value: 'Expired' },
-        { label: 'Not interested', value: 'Not interested' }
+        { label: 'Not Interested', value: 'Not Interested' }
     ];
 
     // Fetch follow-ups
@@ -155,7 +155,7 @@ const FollowUpManagement = () => {
         // Optional: prefill a message
         const message = encodeURIComponent("Hello, I'm following up regarding your inquiry.");
 
-        const whatsappUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${message}`;
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=91${phone}&text=${message}`;
 
         // Open in new tab
         window.open(whatsappUrl, "_blank");
