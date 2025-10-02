@@ -85,3 +85,18 @@ export const createFollowUp = async (leadId, leadStatusId, comment, nextFollowUp
     throw err;
   }
 };
+
+// Export CSV
+export const exportFollowUp = async () => {
+  try {
+    const res = await API.get("/followUp/export-csv" , {
+      responseType : 'blob',
+    });
+    return res;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in exporting follow-up", err);
+    }
+    throw err;
+  }
+};

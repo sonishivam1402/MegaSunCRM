@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { deleteFollowUpById, getFollowUps } from '../../api/followUpApi';
+import { deleteFollowUpById, exportFollowUp, getFollowUps } from '../../api/followUpApi';
 import EditIcon from "../../assets/icons/EditIcon";
 import AddIcon from "../../assets/icons/AddIcon";
 import HistoryIcon from '../../assets/icons/HistoryIcon';
@@ -76,6 +76,8 @@ const FollowUpManagement = () => {
             setLoading(false);
         }
     }, []);
+
+
 
     // Handle filter change
     const handleFilterChange = (filter) => {
@@ -164,10 +166,47 @@ const FollowUpManagement = () => {
     };
 
 
-    const handleExport = () => {
-        console.log('Export follow-ups');
-        toast.info('Export functionality coming soon');
+    const handleExport = async () => {
+        setLoading(true);
+        try {
+            const response = await exportFollowUp(); // axios response
+            const blob = response.data;              // <-- axios puts the Blob here
+
+            // Try to read filename from Content-Disposition
+            let filename = 'export_' + Date.now() + '.csv';
+            const disp = response.headers?.['content-disposition'] || '';
+            const m = /filename\*=UTF-8''([^;]+)|filename="([^"]+)"/i.exec(disp);
+            if (m) filename = decodeURIComponent(m[1] || m[2]);
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+
+            const now = new Date();
+            const pad = (n) => String(n).padStart(2, '0');
+
+            // Format as YYYYMMDD_HHMMSS
+            const formatted =
+                now.getFullYear() +
+                pad(now.getMonth() + 1) +
+                pad(now.getDate()) + '_' +
+                pad(now.getHours()) +
+                pad(now.getMinutes()) +
+                pad(now.getSeconds());
+
+            a.download = `export_follow-ups_${formatted}.csv`;
+            // a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Export failed:', error);
+        } finally {
+            setLoading(false);
+        }
     };
+
 
     const handleAddNewFollowUp = () => {
         setAddFollowUpModalOpen(true);

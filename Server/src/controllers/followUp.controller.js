@@ -1,4 +1,5 @@
 import { sql, poolPromise } from "../database/db.js";
+import { Parser } from "json2csv";
 
 // Get all FollowUps
 export const getFollowUps = async (req, res, next) => {
@@ -123,6 +124,31 @@ export const deleteFollowUpByFollowUpId = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in deleting follow-up deatils by Followup Id :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Export Follow Ups
+export const exportFollowUps = async (req, res, next) => {
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request().execute("sp_GetExportedFollowups");
+
+    // Convert to CSV
+    const json2csvParser = new Parser();
+    const csv = json2csvParser.parse(result.recordset);
+
+    // Set headers for file download
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=export_${Date.now()}.csv`
+    );
+
+    // Send CSV
+    res.send(csv);
+  } catch (err) {
+    console.error("Error in exporting follow-up deatils :", err);
     res.status(500).json({ message: "Server error" });
   }
 };
