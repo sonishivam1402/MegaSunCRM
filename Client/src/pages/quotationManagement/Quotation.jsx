@@ -2,9 +2,10 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import AddIcon from '../../assets/icons/AddIcon';
 import ThreeDotIcon from '../../assets/icons/ThreeDotIcon';
 import AddNewQuotationModal from './AddNewQuotation';
-import { getQuotations } from '../../api/quotation';
-import { getLeadsDD } from '../../api/leadApi';
+import { deleteQuotationById, getQuotations } from '../../api/quotation';
 import { getAllUsersDD } from '../../api/userApi';
+import { toast } from 'react-toastify';
+import ViewLastFollowUp from './ViewLastFollowUp';
 
 const Quotation = ({ refreshKey }) => {
     // State management
@@ -14,6 +15,7 @@ const Quotation = ({ refreshKey }) => {
     const [pageNumber, setPageNumber] = useState(1);
     const [totalRecords, setTotalRecords] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [selectedQuotation, setSelectedQuotation] = useState([]);
 
     // Filters - FIX: Initialize typeFilter with '1' to match default select value
     const [typeFilter, setTypeFilter] = useState('1');
@@ -22,6 +24,9 @@ const Quotation = ({ refreshKey }) => {
 
     // Modal and dropdown states
     const [addModalOpen, setAddModalOpen] = useState(false);
+    const [lastFollowUpModalOpen, setLastFollowUpModalOpen] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+    const [deleting, setDeleting] = useState(false);
     const [activeDropdown, setActiveDropdown] = useState(null);
     const dropdownRefs = useRef({});
 
@@ -220,6 +225,35 @@ const Quotation = ({ refreshKey }) => {
         fetchQuotations('', 1, pageSize, typeFilter, salesmanFilter);
     };
 
+    const handleDelete = (Id) => {
+        setDeleteModalOpen(true);
+        setSelectedQuotation(Id);
+        setActiveDropdown(null);
+    };
+
+    const confirmDelete = async () => {
+        if (!selectedQuotation) return;
+        setDeleting(true);
+        try {
+            const response = await deleteQuotationById(selectedQuotation);
+            if (response.status == 201) {
+                setSelectedQuotation(null)
+                setDeleteModalOpen(false);
+                toast.success(response.data.Message);
+                handleModalSuccess();
+            }
+            else {
+                toast.error(response.data?.[0]?.Message || response.data?.Message || "Something went wrong");
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error('Failed to delete lead status.');
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+
     const formatProducts = (products) => {
         if (!products || products.length === 0) return 'N/A';
         const productList = products.split(",").map(p => p.trim());
@@ -406,7 +440,13 @@ const Quotation = ({ refreshKey }) => {
                                                             <button className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
                                                                 Download Performa Invoice
                                                             </button>
-                                                            <button className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
+                                                            <button
+                                                                onClick={() => {
+                                                                    setLastFollowUpModalOpen(true);
+                                                                    setSelectedQuotation(quotation);
+                                                                    setActiveDropdown(null);
+                                                                }}
+                                                                className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
                                                                 View last follow-up
                                                             </button>
                                                             <button onClick={() => handleWhatsApp(quotation)} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
@@ -415,7 +455,12 @@ const Quotation = ({ refreshKey }) => {
                                                             <button className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
                                                                 Edit
                                                             </button>
-                                                            <button className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
+                                                            <button className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
+                                                                onClick={() => {
+                                                                    handleDelete(quotation.QuotationId)
+                                                                    setActiveDropdown(null);
+                                                                }}
+                                                            >
                                                                 Delete
                                                             </button>
                                                         </div>
@@ -480,11 +525,52 @@ const Quotation = ({ refreshKey }) => {
                     </div>
                 </div>
             </div>
+
+            {deleteModalOpen && (
+                <div className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50">
+                    <div className="bg-[#f1f0e9] border rounded-lg shadow-lg p-6 w-full max-w-sm">
+                        <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                            Confirm Delete
+                        </h2>
+                        <p className="text-sm text-gray-600 mb-6">
+                            Are you sure you want to delete Quotation ?
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                className="px-4 py-2 text-sm rounded bg-gray-200 hover:bg-gray-300"
+                                onClick={() => {
+                                    setSelectedQuotation(null);
+                                    setDeleteModalOpen(false);
+                                }}
+                                disabled={deleting}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="px-4 py-2 text-sm rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+                                onClick={confirmDelete}
+                                disabled={deleting}
+                            >
+                                {deleting ? 'Deleting...' : 'Delete'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {addModalOpen && (
                 <AddNewQuotationModal
                     isOpen={addModalOpen}
                     onClose={() => setAddModalOpen(false)}
                     onSuccess={handleModalSuccess}
+                />
+            )}
+
+            {lastFollowUpModalOpen && (
+                <ViewLastFollowUp
+                    isOpen={lastFollowUpModalOpen}
+                    onClose={() => setLastFollowUpModalOpen(false)}
+                    quotation={selectedQuotation?.QuotationId}
                 />
             )}
         </div>
