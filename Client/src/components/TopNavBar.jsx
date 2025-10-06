@@ -27,7 +27,7 @@ export default function TopNavbar() {
         '/products': 'Product Management',
         '/leads': 'My Leads',
         '/Followups': 'Follow-ups',
-        '/profile': 'Profile',
+        '/quotation': 'Quotation',
         '/notifications': 'Notifications'
     };
 

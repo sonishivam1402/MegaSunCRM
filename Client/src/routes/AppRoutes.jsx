@@ -10,6 +10,7 @@ import Products from "../pages/productManagement/Products";
 import NotFound from "../pages/NotFound";
 import LeadManagement from "../pages/leadManagement/LeadManagement";
 import FollowUpManagement from "../pages/followUpManagement/FollowUpManagement";
+import Quotation from "../pages/quotationManagement/Quotation";
 
 export default function AppRoutes() {
 
@@ -36,6 +37,7 @@ export default function AppRoutes() {
 
         <Route path="/leads" element={<LeadManagement/>} />
         <Route path="/Followups" element={<FollowUpManagement/>} />
+        <Route path="/quotation" element={<Quotation/>} />
 
         <Route path="/products" element={<Products />} />
         
