@@ -64,10 +64,10 @@ const Quotation = ({ refreshKey }) => {
                 params.assignedTo = null;
             }
 
-            console.log('API Request Params:', params); // DEBUG: Log params being sent
+            //console.log('API Request Params:', params);
 
             const response = await getQuotations(params);
-            console.log('API Response:', response.data); // DEBUG: Log full response
+            console.log('API Response:', response.data);
 
             if (response && response.data) {
                 setQuotations(response.data[0] || []);
@@ -199,8 +199,33 @@ const Quotation = ({ refreshKey }) => {
         setAddModalOpen(true);
     };
 
+    const handleWhatsApp = (quotation) => {
+        if (!quotation?.Contact) {
+            console.error("No contact found for this quotation");
+            return;
+        }
+
+        // Ensure correct format (without spaces, etc.)
+        const phone = quotation.Contact.replace(/\D/g, "");
+
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=91${phone}`;
+
+        // Open in new tab
+        window.open(whatsappUrl, "_blank");
+
+        setActiveDropdown(null);
+    };
+
     const handleModalSuccess = () => {
         fetchQuotations('', 1, pageSize, typeFilter, salesmanFilter);
+    };
+
+    const formatProducts = (products) => {
+        if (!products || products.length === 0) return 'N/A';
+        const productList = products.split(",").map(p => p.trim());
+        const displayed = productList.slice(0, 2).join(", ");
+        const extra = productList.length > 2 ? `, ${productList.length - 2} more..` : "";
+        return displayed + extra;
     };
 
     return (
@@ -339,15 +364,17 @@ const Quotation = ({ refreshKey }) => {
                                     </td>
 
                                     {/* Item */}
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                        {quotation.Products || '-'}
+                                    <td className="px-6 py-4 text-sm text-gray-900 text-center">
+                                        <div className="max-w-xs mx-auto">
+                                            {formatProducts(quotation.Products || followUp.Item)}
+                                        </div>
                                     </td>
 
                                     {/* Amount */}
                                     <td className="px-6 py-4 whitespace-nowrap text-center">
                                         <div className="flex flex-col text-sm">
-                                            <span className="text-gray-600">Basic: <span className="text-gray-900">{quotation.BasicAmount || '-'}</span></span>
-                                            <span className="text-gray-600">Final: <span className="text-gray-900">{quotation.FinalAmount || '-'}</span></span>
+                                            <span className="text-gray-600">Basic : ₹<span className="text-gray-900">{quotation.BasicAmount || '-'}</span></span>
+                                            <span className="text-gray-600">Final : ₹<span className="text-gray-900">{quotation.FinalAmount || '-'}</span></span>
                                         </div>
                                     </td>
 
@@ -382,7 +409,7 @@ const Quotation = ({ refreshKey }) => {
                                                             <button className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
                                                                 View last follow-up
                                                             </button>
-                                                            <button className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
+                                                            <button onClick={() => handleWhatsApp(quotation)} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
                                                                 Whatsapp
                                                             </button>
                                                             <button className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
