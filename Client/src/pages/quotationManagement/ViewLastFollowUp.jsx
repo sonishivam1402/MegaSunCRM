@@ -33,7 +33,7 @@ const ViewLastFollowUp = ({ isOpen, onClose, quotation }) => {
         <div className="fixed inset-0 bg-white/30 backdrop-blur-xs flex items-center justify-end z-50">
             <div className="bg-[#F0EEE4] w-200 h-screen max-w-2xl">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4">
+                <div className="flex items-center justify-between p-4 border-b">
                     <h2 className="text-lg font-semibold text-gray-900">Last Follow-Up details</h2>
                     <button
                         onClick={onClose}
@@ -63,15 +63,6 @@ const ViewLastFollowUp = ({ isOpen, onClose, quotation }) => {
                                         </div>
                                         <span className="text-sm font-medium text-gray-900">{followupData.AssignedTo || 'Not Assigned'}</span>
                                     </div>
-                                </div>
-
-                                {/* Status */}
-                                <div className="flex items-center">
-                                    <span className="text-sm text-gray-700 w-32 flex-shrink-0">Status</span>
-                                    <span className="text-sm text-gray-500 mx-3">:</span>
-                                    <span className={`text-sm font-semibold ${(followupData.FollowupStatus)}`}>
-                                        {followupData.FollowupStatus || 'N/A'}
-                                    </span>
                                 </div>
 
                                 {/* Comments */}

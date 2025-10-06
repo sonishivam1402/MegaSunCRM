@@ -8,6 +8,7 @@ import WhatsAppIcon from '../../assets/icons/WhatsAppIcon';
 import ThreeDotIcon from '../../assets/icons/ThreeDotIcon';
 import { toast } from 'react-toastify';
 import EditLeadModal from './EditLeadModal';
+import LastFollowUpModal from './LastFollowUpModal';
 
 const LeadsTab = ({ refreshKey }) => {
   // State management
@@ -29,6 +30,7 @@ const LeadsTab = ({ refreshKey }) => {
   // Modal and dropdown states
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [lastFollowUpModalOpen, setLastFollowUpModalOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -273,15 +275,26 @@ const LeadsTab = ({ refreshKey }) => {
     setActiveDropdown(null);
   };
 
-  const handleCall = (lead) => {
-    console.log('Call lead:', lead);
-    // Implement call functionality
+  const handleCall = (leadId) => {
+    setLastFollowUpModalOpen(true)
+    setSelectedLeadId(leadId)
     setActiveDropdown(null);
   };
 
   const handleWhatsApp = (lead) => {
-    console.log('WhatsApp lead:', lead);
-    // Implement WhatsApp functionality
+    if (!lead?.Contact) {
+      console.error("No contact found for this lead");
+      return;
+    }
+
+    // Ensure correct format (without spaces, etc.)
+    const phone = lead.Contact.replace(/\D/g, "");
+
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=91${phone}`;
+
+    // Open in new tab
+    window.open(whatsappUrl, "_blank");
+
     setActiveDropdown(null);
   };
 
@@ -498,14 +511,14 @@ const LeadsTab = ({ refreshKey }) => {
 
                   {/* Actions */}
                   <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <div className="flex justify-end items-center gap-2">
+                    <div className="flex justify-end items-center gap-1">
                       {/* Call Button */}
                       <button
-                        onClick={() => handleCall(lead)}
+                        onClick={() => handleCall(lead.LeadId)}
                         className="p-2 hover:bg-gray-100 rounded-full"
                         title="Call"
                       >
-                        <HistoryIcon size={16} />
+                        <HistoryIcon size={14} />
                       </button>
 
                       {/* Edit Button */}
@@ -514,7 +527,7 @@ const LeadsTab = ({ refreshKey }) => {
                         className="p-2 hover:bg-gray-100 rounded-full"
                         title="Edit"
                       >
-                        <EditIcon size={16} />
+                        <EditIcon size={14} />
                       </button>
 
                       {/* Add Button */}
@@ -523,7 +536,7 @@ const LeadsTab = ({ refreshKey }) => {
                         className="p-2 hover:bg-gray-100 rounded-full"
                         title="Edit"
                       >
-                        <AddIcon size={16} />
+                        <AddIcon size={14} />
                       </button>
 
                       {/* WhatsApp Button */}
@@ -532,7 +545,7 @@ const LeadsTab = ({ refreshKey }) => {
                         className="p-2 hover:bg-gray-100 rounded-full"
                         title="WhatsApp"
                       >
-                        <WhatsAppIcon size={16} />
+                        <WhatsAppIcon size={14} />
                       </button>
 
                       {/* More Options */}
@@ -655,18 +668,30 @@ const LeadsTab = ({ refreshKey }) => {
         </div>
       )}
 
-      <LeadDetailModal
-        isOpen={detailModalOpen}
-        onClose={() => setDetailModalOpen(false)}
-        leadId={selectedLeadId}
-      />
+      {detailModalOpen && (
+        <LeadDetailModal
+          isOpen={detailModalOpen}
+          onClose={() => setDetailModalOpen(false)}
+          leadId={selectedLeadId}
+        />
+      )}
 
-      <EditLeadModal
-        isOpen={editModalOpen}
-        onClose={() => setEditModalOpen(false)}
-        leadId={selectedLeadId}
-        onSuccess={fetchLeads}
-      />
+      {editModalOpen && (
+        <EditLeadModal
+          isOpen={editModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          leadId={selectedLeadId}
+          onSuccess={fetchLeads}
+        />
+      )}
+
+      {lastFollowUpModalOpen && (
+        <LastFollowUpModal
+          isOpen={lastFollowUpModalOpen}
+          onClose={() => {setLastFollowUpModalOpen(false), setSelectedLeadId(null)}}
+          leadId={selectedLeadId}
+        />
+      )}
 
     </div>
   );

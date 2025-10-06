@@ -10,10 +10,12 @@ import AddLeadSourceModal from './AddLeadSourceModal';
 import AddLeadStatusModal from './AddLeadStatusModal';
 import NewLeadsTab from './NewLeadsTab';
 import OpenIcon from '../../assets/icons/OpenIcon';
+import { exportLeads } from '../../api/leadApi';
 
 const LeadManagement = () => {
 
     const [activeTab, setActiveTab] = useState('leads');
+    const [loading, setLoading] = useState(false);
     const [addLeadModalOpen, setAddLeadModalOpen] = useState(false);
     const [importLeadModalOpen, setImportLeadModalOpen] = useState(false);
     const [addTypeModalOpen, setAddTypeModalOpen] = useState(false);
@@ -24,6 +26,47 @@ const LeadManagement = () => {
     const handleNewCreatedData = () => {
         setRefreshKey(prev => prev + 1);
     };
+
+    const handleExport = async () => {
+            setLoading(true);
+            try {
+                const response = await exportLeads(); 
+                const blob = response.data;             
+    
+                // Try to read filename from Content-Disposition
+                let filename = 'export_' + Date.now() + '.csv';
+                const disp = response.headers?.['content-disposition'] || '';
+                const m = /filename\*=UTF-8''([^;]+)|filename="([^"]+)"/i.exec(disp);
+                if (m) filename = decodeURIComponent(m[1] || m[2]);
+    
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+    
+                const now = new Date();
+                const pad = (n) => String(n).padStart(2, '0');
+    
+                // Format as YYYYMMDD_HHMMSS
+                const formatted =
+                    now.getFullYear() +
+                    pad(now.getMonth() + 1) +
+                    pad(now.getDate()) + '_' +
+                    pad(now.getHours()) +
+                    pad(now.getMinutes()) +
+                    pad(now.getSeconds());
+    
+                a.download = `export_leads_${formatted}.csv`;
+                // a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Export failed:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
     const tabs = [
         { id: 'leads', label: 'All Leads', component: LeadsTab, btnLabel: "Create New Lead", openModal: () => setAddLeadModalOpen(true) },
@@ -56,13 +99,20 @@ const LeadManagement = () => {
                             </button>
                         ))}
                     </div>
-                    <div>
+                    <div className='flex justify-between items-center gap-2'>
+                        <button
+                            className='p-2 border text-green-900 text-sm flex items-center gap-2'
+                            onClick={handleExport}
+                        >
+                           <OpenIcon/> Export
+                        </button>
                         <button
                             className='p-2 border text-green-900 text-sm flex items-center gap-2'
                             onClick={currentTab?.openModal}
                         >
-                         {currentTab.btnLabel == "Import New Lead" ? <OpenIcon size={10} /> : <AddIcon size={10} />}    {currentTab?.btnLabel}
+                            {currentTab.btnLabel == "Import New Lead" ? <OpenIcon size={10} /> : <AddIcon size={10} />}    {currentTab?.btnLabel}
                         </button>
+                        
                     </div>
                 </div>
             </div>
