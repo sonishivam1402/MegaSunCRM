@@ -240,16 +240,6 @@ const FollowUpManagement = () => {
         }
     };
 
-    // const handleSort = () => {
-    //     console.log('Sort follow-ups');
-    //     toast.info('Sort functionality coming soon');
-    // };
-
-    // const handleFilter = () => {
-    //     console.log('Additional filters');
-    //     toast.info('Filter functionality coming soon');
-    // };
-
     // Get status color
     const getStatusColor = (status) => {
         switch (status?.toLowerCase()) {
@@ -329,18 +319,6 @@ const FollowUpManagement = () => {
                             <AddIcon color='green' />
                             Add new follow-up
                         </button>
-                        {/* <button
-              onClick={handleSort}
-              className="p-2 bg-white rounded-lg hover:bg-gray-100 border border-gray-300"
-            >
-              <img src="/icons/Sort.png" alt="Sort" className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleFilter}
-              className="p-2 bg-white rounded-lg hover:bg-gray-100 border border-gray-300"
-            >
-              <img src="/icons/Filter.png" alt="Filter" className="w-4 h-4" />
-            </button> */}
                     </div>
                 </div>
             </div>
@@ -355,6 +333,9 @@ const FollowUpManagement = () => {
                             </th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 LAST FOLLOWUP DATE
+                            </th>
+                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                NEXT FOLLOWUP DATE
                             </th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 ITEM
@@ -414,6 +395,10 @@ const FollowUpManagement = () => {
                                         {dayjs(followUp.LastFollowUpDate).format("DD-MM-YYYY") || 'N/A'}
                                     </td>
 
+                                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                                        {dayjs(followUp.NextFollowUpDate).format("DD-MM-YYYY") || 'N/A'}
+                                    </td>
+
                                     {/* Item */}
                                     <td className="px-6 py-4 text-center text-sm text-gray-900">
                                         <div className="max-w-xs mx-auto">
@@ -455,14 +440,14 @@ const FollowUpManagement = () => {
 
                                     {/* Actions */}
                                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                                        <div className="flex justify-end items-center gap-2">
+                                        <div className="flex justify-end items-center">
                                             {/* Call/History Button */}
                                             <button
                                                 onClick={() => handleHistory(followUp.LeadId)}
                                                 className="p-2 hover:bg-gray-100 rounded-full"
                                                 title="History"
                                             >
-                                                <HistoryIcon size={16} />
+                                                <HistoryIcon size={14} />
                                             </button>
 
                                             {/* Edit Button */}
@@ -471,7 +456,7 @@ const FollowUpManagement = () => {
                                                 className="p-2 hover:bg-gray-100 rounded-full"
                                                 title="Edit"
                                             >
-                                                <EditIcon size={16} />
+                                                <EditIcon size={14} />
                                             </button>
 
                                             {/* Add Button */}
@@ -480,7 +465,7 @@ const FollowUpManagement = () => {
                                                 className="p-2 hover:bg-gray-100 rounded-full"
                                                 title="Add"
                                             >
-                                                <AddIcon size={16} />
+                                                <AddIcon size={14} />
                                             </button>
 
                                             {/* WhatsApp Button */}
@@ -489,7 +474,7 @@ const FollowUpManagement = () => {
                                                 className="p-2 hover:bg-gray-100 rounded-full"
                                                 title="WhatsApp"
                                             >
-                                                <WhatsAppIcon size={16} />
+                                                <WhatsAppIcon size={14} />
                                             </button>
 
                                             {/* More Options */}

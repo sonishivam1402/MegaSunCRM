@@ -1,6 +1,6 @@
 import { sql, poolPromise } from "../database/db.js";
 import validator from "validator";
-
+import { Parser } from "json2csv";
 
 // Create Lead
 export const createLead = async (req, res, next) => {
@@ -478,6 +478,31 @@ export const getLeadsForDropdown = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all leads for dropdown :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Export Leads
+export const exportLeads = async (req, res, next) => {
+  try {
+    const pool = await poolPromise;
+    const result = await pool.request().execute("sp_GetAllLeads");
+
+    // Convert to CSV
+    const json2csvParser = new Parser();
+    const csv = json2csvParser.parse(result.recordset);
+
+    // Set headers for file download
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=export_${Date.now()}.csv`
+    );
+
+    // Send CSV
+    res.send(csv);
+  } catch (err) {
+    console.error("Error in exporting leads deatils :", err);
     res.status(500).json({ message: "Server error" });
   }
 };

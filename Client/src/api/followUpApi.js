@@ -34,6 +34,20 @@ export const getFollowUpByLeadId = async (id) => {
   }
 };
 
+export const getLastFollowUpByLeadId = async (id) => {
+  try {
+    //console.log(id);
+    const res = await API.get(`/followUp/lead/last/${id}`);
+    //console.log(res.data);
+    return res.data;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in fetching last follow-up by LeadId", err);
+    }
+    throw err;
+  }
+};
+
 // Get Follow-up by id
 export const getFollowUpById = async (id) => {
   try {

@@ -152,3 +152,20 @@ export const exportFollowUps = async (req, res, next) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// Get Last FollowUp By LeadId
+export const getLastFollowUpByLeadId = async (req, res, next) => {
+  try {
+    const Id = req.params.id;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("LeadId", sql.UniqueIdentifier, Id)
+      .execute("sp_GetLastFollowupByLeadId");
+
+    res.json(result.recordsets);
+  } catch (err) {
+    console.error("Error in fetching follow-up deatils by lead Id :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};

@@ -291,3 +291,17 @@ export const deleteLeadType = async (id) => {
     throw err;
   }
 }; 
+
+export const exportLeads = async () => {
+  try {
+    const res = await API.get("/lead/export-csv" , {
+      responseType : 'blob',
+    });
+    return res;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in exporting leads", err);
+    }
+    throw err;
+  }
+};

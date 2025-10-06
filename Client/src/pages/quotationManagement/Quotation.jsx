@@ -345,7 +345,7 @@ const Quotation = ({ refreshKey }) => {
             {/* Table */}
             <div className="px-6 flex-1 overflow-y-auto">
                 <table className="w-full">
-                    <thead className="sticky top-0 bg-white">
+                    <thead className="sticky top-0">
                         <tr className="border-b border-gray-300">
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">QUOTATION DETAILS</th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">QUOTATION BY</th>
