@@ -46,7 +46,7 @@ export const getQuotations = async (req, res, next) => {
       .input("IsDomestic", sql.Bit, parseInt(type))
       .input("AssignedTo", sql.UniqueIdentifier, assignedTo)
       .execute("sp_GetQuotation");
-      
+
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching quotation deatils :", err);

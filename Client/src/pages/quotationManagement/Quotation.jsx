@@ -7,6 +7,7 @@ import { getAllUsersDD } from '../../api/userApi';
 import { toast } from 'react-toastify';
 import ViewLastFollowUp from './ViewLastFollowUp';
 import EditQuotationModal from './EditQuotationModal';
+import { getQuotationPdf } from '../../api/invoiceApi';
 
 const Quotation = ({ refreshKey }) => {
     // State management
@@ -270,6 +271,40 @@ const Quotation = ({ refreshKey }) => {
         setActiveDropdown(null);
     };
 
+    const handleDownloadQuotation = async (id) => {
+        try {
+            setLoading(true);
+            const response = await getQuotationPdf(id);
+
+            const blob = await response.data;
+
+            let filename = "Quotation.pdf"; // default
+            const disposition = response.headers.get("Content-Disposition");
+            if (disposition && disposition.includes("filename=")) {
+                filename = disposition
+                    .split("filename=")[1]
+                    .replace(/"/g, "")
+                    .trim();
+            }
+
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+            toast.success("Quotation downloaded successfully");
+            setActiveDropdown(null);
+        } catch (err) {
+            console.error("Download error:", err);
+            toast.error("Failed to download quotation");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="flex flex-col h-full">
             {/* Header */}
@@ -442,7 +477,7 @@ const Quotation = ({ refreshKey }) => {
                                                 {activeDropdown === quotation.QuotationId && (
                                                     <div className="absolute right-2 mt-1 w-50 bg-white rounded-md shadow-lg border border-gray-200 z-50">
                                                         <div className="py-1">
-                                                            <button className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
+                                                            <button onClick={() => handleDownloadQuotation(quotation.QuotationId)} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
                                                                 Download Quotation
                                                             </button>
                                                             <button className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
