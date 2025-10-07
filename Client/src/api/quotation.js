@@ -67,6 +67,19 @@ export const createQuotations = async (data) => {
   }
 };
 
+// Update Quotation By Id
+export const updateQuotationById = async (id, data) => {
+  try {
+    const res = await API.put(`/quotation/${id}`,{data});
+    return res;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in updating quotation by Id", err);
+    }
+    throw err;
+  }
+};
+
 // Export CSV
 export const exportQuotation = async () => {
   try {

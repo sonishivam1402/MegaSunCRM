@@ -6,6 +6,7 @@ import { deleteQuotationById, getQuotations } from '../../api/quotation';
 import { getAllUsersDD } from '../../api/userApi';
 import { toast } from 'react-toastify';
 import ViewLastFollowUp from './ViewLastFollowUp';
+import EditQuotationModal from './EditQuotationModal';
 
 const Quotation = ({ refreshKey }) => {
     // State management
@@ -29,6 +30,7 @@ const Quotation = ({ refreshKey }) => {
     const [deleting, setDeleting] = useState(false);
     const [activeDropdown, setActiveDropdown] = useState(null);
     const dropdownRefs = useRef({});
+    const [editModalOpen, setEditModalOpen] = useState(false);
 
     // Debounce timer ref
     const searchTimeoutRef = useRef(null);
@@ -262,6 +264,12 @@ const Quotation = ({ refreshKey }) => {
         return displayed + extra;
     };
 
+    const handleEdit = (id) => {
+        setEditModalOpen(true);
+        setSelectedQuotation(id);
+        setActiveDropdown(null);
+    };
+
     return (
         <div className="flex flex-col h-full">
             {/* Header */}
@@ -345,7 +353,7 @@ const Quotation = ({ refreshKey }) => {
             {/* Table */}
             <div className="px-6 flex-1 overflow-y-auto">
                 <table className="w-full">
-                    <thead className="sticky top-0">
+                    <thead className="sticky top-0 bg-[#f1f0e9]">
                         <tr className="border-b border-gray-300">
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">QUOTATION DETAILS</th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">QUOTATION BY</th>
@@ -452,7 +460,7 @@ const Quotation = ({ refreshKey }) => {
                                                             <button onClick={() => handleWhatsApp(quotation)} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
                                                                 Whatsapp
                                                             </button>
-                                                            <button className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
+                                                            <button onClick={() => handleEdit(quotation.QuotationId)} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
                                                                 Edit
                                                             </button>
                                                             <button className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
@@ -571,6 +579,15 @@ const Quotation = ({ refreshKey }) => {
                     isOpen={lastFollowUpModalOpen}
                     onClose={() => setLastFollowUpModalOpen(false)}
                     quotation={selectedQuotation?.QuotationId}
+                />
+            )}
+
+            {editModalOpen && (
+                <EditQuotationModal
+                    isOpen={editModalOpen}
+                    onClose={() => setEditModalOpen(false)}
+                    onSuccess={handleModalSuccess}
+                    quotationId={selectedQuotation}
                 />
             )}
         </div>
