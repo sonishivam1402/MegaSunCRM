@@ -8,6 +8,9 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [loadingLeadData, setLoadingLeadData] = useState(false);
+    
+    // Validation states
+    const [validationErrors, setValidationErrors] = useState({});
 
     // Step 1: Lead Details
     const [selectedLead, setSelectedLead] = useState('');
@@ -66,6 +69,110 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
     const [terms, setTerms] = useState('');
     const [taxFormat, setTaxFormat] = useState('SGST - CGST');
     const [roundOff, setRoundOff] = useState('0.80');
+
+    // Validation helper functions
+    const validateEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
+
+    const validateMobileNumber = (mobile) => {
+        const mobileRegex = /^\d{10}$/;
+        return mobileRegex.test(mobile);
+    };
+
+    const validatePincode = (pincode) => {
+        const pincodeRegex = /^\d{6}$/;
+        return pincodeRegex.test(pincode);
+    };
+
+    // Clear specific field error
+    const clearFieldError = (fieldName) => {
+        setValidationErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors[fieldName];
+            return newErrors;
+        });
+    };
+
+    const validateStep1 = () => {
+        const errors = {};
+        let isValid = true;
+
+        if (!selectedLead) {
+            errors.selectedLead = 'Please select a lead';
+            isValid = false;
+        }
+
+        if (!quotationDate) {
+            errors.quotationDate = 'Please select quotation date';
+            isValid = false;
+        }
+
+        // Clear previous step 1 errors and set new ones
+        setValidationErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors.selectedLead;
+            delete newErrors.quotationDate;
+            return { ...newErrors, ...errors };
+        });
+        return isValid;
+    };
+
+    const validateStep3 = () => {
+        const errors = {};
+        let isValid = true;
+
+        // Required field validations
+        if (!shippingDetails.companyName.trim()) {
+            errors.companyName = 'Company name is required';
+            isValid = false;
+        }
+
+        if (!shippingDetails.email.trim()) {
+            errors.email = 'Email is required';
+            isValid = false;
+        } else if (!validateEmail(shippingDetails.email)) {
+            errors.email = 'Please enter a valid email address';
+            isValid = false;
+        }
+
+        if (!shippingDetails.address.trim()) {
+            errors.address = 'Address is required';
+            isValid = false;
+        }
+
+        if (!shippingDetails.city.trim()) {
+            errors.city = 'City is required';
+            isValid = false;
+        }
+
+        if (!shippingDetails.pincode.trim()) {
+            errors.pincode = 'Pincode is required';
+            isValid = false;
+        } else if (!validatePincode(shippingDetails.pincode)) {
+            errors.pincode = 'Pincode must be 6 digits';
+            isValid = false;
+        }
+
+        if (!shippingDetails.country.trim()) {
+            errors.country = 'Country is required';
+            isValid = false;
+        }
+
+        // Clear previous step 3 errors and set new ones
+        setValidationErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors.companyName;
+            delete newErrors.email;
+            delete newErrors.address;
+            delete newErrors.city;
+            delete newErrors.pincode;
+            delete newErrors.country;
+            return { ...newErrors, ...errors };
+        });
+        return isValid;
+    };
 
     // Fetch leads for dropdown
     const fetchLeads = async () => {
@@ -157,9 +264,19 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
         }
     }, [selectedLead]);
 
+
     const handleNext = () => {
-        if (currentStep < 4) {
-            setCurrentStep(currentStep + 1);
+        if (currentStep === 1) {
+            if (validateStep1()) {
+                setCurrentStep(2);
+            }
+        } else if (currentStep === 2) {
+            // Step 2 is view-only, no validation needed
+            setCurrentStep(3);
+        } else if (currentStep === 3) {
+            if (validateStep3()) {
+                setCurrentStep(4);
+            }
         }
     };
 
@@ -421,11 +538,16 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Select lead</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Select lead *</label>
                 <select
                     value={selectedLead}
-                    onChange={(e) => setSelectedLead(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm appearance-none cursor-pointer"
+                    onChange={(e) => {
+                        setSelectedLead(e.target.value);
+                        clearFieldError('selectedLead');
+                    }}
+                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm appearance-none cursor-pointer ${
+                        validationErrors.selectedLead ? 'border-2 border-red-500' : ''
+                    }`}
                     disabled={loading}
                 >
                     <option value="">Select a lead</option>
@@ -433,6 +555,9 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
                         <option key={lead.LeadId} value={lead.LeadId}>{lead.Name}</option>
                     ))}
                 </select>
+                {validationErrors.selectedLead && (
+                    <p className="text-red-500 text-sm mt-1">{validationErrors.selectedLead}</p>
+                )}
             </div>
 
             <div>
@@ -453,13 +578,21 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Quotation date</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Quotation date *</label>
                 <input
                     type="date"
                     value={quotationDate}
-                    onChange={(e) => setQuotationDate(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm"
+                    onChange={(e) => {
+                        setQuotationDate(e.target.value);
+                        clearFieldError('quotationDate');
+                    }}
+                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${
+                        validationErrors.quotationDate ? 'border-2 border-red-500' : ''
+                    }`}
                 />
+                {validationErrors.quotationDate && (
+                    <p className="text-red-500 text-sm mt-1">{validationErrors.quotationDate}</p>
+                )}
             </div>
         </div>
     );
@@ -567,70 +700,120 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Company Name *</label>
                 <input
                     type="text"
                     value={shippingDetails.companyName}
-                    onChange={(e) => setShippingDetails({ ...shippingDetails, companyName: e.target.value })}
+                    onChange={(e) => {
+                        setShippingDetails({ ...shippingDetails, companyName: e.target.value });
+                        clearFieldError('companyName');
+                    }}
                     placeholder="Company name"
-                    className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm"
+                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${
+                        validationErrors.companyName ? 'border-2 border-red-500' : ''
+                    }`}
                 />
+                {validationErrors.companyName && (
+                    <p className="text-red-500 text-sm mt-1">{validationErrors.companyName}</p>
+                )}
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email address</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email address *</label>
                 <input
                     type="email"
                     value={shippingDetails.email}
-                    onChange={(e) => setShippingDetails({ ...shippingDetails, email: e.target.value })}
+                    onChange={(e) => {
+                        setShippingDetails({ ...shippingDetails, email: e.target.value });
+                        clearFieldError('email');
+                    }}
                     placeholder="john.doe@gmail.com"
-                    className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm"
+                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${
+                        validationErrors.email ? 'border-2 border-red-500' : ''
+                    }`}
                 />
+                {validationErrors.email && (
+                    <p className="text-red-500 text-sm mt-1">{validationErrors.email}</p>
+                )}
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Address *</label>
                 <textarea
                     value={shippingDetails.address}
-                    onChange={(e) => setShippingDetails({ ...shippingDetails, address: e.target.value })}
+                    onChange={(e) => {
+                        setShippingDetails({ ...shippingDetails, address: e.target.value });
+                        clearFieldError('address');
+                    }}
                     placeholder="Flat no., Street name, area"
                     rows={4}
-                    className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm resize-none"
+                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm resize-none ${
+                        validationErrors.address ? 'border-2 border-red-500' : ''
+                    }`}
                 />
+                {validationErrors.address && (
+                    <p className="text-red-500 text-sm mt-1">{validationErrors.address}</p>
+                )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">City, state</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">City, state *</label>
                     <input
                         type='text'
                         placeholder='City, State'
                         value={shippingDetails.city}
-                        onChange={(e) => setShippingDetails({ ...shippingDetails, city: e.target.value })}
-                        className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm"
+                        onChange={(e) => {
+                            setShippingDetails({ ...shippingDetails, city: e.target.value });
+                            clearFieldError('city');
+                        }}
+                        className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${
+                            validationErrors.city ? 'border-2 border-red-500' : ''
+                        }`}
                     />
+                    {validationErrors.city && (
+                        <p className="text-red-500 text-sm mt-1">{validationErrors.city}</p>
+                    )}
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Pincode</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Pincode *</label>
                     <input
                         type="text"
                         value={shippingDetails.pincode}
-                        onChange={(e) => setShippingDetails({ ...shippingDetails, pincode: e.target.value })}
-                        placeholder="Pincode"
-                        className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm"
+                        onChange={(e) => {
+                            // Only allow numeric input and max 6 digits
+                            const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                            setShippingDetails({ ...shippingDetails, pincode: value });
+                            clearFieldError('pincode');
+                        }}
+                        placeholder="123456"
+                        className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${
+                            validationErrors.pincode ? 'border-2 border-red-500' : ''
+                        }`}
                     />
+                    {validationErrors.pincode && (
+                        <p className="text-red-500 text-sm mt-1">{validationErrors.pincode}</p>
+                    )}
                 </div>
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Country *</label>
                 <input
                     type='text'
                     placeholder='Country'
                     value={shippingDetails.country}
-                    onChange={(e) => setShippingDetails({ ...shippingDetails, country: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm"
+                    onChange={(e) => {
+                        setShippingDetails({ ...shippingDetails, country: e.target.value });
+                        clearFieldError('country');
+                    }}
+                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${
+                        validationErrors.country ? 'border-2 border-red-500' : ''
+                    }`}
                 />
+                {validationErrors.country && (
+                    <p className="text-red-500 text-sm mt-1">{validationErrors.country}</p>
+                )}
             </div>
         </div>
     );
@@ -827,15 +1010,11 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
 
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Terms</label>
-                <select
+                <input type="text"
                     value={terms}
                     onChange={(e) => setTerms(e.target.value)}
                     className="w-full px-3 py-2 bg-gray-100 rounded text-sm"
-                >
-                    <option value="">-- Select Option --</option>
-                    <option value="net30">Net 30</option>
-                    <option value="net60">Net 60</option>
-                </select>
+                />
             </div>
 
             {/* Total Amount Details */}
