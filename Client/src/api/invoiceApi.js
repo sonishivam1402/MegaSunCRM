@@ -1,9 +1,12 @@
 import API from "./axios";
 
-export const getQuotationPdf = async (id) => {
+export const getQuotationPdf = async (id, type) => {
     try {
         const res = await API.get(`/invoice/${id}`, {
             responseType: 'blob',
+            params: {
+                type: type
+            }
         });
         return res;
     } catch (err) {
