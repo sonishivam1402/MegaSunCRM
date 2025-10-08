@@ -3,9 +3,23 @@ import PDFDocument from "pdfkit";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
+import axios from 'axios';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+let logoCache = null; // Cache at module level
+
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+
+async function getLogoBuffer() {
+    if (logoCache) {
+        return logoCache;
+    }
+    
+    const logoUrl = 'https://megakitchensystem.in/wp-content/uploads/2019/05/MegaSun_PNG.png';
+    const response = await axios.get(logoUrl, { responseType: 'arraybuffer' });
+    logoCache = Buffer.from(response.data);
+    return logoCache;
+}
 
 // Helper function to convert database data to PDF format
 function convertToPDFFormat(dbData) {
@@ -152,16 +166,10 @@ export const getQuotationPdf = async (req, res, next) => {
 
         // Logo area (left side)
         try {
-            // Try to load and display the logo image
-            const logoPath = path.join(__dirname, '../../public/images/logo.png');
-            //console.log('Logo path:', logoPath);
-            const imageBuffer = fs.readFileSync(logoPath);
+            const imageBuffer = await getLogoBuffer();
             doc.image(imageBuffer, leftMargin, yPos, { width: 100, height: 50 });
-            //doc.image(logoPath, leftMargin, yPos, { width: 100, height: 50 });
         } catch (error) {
-            // Fallback to text if image not found
-            console.log('Error:', error);
-            console.log('Logo image not found, using text fallback');
+            console.log('Error loading logo:', error.message);
             doc.rect(leftMargin, yPos, 100, 50).stroke();
             doc.fontSize(10).font('Helvetica-Bold').text('MEGASUN', leftMargin + 30, yPos + 20);
         }
@@ -350,18 +358,17 @@ export const getQuotationPdf = async (req, res, next) => {
             .lineTo(leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + rateWidth + taxWidth, yPos + totalRowHeight).stroke();
 
         doc.fontSize(8).font('Helvetica-Bold')
-            .text('Total ', leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + rateWidth, yPos + 3, { width: taxWidth, align: 'right' })
+            .text('Total ', leftMargin + itemWidth + hsnWidth + qtyWidth + rateWidth + 10, yPos + 3, { width: taxWidth, align: 'right' })
             .text(`Rs. ${quotationData.totals.subtotal.toLocaleString('en-IN')}.00`, leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + rateWidth + taxWidth + 2, yPos + 3, { width: amountWidth - 4, align: 'right' });
 
         yPos += totalRowHeight + 5;
 
-        // Bottom section - Bank Details, Sales Rep, Tax info
+        // Bottom section - 3 sections: Bank Details, Sales Rep, Tax info
         const bottomSectionHeight = 65;
-        const leftBoxWidth = pageWidth * 0.5;
-        const rightBoxWidth = pageWidth * 0.5;
+        const sectionWidth = pageWidth / 3; // Divide into 3 equal sections
 
-        // Left box - Bank Details
-        doc.rect(leftMargin, yPos, leftBoxWidth, bottomSectionHeight).stroke();
+        // Section 1 - Bank Details
+        doc.rect(leftMargin, yPos, sectionWidth, bottomSectionHeight).stroke();
 
         doc.fontSize(8).font('Helvetica-Bold')
             .text('BANK DETAILS', leftMargin + 3, yPos + 3);
@@ -370,29 +377,38 @@ export const getQuotationPdf = async (req, res, next) => {
             .text(`Bank Name: ${quotationData.bank.name}`, leftMargin + 3, yPos + 13)
             .text(`A/C Name: ${quotationData.bank.accountName}`, leftMargin + 3, yPos + 21)
             .text(`A/C. NO.: ${quotationData.bank.accountNo}`, leftMargin + 3, yPos + 29)
-            .text(`IFSC Code: ${quotationData.bank.ifsc} | Swift Code: ${quotationData.bank.swift}`, leftMargin + 3, yPos + 37)
-            .text(`Branch: ${quotationData.bank.branch}`, leftMargin + 3, yPos + 45);
+            .text(`IFSC Code: ${quotationData.bank.ifsc}`, leftMargin + 3, yPos + 37)
+            .text(`Swift Code: ${quotationData.bank.swift}`, leftMargin + 3, yPos + 45)
+            .text(`Branch: ${quotationData.bank.branch}`, leftMargin + 3, yPos + 53);
 
-        // Right box - Sales Rep and tax
-        const rightBoxStart = leftMargin + leftBoxWidth;
-        doc.rect(rightBoxStart, yPos, rightBoxWidth, 40).stroke();
+        // Section 2 - Sales Representative
+        const salesRepStart = leftMargin + sectionWidth;
+        doc.rect(salesRepStart, yPos, sectionWidth, bottomSectionHeight).stroke();
 
         doc.fontSize(8).font('Helvetica-Bold')
-            .text('SALES REPRESENTATIVE', rightBoxStart + 3, yPos + 3);
+            .text('SALES REPRESENTATIVE', salesRepStart + 3, yPos + 3);
 
         doc.fontSize(7).font('Helvetica')
-            .text(`Name: ${quotationData.salesRep.name}`, rightBoxStart + 3, yPos + 13)
-            .text(`Mobile Number: ${quotationData.salesRep.mobile}`, rightBoxStart + 3, yPos + 21)
-            .text(`Email Address: ${quotationData.salesRep.email}`, rightBoxStart + 3, yPos + 29);
+            .text(`Name: ${quotationData.salesRep.name}`, salesRepStart + 3, yPos + 13)
+            .text(`Mobile Number: ${quotationData.salesRep.mobile}`, salesRepStart + 3, yPos + 21)
+            .text(`Email Address: ${quotationData.salesRep.email}`, salesRepStart + 3, yPos + 29);
 
-        const taxYPos = yPos + 40;
-        doc.rect(rightBoxStart, taxYPos, rightBoxWidth, 25).stroke();
+        // Section 3 - Tax Info (2 rows)
+        const taxInfoStart = leftMargin + (sectionWidth * 2);
+        const taxRowHeight = bottomSectionHeight / 2; // Split into 2 equal rows
 
+        // Tax row
+        doc.rect(taxInfoStart, yPos, sectionWidth, taxRowHeight).stroke();
+        const taxCenterY = yPos + (taxRowHeight / 2) - 3; // Center vertically
         doc.fontSize(7).font('Helvetica')
-            .text(`(+ Add Tax) IGST: Rs. ${quotationData.totals.igst.toLocaleString('en-IN')}.00`, rightBoxStart + 3, taxYPos + 3, { width: rightBoxWidth - 6, align: 'right' });
+            .text(`(+ Add Tax) IGST: Rs. ${quotationData.totals.igst.toLocaleString('en-IN')}.00`, taxInfoStart + 3, taxCenterY, { width: sectionWidth - 6, align: 'center' });
 
+        // Grand Total row
+        const grandTotalYPos = yPos + taxRowHeight;
+        doc.rect(taxInfoStart, grandTotalYPos, sectionWidth, taxRowHeight).stroke();
+        const grandTotalCenterY = grandTotalYPos + (taxRowHeight / 2) - 4; // Center vertically
         doc.fontSize(9).font('Helvetica-Bold')
-            .text(`GRAND TOTAL: Rs. ${quotationData.totals.grandTotal.toLocaleString('en-IN')}.00`, rightBoxStart + 3, taxYPos + 13, { width: rightBoxWidth - 6, align: 'right' });
+            .text(`GRAND TOTAL: Rs. ${quotationData.totals.grandTotal.toLocaleString('en-IN')}.00`, taxInfoStart + 3, grandTotalCenterY, { width: sectionWidth - 6, align: 'center' });
 
         yPos += bottomSectionHeight + 5;
 
@@ -432,8 +448,8 @@ export const getQuotationPdf = async (req, res, next) => {
         // Logo in terms section
         if (type === 'quotation') {
             try {
-                const logoPath = path.join(__dirname, '../../public/images/logo.png');
-                doc.image(logoPath, leftMargin + pageWidth * 0.7, yPos + 60, { width: 80, height: 40 });
+                const imageBuffer = await getLogoBuffer();
+                doc.image(imageBuffer, leftMargin + pageWidth * 0.7, yPos + 60, { width: 80, height: 40 });
             } catch (error) {
                 // Fallback to text if image not found
                 doc.rect(leftMargin + pageWidth * 0.7, yPos + 60, 80, 40).stroke();

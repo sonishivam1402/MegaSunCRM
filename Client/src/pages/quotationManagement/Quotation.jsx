@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import AddIcon from '../../assets/icons/AddIcon';
 import ThreeDotIcon from '../../assets/icons/ThreeDotIcon';
 import AddNewQuotationModal from './AddNewQuotation';
-import { deleteQuotationById, getQuotations } from '../../api/quotation';
+import { deleteQuotationById, exportQuotation, getQuotations } from '../../api/quotation';
 import { getAllUsersDD } from '../../api/userApi';
 import { toast } from 'react-toastify';
 import ViewLastFollowUp from './ViewLastFollowUp';
@@ -199,8 +199,45 @@ const Quotation = ({ refreshKey }) => {
         setActiveDropdown(activeDropdown === quotationId ? null : quotationId);
     };
 
-    const handleExport = () => {
-        console.log('Export all quotations');
+    const handleExport = async () => {
+        setLoading(true);
+        try {
+            const response = await exportQuotation(); // axios response
+            const blob = response.data;              // <-- axios puts the Blob here
+
+            // Try to read filename from Content-Disposition
+            let filename = 'export_' + Date.now() + '.csv';
+            const disp = response.headers?.['content-disposition'] || '';
+            const m = /filename\*=UTF-8''([^;]+)|filename="([^"]+)"/i.exec(disp);
+            if (m) filename = decodeURIComponent(m[1] || m[2]);
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+
+            const now = new Date();
+            const pad = (n) => String(n).padStart(2, '0');
+
+            // Format as YYYYMMDD_HHMMSS
+            const formatted =
+                now.getFullYear() +
+                pad(now.getMonth() + 1) +
+                pad(now.getDate()) + '_' +
+                pad(now.getHours()) +
+                pad(now.getMinutes()) +
+                pad(now.getSeconds());
+
+            a.download = `export_quotations_${formatted}.csv`;
+            // a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Export failed:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleAddQuotation = () => {
@@ -388,7 +425,7 @@ const Quotation = ({ refreshKey }) => {
             {/* Table */}
             <div className="px-6 flex-1 overflow-y-auto">
                 <table className="w-full">
-                    <thead className="sticky top-0 bg-[#f1f0e9]">
+                    <thead>
                         <tr className="border-b border-gray-300">
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">QUOTATION DETAILS</th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">QUOTATION BY</th>
@@ -480,9 +517,9 @@ const Quotation = ({ refreshKey }) => {
                                                             <button onClick={() => handleDownloadQuotation(quotation.QuotationId, "quotation")} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
                                                                 Download Quotation
                                                             </button>
-                                                            <button onClick={() => handleDownloadQuotation(quotation.QuotationId, "performaInvoice")} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
+                                                            {/* <button onClick={() => handleDownloadQuotation(quotation.QuotationId, "performaInvoice")} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
                                                                 Download Performa Invoice
-                                                            </button>
+                                                            </button> */}
                                                             <button
                                                                 onClick={() => {
                                                                     setLastFollowUpModalOpen(true);
