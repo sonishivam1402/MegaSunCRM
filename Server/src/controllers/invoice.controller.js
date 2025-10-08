@@ -1,5 +1,11 @@
 import { sql, poolPromise } from "../database/db.js";
 import PDFDocument from "pdfkit";
+import path from "path";
+import { fileURLToPath } from "url";
+import fs from "fs";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Helper function to convert database data to PDF format
 function convertToPDFFormat(dbData) {
@@ -108,6 +114,7 @@ function numberToWords(num) {
 export const getQuotationPdf = async (req, res, next) => {
     try {
         const quotationId = req.params.id;
+        const type = req.query.type;
         const pool = await poolPromise;
         const result = await pool
             .request()
@@ -143,9 +150,21 @@ export const getQuotationPdf = async (req, res, next) => {
         const rightMargin = doc.page.width - 30;
         let yPos = 30;
 
-        // Logo placeholder area (left side)
-        doc.rect(leftMargin, yPos, 100, 50).stroke();
-        doc.fontSize(10).font('Helvetica-Bold').text('MEGASUN', leftMargin + 30, yPos + 20);
+        // Logo area (left side)
+        try {
+            // Try to load and display the logo image
+            const logoPath = path.join(__dirname, '../../public/images/logo.png');
+            //console.log('Logo path:', logoPath);
+            const imageBuffer = fs.readFileSync(logoPath);
+            doc.image(imageBuffer, leftMargin, yPos, { width: 100, height: 50 });
+            //doc.image(logoPath, leftMargin, yPos, { width: 100, height: 50 });
+        } catch (error) {
+            // Fallback to text if image not found
+            console.log('Error:', error);
+            console.log('Logo image not found, using text fallback');
+            doc.rect(leftMargin, yPos, 100, 50).stroke();
+            doc.fontSize(10).font('Helvetica-Bold').text('MEGASUN', leftMargin + 30, yPos + 20);
+        }
 
         // Company name and details (right side)
         doc.fontSize(14).font('Helvetica-Bold')
@@ -184,7 +203,7 @@ export const getQuotationPdf = async (req, res, next) => {
         // Black header for "SALES QUOTATION"
         doc.rect(leftMargin, yPos, pageWidth, 20).fillAndStroke('#000000', '#000000');
         doc.fontSize(12).font('Helvetica-Bold').fillColor('#ffffff')
-            .text('SALES QUOTATION', leftMargin, yPos + 5, {
+            .text(type === 'quotation' ? 'SALES QUOTATION' : 'PERFORMA INVOICE', leftMargin, yPos + 5, {
                 width: pageWidth,
                 align: 'center'
             });
@@ -410,9 +429,20 @@ export const getQuotationPdf = async (req, res, next) => {
             termsY += 12;
         });
 
-        // Logo placeholder in terms section
-        doc.rect(leftMargin + pageWidth * 0.7, yPos + 60, 80, 40).stroke();
-        doc.fontSize(10).font('Helvetica-Bold').text('MEGASUN', leftMargin + pageWidth * 0.7 + 20, yPos + 75);
+        // Logo in terms section
+        if (type === 'quotation') {
+            try {
+                const logoPath = path.join(__dirname, '../../public/images/logo.png');
+                doc.image(logoPath, leftMargin + pageWidth * 0.7, yPos + 60, { width: 80, height: 40 });
+            } catch (error) {
+                // Fallback to text if image not found
+                doc.rect(leftMargin + pageWidth * 0.7, yPos + 60, 80, 40).stroke();
+                doc.fontSize(10).font('Helvetica-Bold').text('MEGASUN', leftMargin + pageWidth * 0.7 + 20, yPos + 75);
+            }
+        } else {
+            doc.rect(leftMargin + pageWidth * 0.7, yPos + 60, 80, 40).stroke();
+            doc.fontSize(10).font('Helvetica-Bold').text('MEGASUN', leftMargin + pageWidth * 0.7 + 20, yPos + 75);
+        }
 
         // Authorized Signatory
         doc.fontSize(8).font('Helvetica')
