@@ -88,7 +88,7 @@ export const updateLeadById = async (req, res, next) => {
         sql.NVarChar(sql.MAX),
         JSON.stringify(lead.productMappings)
       )
-      .execute("sp_UpdateLeadByLeadId");
+      .execute("sp_UpdateLeadByLeadId_v1");
 
     if (result.recordset[0].Success) {
       res.status(201).json(result.recordsets[0]);
