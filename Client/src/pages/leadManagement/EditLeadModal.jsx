@@ -144,7 +144,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
             ...prev,
             productMappings: [
                 ...prev.productMappings,
-                { ProductId: '', ProductName: '', Quantity: 1 }
+                { ProductId: null, ProductName: '', Quantity: 1 }  // Explicitly set ProductId to null
             ]
         }));
     };
@@ -182,8 +182,10 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
     };
 
     const validateStep2 = () => {
-        return formData.productMappings.length > 0 &&
-            formData.productMappings.every(p => p.ProductId && p.Quantity > 0);
+    return formData.productMappings.length > 0 &&
+        formData.productMappings.every(p => 
+            (p.ProductId || p.ProductName) && p.Quantity > 0
+        );
     };
 
     // Check if individual field is invalid
@@ -255,7 +257,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
         if (validateStep2()) {
             // Parse location into city, state, pincode, address
             const locationParts = formData.location.split(',').map(part => part.trim());
-
+            
             const submitData = {
                 lead: {
                     id: leadId,
@@ -273,6 +275,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                     userId: formData.userId,
                     productMappings: formData.productMappings
                 }
+                
             };
 
             try {
@@ -669,39 +672,103 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                                             </label>
 
                                             {formData.productMappings.map((product, index) => (
-                                                <div key={index} className="flex gap-2 mb-3 items-start">
-                                                    <div className="flex-1 relative">
-                                                        <select
-                                                            value={product.ProductId || ''}
-                                                            onChange={(e) => updateProduct(index, 'ProductId', e.target.value)}
-                                                            className="w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-500 max-h-40 overflow-y-auto"
-                                                        >
-                                                            <option value="">Select product</option>
-                                                            {productOptions.map(prod => (
-                                                                <option key={prod.productId} value={prod.productId}>{prod.productName}</option>
-                                                            ))}
-                                                        </select>
-                                                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                                            </svg>
+                                                <div key={index} className="mb-4">
+                                                    {/* Show IndiaMart product name if ProductId is null/undefined */}
+                                                    {(!product.ProductId && product.ProductName) ? (
+                                                        <div className="space-y-2">
+                                                            <div className="flex gap-2 items-start">
+                                                                <div className="flex-1">
+                                                                    <input
+                                                                        type="text"
+                                                                        value={product.ProductName || ''}
+                                                                        disabled
+                                                                        className="w-full px-4 py-3 bg-yellow-50 border border-yellow-300 rounded text-gray-700 cursor-not-allowed"
+                                                                    />
+                                                                    <p className="text-xs text-yellow-700 mt-1">
+                                                                        ⚠️ This is an IndiaMart product (not in our product list). You can keep it or replace it below.
+                                                                    </p>
+                                                                </div>
+                                                                <input
+                                                                    type="number"
+                                                                    value={product.Quantity || 1}
+                                                                    onChange={(e) => updateProduct(index, 'Quantity', e.target.value)}
+                                                                    placeholder="Qty"
+                                                                    min="1"
+                                                                    className="w-20 px-3 py-3 bg-gray-200 border-0 rounded text-gray-700 focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-500"
+                                                                />
+                                                                {formData.productMappings.length > 1 && (
+                                                                    <button
+                                                                        onClick={() => removeProduct(index)}
+                                                                        className="p-3 text-red-600 hover:text-red-800 transition-colors"
+                                                                    >
+                                                                        <TrashIcon size={16} />
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                            
+                                                            {/* Option to replace with real product */}
+                                                            <div className="flex gap-2 items-center pl-2">
+                                                                <span className="text-xs text-gray-600">Replace with:</span>
+                                                                <div className="flex-1 relative">
+                                                                    <select
+                                                                        value=""
+                                                                        onChange={(e) => {
+                                                                            if (e.target.value) {
+                                                                                updateProduct(index, 'ProductId', e.target.value);
+                                                                            }
+                                                                        }}
+                                                                        className="w-full px-3 py-2 bg-gray-200 border-0 rounded text-sm text-gray-700 appearance-none focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-500"
+                                                                    >
+                                                                        <option value="">Select a product from our list</option>
+                                                                        {productOptions.map(prod => (
+                                                                            <option key={prod.productId} value={prod.productId}>{prod.productName}</option>
+                                                                        ))}
+                                                                    </select>
+                                                                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                                                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                                        </svg>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <input
-                                                        type="number"
-                                                        value={product.Quantity || 1}
-                                                        onChange={(e) => updateProduct(index, 'Quantity', e.target.value)}
-                                                        placeholder="Qty"
-                                                        min="1"
-                                                        className="w-20 px-3 py-3 bg-gray-200 border-0 rounded text-gray-700 focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-500"
-                                                    />
-                                                    {formData.productMappings.length > 1 && (
-                                                        <button
-                                                            onClick={() => removeProduct(index)}
-                                                            className="p-3 text-red-600 hover:text-red-800 transition-colors"
-                                                        >
-                                                            <TrashIcon size={16} />
-                                                        </button>
+                                                    ) : (
+                                                        /* Regular product dropdown for real products */
+                                                        <div className="flex gap-2 items-start">
+                                                            <div className="flex-1 relative">
+                                                                <select
+                                                                    value={product.ProductId || ''}
+                                                                    onChange={(e) => updateProduct(index, 'ProductId', e.target.value)}
+                                                                    className="w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-500"
+                                                                >
+                                                                    <option value="">Select product</option>
+                                                                    {productOptions.map(prod => (
+                                                                        <option key={prod.productId} value={prod.productId}>{prod.productName}</option>
+                                                                    ))}
+                                                                </select>
+                                                                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                                                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                                    </svg>
+                                                                </div>
+                                                            </div>
+                                                            <input
+                                                                type="number"
+                                                                value={product.Quantity || 1}
+                                                                onChange={(e) => updateProduct(index, 'Quantity', e.target.value)}
+                                                                placeholder="Qty"
+                                                                min="1"
+                                                                className="w-20 px-3 py-3 bg-gray-200 border-0 rounded text-gray-700 focus:outline-none focus:bg-white focus:ring-2 focus:ring-gray-500"
+                                                            />
+                                                            {formData.productMappings.length > 1 && (
+                                                                <button
+                                                                    onClick={() => removeProduct(index)}
+                                                                    className="p-3 text-red-600 hover:text-red-800 transition-colors"
+                                                                >
+                                                                    <TrashIcon size={16} />
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     )}
                                                 </div>
                                             ))}
