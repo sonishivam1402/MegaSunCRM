@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { getQuotationById, updateQuotationById } from '../../api/quotation';
+import { getOrderById, updateOrderById } from '../../api/orderApi';
 import { getAllProducts } from '../../api/productApi';
 import { toast } from 'react-toastify';
 
-const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
+const EditOrderModal = ({ isOpen, onClose, onSuccess, orderId }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
@@ -11,11 +11,11 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
   // Validation
   const [validationErrors, setValidationErrors] = useState({});
 
-  // Step 1: Lead and quotation details (lead read-only, date editable)
+  // Step 1: Lead and order details (lead read-only, date editable)
   const [leadText, setLeadText] = useState('');
   const [salesRepresentative, setSalesRepresentative] = useState('');
-  const [quotationDate, setQuotationDate] = useState('');
-  const [quotationBy, setQuotationBy] = useState(null);
+  const [orderDate, setOrderDate] = useState('');
+  const [orderBy, setOrderBy] = useState(null);
 
   // Step 2: Billing details (view-only)
   const [billingDetails, setBillingDetails] = useState({
@@ -42,7 +42,7 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
   });
 
   // Step 4: Payment & Tax Details
-  const [quotationType, setQuotationType] = useState('domestic');
+  const [orderType, setOrderType] = useState('domestic');
   const [currency, setCurrency] = useState('rupees');
   const [productOptions, setProductOptions] = useState([]);
 
@@ -88,11 +88,11 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
   const validateStep1 = () => {
     const errors = {};
     let ok = true;
-    if (!quotationDate) {
-      errors.quotationDate = 'Please select quotation date';
+    if (!orderDate) {
+      errors.orderDate = 'Please select order date';
       ok = false;
     }
-    setValidationErrors(prev => ({ ...prev, quotationDate: errors.quotationDate }));
+    setValidationErrors(prev => ({ ...prev, orderDate: errors.orderDate }));
     return ok;
   };
 
@@ -123,54 +123,54 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
     }
   };
 
-  const loadQuotation = async () => {
-    if (!quotationId) return;
+  const loadOrder = async () => {
+    if (!orderId) return;
     setLoadingData(true);
     try {
-      const res = await getQuotationById(quotationId);
-      const quotation = res?.[0]?.[0] || {};
+      const res = await getOrderById(orderId);
+      const order = res?.[0]?.[0] || {};
       const products = res?.[1] || [];
 
       // Step 1
-      setLeadText(quotation.BillingCompanyName || '');
-      setSalesRepresentative(quotation.LeadAssignedTo || '');
-      setQuotationDate(quotation.QuotationDate ? quotation.QuotationDate.substring(0, 10) : '');
-      setQuotationBy(quotation.QuotationById || null);
+      setLeadText(order.BillingCompanyName || '');
+      setSalesRepresentative(order.LeadAssignedTo || '');
+      setOrderDate(order.OrderDate ? order.OrderDate.substring(0, 10) : '');
+      setOrderBy(order.OrderById || null);
 
       // Step 2
       setBillingDetails({
-        customerName: quotation.BillingCompanyName || '',
-        mobileNumber: quotation.ContactNumber || '',
-        gstNumber: quotation.GSTNumber || '',
-        email: quotation.BillingEmail || '',
-        address: quotation.BillingAddress || '',
-        city: quotation.BillingCity || '',
-        state: quotation.BillingState || '',
-        pincode: quotation.BillingPincode || '',
-        country: quotation.BillingCountry || ''
+        customerName: order.BillingCompanyName || '',
+        mobileNumber: order.ContactNumber || '',
+        gstNumber: order.GSTNumber || '',
+        email: order.BillingEmail || '',
+        address: order.BillingAddress || '',
+        city: order.BillingCity || '',
+        state: order.BillingState || '',
+        pincode: order.BillingPincode || '',
+        country: order.BillingCountry || ''
       });
 
       // Step 3
       setShippingDetails({
-        companyName: quotation.ShippingCompanyName || '',
-        email: quotation.ShippingEmailAddress || '',
-        address: quotation.ShippingAddress || '',
-        city: quotation.ShippingCity || '',
-        state: quotation.ShippingState || '',
-        pincode: (quotation.ShippingPincode || '').toString(),
-        country: quotation.ShippingCountry || ''
+        companyName: order.ShippingCompanyName || '',
+        email: order.ShippingEmailAddress || '',
+        address: order.ShippingAddress || '',
+        city: order.ShippingCity || '',
+        state: order.ShippingState || '',
+        pincode: (order.ShippingPincode || '').toString(),
+        country: order.ShippingCountry || ''
       });
 
       // Step 4
-      setQuotationType(quotation.IsDomestic ? 'domestic' : 'international');
+      setOrderType(order.IsDomestic ? 'domestic' : 'international');
       const currencyMapBack = { INR: 'rupees', USD: 'dollar', GBP: 'pound', EUR: 'euro' };
-      setCurrency(currencyMapBack[quotation.Currency] || 'rupees');
-      setExpectedDispatchDays(quotation.ExpectedDispatchDays?.toString?.() || '');
-      setPaymentTerms(quotation.PaymentTerms || '');
-      setNotes(quotation.Notes || '');
-      setTerms(quotation.Terms || '');
-      setTaxFormat(quotation.TaxFormat || 'SGST - CGST');
-      setRoundOff((quotation.RoundOff != null ? Number(quotation.RoundOff) : 0).toFixed(2));
+      setCurrency(currencyMapBack[order.Currency] || 'rupees');
+      setExpectedDispatchDays(order.ExpectedDispatchDays?.toString?.() || '');
+      setPaymentTerms(order.PaymentTerms || '');
+      setNotes(order.Notes || '');
+      setTerms(order.Terms || '');
+      setTaxFormat(order.TaxFormat || 'SGST - CGST');
+      setRoundOff((order.RoundOff != null ? Number(order.RoundOff) : 0).toFixed(2));
 
       // Items
       if (Array.isArray(products) && products.length) {
@@ -181,7 +181,7 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
           const discount = Number(p.Discount) || 0;
           const taxPercent = Number(p.Tax) || 0;
           const net = basic - (basic * discount / 100);
-          const taxAmount = (quotation.IsDomestic ? (net * taxPercent / 100) : 0);
+          const taxAmount = (order.IsDomestic ? (net * taxPercent / 100) : 0);
           const total = net + taxAmount;
           return {
             id: idx + 1,
@@ -201,8 +201,8 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
         setItemRows(mapped);
       }
     } catch (e) {
-      console.error('Error loading quotation:', e);
-      toast.error('Failed to load quotation');
+      console.error('Error loading order:', e);
+      toast.error('Failed to load order');
     } finally {
       setLoadingData(false);
     }
@@ -211,11 +211,11 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
   useEffect(() => {
     if (isOpen) {
       getProducts();
-      loadQuotation();
+      loadOrder();
       setCurrentStep(1);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, quotationId]);
+  }, [isOpen, orderId]);
 
   const handleNext = () => {
     if (currentStep === 1) {
@@ -254,7 +254,7 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
         const discountAmount = basicAmount * (discountPercent / 100);
         const netAmount = basicAmount - discountAmount;
         let taxAmount = 0;
-        if (quotationType === 'domestic') taxAmount = netAmount * (taxPercent / 100);
+        if (orderType === 'domestic') taxAmount = netAmount * (taxPercent / 100);
         updated.totalAmount = (netAmount + taxAmount).toFixed(2);
       }
       return updated;
@@ -302,7 +302,7 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
     const netTotal = basicAmount - totalDiscount;
 
     let sgst = 0, cgst = 0, igst = 0, taxAmount = 0;
-    if (quotationType === 'domestic') {
+    if (orderType === 'domestic') {
       itemRows.forEach(row => {
         const qty = parseFloat(row.qty) || 0;
         const rate = parseFloat(row.rate) || 0;
@@ -371,8 +371,8 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
       })));
 
       const finalData = {
-        quotationBy: quotationBy,
-        quotationDate: quotationDate,
+        orderBy: orderBy,
+        orderDate: orderDate,
         shippingCompanyName: shippingDetails.companyName,
         shippingEmailAddress: shippingDetails.email,
         shippingAddress: shippingDetails.address,
@@ -380,13 +380,13 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
         shippingState: shippingDetails.state || '',
         shippingPincode: shippingDetails.pincode,
         shippingCountry: shippingDetails.country,
-        isDomestic: quotationType === 'domestic',
+        isDomestic: orderType === 'domestic',
         currency: currencyMap[currency],
         expectedDispatchDays: parseInt(expectedDispatchDays) || null,
         paymentTerms: paymentTerms,
         notes: notes,
         terms: terms,
-        taxFormat: quotationType === 'domestic' ? taxFormat : null,
+        taxFormat: orderType === 'domestic' ? taxFormat : null,
         basicAmount: parseFloat(totals.basicAmount),
         discount: parseFloat(totals.discount),
         total: parseFloat(totals.total),
@@ -400,17 +400,17 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
         productMappings: productMappings
       };
 
-      const res = await updateQuotationById(quotationId, finalData);
+      const res = await updateOrderById(orderId, finalData);
       if (res.status === 201) {
-        toast.success(res.data.Message || 'Quotation updated');
+        toast.success(res.data.Message || 'Order updated');
         onSuccess?.();
         onClose?.();
       } else {
         toast.error(res.data?.Message || 'Failed to update');
       }
     } catch (e) {
-      console.error('Error updating quotation:', e);
-      toast.error('Error updating quotation');
+      console.error('Error updating order:', e);
+      toast.error('Error updating order');
     } finally {
       setLoading(false);
     }
@@ -460,15 +460,15 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Quotation date *</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Order date *</label>
         <input
           type="date"
-          value={quotationDate}
-          onChange={(e) => { setQuotationDate(e.target.value); clearFieldError('quotationDate'); }}
-          className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.quotationDate ? 'border-2 border-red-500' : ''}`}
+          value={orderDate}
+          onChange={(e) => { setOrderDate(e.target.value); clearFieldError('orderDate'); }}
+          className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.orderDate ? 'border-2 border-red-500' : ''}`}
         />
-        {validationErrors.quotationDate && (
-          <p className="text-red-500 text-sm mt-1">{validationErrors.quotationDate}</p>
+        {validationErrors.orderDate && (
+          <p className="text-red-500 text-sm mt-1">{validationErrors.orderDate}</p>
         )}
       </div>
     </div>
@@ -622,14 +622,14 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">Select Quotation Type *</label>
+        <label className="block text-sm font-medium text-gray-700 mb-3">Select Order Type *</label>
         <div className="flex items-center gap-6">
           <label className="flex items-center gap-2 cursor-pointer">
-            <input type="radio" value="domestic" checked={quotationType === 'domestic'} onChange={(e) => setQuotationType(e.target.value)} className="w-4 h-4 text-[#0d4715]" />
+            <input type="radio" value="domestic" checked={orderType === 'domestic'} onChange={(e) => setOrderType(e.target.value)} className="w-4 h-4 text-[#0d4715]" />
             <span className="text-sm">Domestic-India</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
-            <input type="radio" value="international" checked={quotationType === 'international'} onChange={(e) => setQuotationType(e.target.value)} className="w-4 h-4 text-[#0d4715]" />
+            <input type="radio" value="international" checked={orderType === 'international'} onChange={(e) => setOrderType(e.target.value)} className="w-4 h-4 text-[#0d4715]" />
             <span className="text-sm">International</span>
           </label>
         </div>
@@ -762,7 +762,7 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
       <div className="bg-gray-50 p-4 rounded-lg">
         <h4 className="font-semibold text-gray-800 mb-4">Total Amount Details</h4>
 
-        {quotationType === 'domestic' && (
+        {orderType === 'domestic' && (
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">Select Tax Format *</label>
             <select value={taxFormat} onChange={(e) => setTaxFormat(e.target.value)} className="w-full px-3 py-2 bg-white border rounded text-sm">
@@ -786,7 +786,7 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
             <input type="text" value={totals.total} readOnly className="w-40 px-3 py-1 bg-gray-100 rounded text-right" />
           </div>
 
-          {quotationType === 'domestic' && (
+          {orderType === 'domestic' && (
             <>
               {taxFormat === 'SGST - CGST' ? (
                 <>
@@ -837,8 +837,8 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
               </svg>
             </button>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Edit quotation</h2>
-              <p className="text-sm text-gray-600">Update quotation details</p>
+              <h2 className="text-xl font-bold text-gray-900">Edit order</h2>
+              <p className="text-sm text-gray-600">Update order details</p>
             </div>
           </div>
           <button onClick={onClose} className="p-1 hover:bg-gray-200 rounded" disabled={loading}>
@@ -884,4 +884,4 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
   );
 };
 
-export default EditQuotationModal;
+export default EditOrderModal;

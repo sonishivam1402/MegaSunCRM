@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { getLeadById, getLeadsDD } from '../../api/leadApi';
 import { getAllProducts } from '../../api/productApi';
-import { createQuotations } from '../../api/quotation';
+import { createNewOrder } from '../../api/orderApi';
 import { toast } from 'react-toastify';
 
-const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
+const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [loadingLeadData, setLoadingLeadData] = useState(false);
@@ -15,7 +15,7 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
     // Step 1: Lead Details
     const [selectedLead, setSelectedLead] = useState('');
     const [salesRepresentative, setSalesRepresentative] = useState('');
-    const [quotationDate, setQuotationDate] = useState('');
+    const [orderDate, setOrderDate] = useState('');
     const [leadOptions, setLeadOptions] = useState([]);
     const [leadData, setLeadData] = useState({});
     const [productData, setProductData] = useState([]);
@@ -45,7 +45,7 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
     });
 
     // Step 4: Payment & Tax Details
-    const [quotationType, setQuotationType] = useState('domestic');
+    const [orderType, setOrderType] = useState('domestic');
     const [currency, setCurrency] = useState('rupees');
     const [productOptions, setProductOptions] = useState([]);
 
@@ -105,8 +105,8 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
             isValid = false;
         }
 
-        if (!quotationDate) {
-            errors.quotationDate = 'Please select quotation date';
+        if (!orderDate) {
+            errors.orderDate = 'Please select order date';
             isValid = false;
         }
 
@@ -114,7 +114,7 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
         setValidationErrors(prev => {
             const newErrors = { ...prev };
             delete newErrors.selectedLead;
-            delete newErrors.quotationDate;
+            delete newErrors.orderDate;
             return { ...newErrors, ...errors };
         });
         return isValid;
@@ -325,7 +325,7 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
 
                     // Step 4: Tax calculation
                     let taxAmount = 0;
-                    if (quotationType === 'domestic') {
+                    if (orderType === 'domestic') {
                         // Net Total × (GST % ÷ 100)
                         taxAmount = netAmount * (taxPercent / 100);
                     } else {
@@ -394,7 +394,7 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
         let igst = 0;
         let taxAmount = 0;
 
-        if (quotationType === 'domestic') {
+        if (orderType === 'domestic') {
             itemRows.forEach(row => {
                 const qty = parseFloat(row.qty) || 0;
                 const rate = parseFloat(row.rate) || 0;
@@ -483,8 +483,8 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
 
             const finalData = {
                 leadId: selectedLead,
-                quotationBy: leadData.AssignedTo || null,
-                quotationDate: quotationDate,
+                orderBy: leadData.AssignedTo || null,
+                orderDate: orderDate,
                 shippingCompanyName: shippingDetails.companyName,
                 shippingEmailAddress: shippingDetails.email,
                 shippingAddress: shippingDetails.address,
@@ -492,13 +492,13 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
                 shippingState: shippingDetails.state || '',
                 shippingPincode: shippingDetails.pincode,
                 shippingCountry: shippingDetails.country,
-                isDomestic: quotationType === 'domestic',
+                isDomestic: orderType === 'domestic',
                 currency: currencyMap[currency],
                 expectedDispatchDays: parseInt(expectedDispatchDays) || null,
                 paymentTerms: paymentTerms,
                 notes: notes,
                 terms: terms,
-                taxFormat: quotationType === 'domestic' ? taxFormat : null,
+                taxFormat: orderType === 'domestic' ? taxFormat : null,
                 basicAmount: parseFloat(totals.basicAmount),
                 discount: parseFloat(totals.discount),
                 total: parseFloat(totals.total),
@@ -513,8 +513,8 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
             };
 
             console.log('Final Data to Submit:', finalData);
-            // API call to create quotation
-            const response = await createQuotations(finalData);
+            // API call to create order
+            const response = await createNewOrder(finalData);
             if (response.status == 201) {
                 toast.success(response.data.Message);
                 onSuccess();
@@ -524,7 +524,7 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
                 toast.error(response.data?.[0]?.Message || response.data?.Message || "Something went wrong");
             }
         } catch (error) {
-            console.error('Error creating quotation:', error);
+            console.error('Error creating order:', error);
         } finally {
             setLoading(false);
         }
@@ -595,20 +595,20 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Quotation date *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Order date *</label>
                 <input
                     type="date"
-                    value={quotationDate}
+                    value={orderDate}
                     onChange={(e) => {
-                        setQuotationDate(e.target.value);
-                        clearFieldError('quotationDate');
+                        setOrderDate(e.target.value);
+                        clearFieldError('orderDate');
                     }}
                     className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${
-                        validationErrors.quotationDate ? 'border-2 border-red-500' : ''
+                        validationErrors.orderDate ? 'border-2 border-red-500' : ''
                     }`}
                 />
-                {validationErrors.quotationDate && (
-                    <p className="text-red-500 text-sm mt-1">{validationErrors.quotationDate}</p>
+                {validationErrors.orderDate && (
+                    <p className="text-red-500 text-sm mt-1">{validationErrors.orderDate}</p>
                 )}
             </div>
         </div>
@@ -841,16 +841,16 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment & Tax Details</h3>
             </div>
 
-            {/* Quotation Type */}
+            {/* Order Type */}
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">Select Quotation Type *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Select Order Type *</label>
                 <div className="flex items-center gap-6">
                     <label className="flex items-center gap-2 cursor-pointer">
                         <input
                             type="radio"
                             value="domestic"
-                            checked={quotationType === 'domestic'}
-                            onChange={(e) => setQuotationType(e.target.value)}
+                            checked={orderType === 'domestic'}
+                            onChange={(e) => setOrderType(e.target.value)}
                             className="w-4 h-4 text-[#0d4715]"
                         />
                         <span className="text-sm">Domestic-India</span>
@@ -859,8 +859,8 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
                         <input
                             type="radio"
                             value="international"
-                            checked={quotationType === 'international'}
-                            onChange={(e) => setQuotationType(e.target.value)}
+                            checked={orderType === 'international'}
+                            onChange={(e) => setOrderType(e.target.value)}
                             className="w-4 h-4 text-[#0d4715]"
                         />
                         <span className="text-sm">International</span>
@@ -1064,7 +1064,7 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
             <div className="bg-gray-50 p-4 rounded-lg">
                 <h4 className="font-semibold text-gray-800 mb-4">Total Amount Details</h4>
 
-                {quotationType === 'domestic' && (
+                {orderType === 'domestic' && (
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">Select Tax Format *</label>
                         <select
@@ -1092,7 +1092,7 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
                         <input type="text" value={totals.total} readOnly className="w-40 px-3 py-1 bg-gray-100 rounded text-right" />
                     </div>
 
-                    {quotationType === 'domestic' && (
+                    {orderType === 'domestic' && (
                         <>
                             {taxFormat === 'SGST - CGST' ? (
                                 <>
@@ -1153,8 +1153,8 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
                             </svg>
                         </button>
                         <div>
-                            <h2 className="text-xl font-bold text-gray-900">New quotation</h2>
-                            <p className="text-sm text-gray-600">Add in the details of the new quotation</p>
+                            <h2 className="text-xl font-bold text-gray-900">New order</h2>
+                            <p className="text-sm text-gray-600">Add in the details of the new order</p>
                         </div>
                     </div>
                     <button
@@ -1213,4 +1213,4 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
     );
 };
 
-export default AddNewQuotationModal;
+export default AddNewOrderModal;
