@@ -28,7 +28,8 @@ export default function TopNavbar() {
         '/leads': 'My Leads',
         '/Followups': 'Follow-ups',
         '/quotation': 'Quotation',
-        '/notifications': 'Notifications'
+        '/notifications': 'Notifications',
+        '/orders': 'Orders'
     };
 
     let currentPageTitle =  'Dashboard';
