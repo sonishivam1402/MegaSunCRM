@@ -11,6 +11,7 @@ import AddLeadStatusModal from './AddLeadStatusModal';
 import NewLeadsTab from './NewLeadsTab';
 import OpenIcon from '../../assets/icons/OpenIcon';
 import { exportLeads } from '../../api/leadApi';
+import { useAuth } from '../../context/AuthContext';
 
 const LeadManagement = () => {
 
@@ -22,6 +23,7 @@ const LeadManagement = () => {
     const [addStatusModalOpen, setAddStatusModalOpen] = useState(false);
     const [addSourceModalOpen, setAddSourceModalOpen] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
+    const { user } = useAuth();
 
     const handleNewCreatedData = () => {
         setRefreshKey(prev => prev + 1);
@@ -110,13 +112,15 @@ const LeadManagement = () => {
                         ))}
                     </div>
                     <div className='flex justify-between items-center gap-2'>
-                        <button
-                            className='p-2 border text-green-900 text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed'
-                            onClick={handleExport}
-                            disabled={loading}
-                        >
-                            <OpenIcon /> Export
-                        </button>
+                        {user.IsAdmin ? (
+                            <button
+                                className='p-2 border text-green-900 text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed'
+                                onClick={handleExport}
+                                disabled={loading}
+                            >
+                                <OpenIcon /> Export
+                            </button>
+                        ) : ""}
                         <button
                             className='p-2 border text-green-900 text-sm flex items-center gap-2'
                             onClick={currentTab?.openModal}

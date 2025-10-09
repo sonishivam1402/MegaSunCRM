@@ -11,6 +11,7 @@ import AddNewFollowUp from './AddNewFollowUp';
 import EditFollowUpComment from './EditFollowUpComment';
 import DetailFollowUpModal from './DetailFollowUpModal';
 import HistoryModal from './HistoryModal';
+import { useAuth } from '../../context/AuthContext';
 
 const FollowUpManagement = () => {
     // State management
@@ -28,7 +29,7 @@ const FollowUpManagement = () => {
     const [historyModalOpen, setHistoryModalOpen] = useState(false);
     const [selectedFollowUp, setSelectedFollowUp] = useState(null);
     const [deleting, setDeleting] = useState(false);
-
+    const { user } = useAuth();
     const dropdownRefs = useRef({});
 
     // Calculate total pages
@@ -305,13 +306,15 @@ const FollowUpManagement = () => {
 
                     {/* Action Buttons */}
                     <div className="flex items-center gap-2">
-                        <button
-                            onClick={handleExport}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700"
-                        >
-                            <img src="/icons/Export.png" alt="Export" className="w-4 h-4" />
-                            Export
-                        </button>
+                        {user.IsAdmin ? (
+                            <button
+                                onClick={handleExport}
+                                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700"
+                            >
+                                <img src="/icons/Export.png" alt="Export" className="w-4 h-4" />
+                                Export
+                            </button>
+                        ) : ""}
                         <button
                             onClick={handleAddNewFollowUp}
                             className="flex items-center gap-2 px-4 py-2 text-green-900 rounded-sm text-sm font-medium border !border-green-900"
