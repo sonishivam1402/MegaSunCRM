@@ -480,7 +480,7 @@ const Order = ({ refreshKey }) => {
                                     {/* Item */}
                                     <td className="px-6 py-4 text-sm text-gray-900 text-center">
                                         <div className="max-w-xs mx-auto">
-                                            {formatProducts(order.Products || followUp.Item)}
+                                            {formatProducts(order.Products || order.Item)}
                                         </div>
                                     </td>
 

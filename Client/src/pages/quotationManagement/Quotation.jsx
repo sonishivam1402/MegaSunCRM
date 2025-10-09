@@ -480,7 +480,7 @@ const Quotation = ({ refreshKey }) => {
                                     {/* Item */}
                                     <td className="px-6 py-4 text-sm text-gray-900 text-center">
                                         <div className="max-w-xs mx-auto">
-                                            {formatProducts(quotation.Products || followUp.Item)}
+                                            {formatProducts(quotation.Products || quotation.Item)}
                                         </div>
                                     </td>
 

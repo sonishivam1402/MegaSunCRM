@@ -473,7 +473,9 @@ export const deleteLead = async (req, res, next) => {
 export const getLeadsForDropdown = async (req, res, next) => {
   try {
     const pool = await poolPromise;
-    const result = await pool.request().execute("sp_GetLeadsForDDN");
+    const result = await pool.request()
+    .input("UserId", sql.UniqueIdentifier, req.user.id)
+    .execute("sp_GetLeadsForDDN");
 
     res.json(result.recordsets);
   } catch (err) {

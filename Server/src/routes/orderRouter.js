@@ -5,12 +5,12 @@ import { getOrderById, getLastFollowUpByOrderId, deleteOrderById, getOrders, exp
 
 const orderRouter = Router();
 
-orderRouter.get("/export-csv", authenticate, checkPermission("ReadAccess", "Order"), exportOrders);
-orderRouter.get("/:id", authenticate, checkPermission("ReadAccess", "Order"), getOrderById);
-orderRouter.get("/last-followup/:id", authenticate, checkPermission("ReadAccess", "Order"), getLastFollowUpByOrderId);
-orderRouter.delete("/:id", authenticate, checkPermission("DeleteAccess", "Order"), deleteOrderById);
-orderRouter.get("/", authenticate, checkPermission("ReadAccess", "Order"), getOrders);
-orderRouter.post("/", authenticate, checkPermission("CreateAccess", "Order"), createNewOrder);
-orderRouter.put("/:id", authenticate, checkPermission("UpdateAccess", "Order"), updateOrderById);
+orderRouter.get("/export-csv", authenticate, checkPermission("ReadAccess", "Orders"), exportOrders);
+orderRouter.get("/:id", authenticate, checkPermission("ReadAccess", "Orders"), getOrderById);
+orderRouter.get("/last-followup/:id", authenticate, checkPermission("ReadAccess", "Orders"), getLastFollowUpByOrderId);
+orderRouter.delete("/:id", authenticate, checkPermission("DeleteAccess", "Orders"), deleteOrderById);
+orderRouter.get("/", authenticate, checkPermission("ReadAccess", "Orders"), getOrders);
+orderRouter.post("/", authenticate, checkPermission("CreateAccess", "Orders"), createNewOrder);
+orderRouter.put("/:id", authenticate, checkPermission("UpdateAccess", "Orders"), updateOrderById);
 
 export default orderRouter;
