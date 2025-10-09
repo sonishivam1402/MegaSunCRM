@@ -10,6 +10,7 @@ import leadRouter from "./routes/leadRouter.js";
 import followUpRouter from "./routes/followUpRoutes.js";
 import quotationRouter from "./routes/quotationRouter.js";
 import invoiceRouter from "./routes/invoiceRoutes.js";
+import orderRouter from "./routes/orderRouter.js";
 
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
@@ -30,6 +31,7 @@ app.use("/api/lead", leadRouter);
 app.use("/api/followUp", followUpRouter);
 app.use("/api/quotation", quotationRouter);
 app.use("/api/invoice", invoiceRouter);
+app.use("/api/order", orderRouter);
 
 app.get("/api/test", (req, res) => {
   res.json({ message: "Hello from backend!" });
