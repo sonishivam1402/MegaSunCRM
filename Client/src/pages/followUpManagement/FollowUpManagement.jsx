@@ -306,7 +306,7 @@ const FollowUpManagement = () => {
 
                     {/* Action Buttons */}
                     <div className="flex items-center gap-2">
-                        {user.isAdmin ? (
+                        {user.IsAdmin ? (
                             <button
                                 onClick={handleExport}
                                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700"

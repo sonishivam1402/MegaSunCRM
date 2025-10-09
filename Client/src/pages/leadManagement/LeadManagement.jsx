@@ -112,7 +112,7 @@ const LeadManagement = () => {
                         ))}
                     </div>
                     <div className='flex justify-between items-center gap-2'>
-                        {user.isAdmin ? (
+                        {user.IsAdmin ? (
                             <button
                                 className='p-2 border text-green-900 text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed'
                                 onClick={handleExport}
