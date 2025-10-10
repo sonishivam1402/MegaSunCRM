@@ -58,7 +58,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                 leadStatusId: leadData.LeadStatusId?.toString() || '',
                 leadTypeId: leadData.LeadTypeId?.toString() || '',
                 leadSourceId: leadData.LeadSourceId?.toString() || '',
-                userId: leadData.UserId?.toString() || '',
+                userId: user.IsAdmin ? (leadData.UserId?.toString() || '') : user.UserId,
                 productMappings: productMappings.map(product => ({
                     ProductId: product.ProductId,
                     ProductName: product.ProductName,
@@ -132,14 +132,17 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
             getProducts();
             fetchLeadDetails();
         }
+    }, [isOpen, leadId]);
 
-        if (!user.IsAdmin) {
+    // Set userId for non-admin users after form data is loaded
+    useEffect(() => {
+        if (!user.IsAdmin && user.UserId) {
             setFormData(prev => ({
                 ...prev,
                 userId: user.UserId
             }));
         }
-    }, [isOpen, leadId, user.UserId, user.IsAdmin]);
+    }, [user.UserId, user.IsAdmin]);
 
 
     const handleInputChange = (field, value) => {
@@ -268,7 +271,6 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
     };
 
     const handleSubmit = async () => {
-        console.log(formData)
         if (validateStep2()) {
             // Parse location into city, state, pincode, address
             const locationParts = formData.location.split(',').map(part => part.trim());
@@ -287,14 +289,13 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                     leadStatusId: formData.leadStatusId,
                     leadTypeId: formData.leadTypeId,
                     leadSourceId: formData.leadSourceId,
-                    userId: formData.userId,
+                    userId: user.IsAdmin ? formData.userId : user.UserId,
                     productMappings: formData.productMappings
                 }
                 
             };
 
             try {
-                console.log(submitData);
                 const response = await updateLeadById(leadId, submitData);
                 if (response.status == 201) {
                     toast.success(response.data[0].Message);

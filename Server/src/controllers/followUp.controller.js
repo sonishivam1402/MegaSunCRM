@@ -11,6 +11,7 @@ export const getFollowUps = async (req, res, next) => {
       .input("FilterType", sql.NVarChar(50), filter)
       .input("LimitParameter", sql.Int, parseInt(limit))
       .input("OffsetParameter", sql.Int, parseInt(offset))
+      .input("UserId", sql.UniqueIdentifier, req.user.id)
       .execute("sp_GetFollowups");
 
     res.json(result.recordsets);

@@ -9,6 +9,7 @@ import ThreeDotIcon from '../../assets/icons/ThreeDotIcon';
 import { toast } from 'react-toastify';
 import EditLeadModal from './EditLeadModal';
 import LastFollowUpModal from './LastFollowUpModal';
+import AddNewFollowUp from '../followUpManagement/AddNewFollowUp';
 
 const LeadsTab = ({ refreshKey }) => {
   // State management
@@ -31,6 +32,7 @@ const LeadsTab = ({ refreshKey }) => {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [lastFollowUpModalOpen, setLastFollowUpModalOpen] = useState(false);
+  const [addFollowUpModalOpen, setAddFollowUpModalOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -259,6 +261,12 @@ const LeadsTab = ({ refreshKey }) => {
 
   const handleEdit = (leadId) => {
     setEditModalOpen(true);
+    setSelectedLeadId(leadId);
+    setActiveDropdown(null);
+  };
+
+  const handleAdd = (leadId) => {
+    setAddFollowUpModalOpen(true);
     setSelectedLeadId(leadId);
     setActiveDropdown(null);
   };
@@ -688,8 +696,17 @@ const LeadsTab = ({ refreshKey }) => {
       {lastFollowUpModalOpen && (
         <LastFollowUpModal
           isOpen={lastFollowUpModalOpen}
-          onClose={() => {setLastFollowUpModalOpen(false), setSelectedLeadId(null)}}
+          onClose={() => { setLastFollowUpModalOpen(false), setSelectedLeadId(null) }}
           leadId={selectedLeadId}
+        />
+      )}
+
+      {addFollowUpModalOpen && (
+        <AddNewFollowUp
+          isOpen={addFollowUpModalOpen}
+          onClose={() => { setAddFollowUpModalOpen(false), setSelectedLeadId(null) }}
+          onSuccess={()=>null}
+          followUp={selectedLeadId}
         />
       )}
 
