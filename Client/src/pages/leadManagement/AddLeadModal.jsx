@@ -6,6 +6,7 @@ import { getAllLeadSourcesDD, getAllLeadStatusDD, getAllLeadTypesDD, createNewLe
 import { getAllUsersDD } from '../../api/userApi';
 import { getProductOptions } from '../../api/productApi';
 import { toast } from 'react-toastify';
+import { useAuth } from '../../context/AuthContext';
 
 const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
     const [currentStep, setCurrentStep] = useState(1);
@@ -26,6 +27,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
         productMappings: []
     });
 
+    const { user } = useAuth();
     const [leadTypeOptions, setLeadTypeOptions] = useState([]);
     const [sourceOptions, setSourceOptions] = useState([]);
     const [statusOptions, setStatusOptions] = useState([]);
@@ -90,6 +92,16 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
         }
     }, [isOpen]);
 
+    // Set userId for non-admin users
+    useEffect(() => {
+        if (!user.IsAdmin && user.UserId) {
+            setFormData(prev => ({
+                ...prev,
+                userId: user.UserId
+            }));
+        }
+    }, [user.UserId, user.IsAdmin]);
+
     const handleInputChange = (field, value) => {
         setFormData(prev => ({
             ...prev,
@@ -135,7 +147,11 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
     };
 
     const validateStep1 = () => {
-        const required = ['name', 'contact', 'email', 'location', 'country', 'address', 'pincode', 'gst', 'leadTypeId', 'leadSourceId', 'userId'];
+        const required = ['name', 'contact', 'email', 'location', 'country', 'address', 'pincode', 'gst', 'leadTypeId', 'leadSourceId'];
+
+        // Include userId only for admin
+        if (user.IsAdmin) required.push('userId');
+
         return required.every(field => formData[field] && formData[field].toString().trim() !== '');
     };
 
@@ -220,7 +236,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                     // leadStatusId: formData.leadStatusId,
                     leadTypeId: formData.leadTypeId,
                     leadSourceId: formData.leadSourceId,
-                    userId: formData.userId,
+                    userId: user.IsAdmin ? formData.userId : user.UserId,
                     productMappings: formData.productMappings
                 }
             };
@@ -591,23 +607,33 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                                     </label>
                                     <div className="relative">
                                         <select
-                                            value={formData.userId}
+                                            value={user.IsAdmin ? formData.userId : user.UserId} // Admin can select, non-admin stays fixed
                                             onChange={(e) => handleInputChange('userId', e.target.value)}
+                                            disabled={!user.IsAdmin} // Non-admin cannot change
                                             className={`w-full px-4 py-3 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('userId')
                                                 ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
-                                                : 'bg-gray-200 focus:bg-white'
+                                                : user.IsAdmin ? 'bg-gray-200 focus:bg-white' : 'bg-gray-100 cursor-not-allowed'
                                                 }`}
                                         >
-                                            <option value="">Select user</option>
-                                            {usersOptions.map(user => (
-                                                <option key={user.UserId} value={user.UserId}>{user.Name}</option>
-                                            ))}
+                                            {user.IsAdmin ? (
+                                                <>
+                                                    <option value="">Select user</option>
+                                                    {usersOptions.map(u => (
+                                                        <option key={u.UserId} value={u.UserId}>{u.Name}</option>
+                                                    ))}
+                                                </>
+                                            ) : (
+                                                <option value={user.UserId}>{user.Name}</option>
+                                            )}
                                         </select>
-                                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </div>
+
+                                        {user.IsAdmin && (
+                                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
