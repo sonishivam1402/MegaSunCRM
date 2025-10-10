@@ -620,7 +620,7 @@ const FollowUpManagement = () => {
             {addFollowUpModalOpen && (
                 <AddNewFollowUp
                     isOpen={addFollowUpModalOpen}
-                    onClose={() => setAddFollowUpModalOpen(false)}
+                    onClose={() => {setAddFollowUpModalOpen(false), setSelectedFollowUp(null)}}
                     onSuccess={() => fetchFollowUps()}
                     followUp={selectedFollowUp}
                 />
@@ -631,7 +631,7 @@ const FollowUpManagement = () => {
                     id={selectedFollowUp?.FollowUpId}
                     comment={selectedFollowUp?.Comments}
                     isOpen={editFollowUpModalOpen}
-                    onClose={() => setEditFollowUpModalOpen(false)}
+                    onClose={() => {setEditFollowUpModalOpen(false), setSelectedFollowUp(null)}}
                     onSuccess={() => fetchFollowUps()}
                 />
             )}
@@ -639,7 +639,7 @@ const FollowUpManagement = () => {
             {detailFollowUpModalOpen && (
                 <DetailFollowUpModal
                     isOpen={detailFollowUpModalOpen}
-                    onClose={() => setDetailFollowUpModalOpen(false)}
+                    onClose={() => {setDetailFollowUpModalOpen(false), setSelectedFollowUp(null)}}
                     followUp={selectedFollowUp?.FollowUpId}
                 />
             )}
@@ -647,7 +647,7 @@ const FollowUpManagement = () => {
             {historyModalOpen && (
                 <HistoryModal
                     isOpen={historyModalOpen}
-                    onClose={() => setHistoryModalOpen(false)}
+                    onClose={() => {setHistoryModalOpen(false), setSelectedFollowUp(null)}}
                     followUp={selectedFollowUp}
                 />
             )}

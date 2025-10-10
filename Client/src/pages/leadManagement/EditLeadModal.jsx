@@ -6,6 +6,7 @@ import { getAllLeadSourcesDD, getAllLeadStatusDD, getAllLeadTypesDD, getLeadById
 import { getAllUsersDD } from '../../api/userApi';
 import { getProductOptions } from '../../api/productApi';
 import { toast } from 'react-toastify';
+import { useAuth } from '../../context/AuthContext';
 
 const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
     const [currentStep, setCurrentStep] = useState(1);
@@ -27,6 +28,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
         productMappings: []
     });
 
+    const { user } = useAuth();
     const [leadTypeOptions, setLeadTypeOptions] = useState([]);
     const [sourceOptions, setSourceOptions] = useState([]);
     const [statusOptions, setStatusOptions] = useState([]);
@@ -130,7 +132,15 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
             getProducts();
             fetchLeadDetails();
         }
-    }, [isOpen, leadId]);
+
+        if (!user.IsAdmin) {
+            setFormData(prev => ({
+                ...prev,
+                userId: user.UserId
+            }));
+        }
+    }, [isOpen, leadId, user.UserId, user.IsAdmin]);
+
 
     const handleInputChange = (field, value) => {
         setFormData(prev => ({
@@ -177,15 +187,19 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
     };
 
     const validateStep1 = () => {
-        const required = ['name', 'contact', 'email', 'location', 'country', 'pincode', 'address', 'leadStatusId', 'leadTypeId', 'leadSourceId', 'userId'];
+        const required = ['name', 'contact', 'email', 'location', 'country', 'pincode', 'address', 'leadStatusId', 'leadTypeId', 'leadSourceId'];
+
+        // Include userId only for admin
+        if (user.IsAdmin) required.push('userId');
+
         return required.every(field => formData[field] && formData[field].toString().trim() !== '');
     };
 
     const validateStep2 = () => {
-    return formData.productMappings.length > 0 &&
-        formData.productMappings.every(p => 
-            (p.ProductId || p.ProductName) && p.Quantity > 0
-        );
+        return formData.productMappings.length > 0 &&
+            formData.productMappings.every(p =>
+                (p.ProductId || p.ProductName) && p.Quantity > 0
+            );
     };
 
     // Check if individual field is invalid
@@ -210,7 +224,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
 
     const handleNext = () => {
         setAttemptedNext(true);
-        
+
         // Validate contact number format
         if (formData.contact && !isContactValid()) {
             toast.error("Please enter a valid 10-digit mobile number.");
@@ -254,16 +268,17 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
     };
 
     const handleSubmit = async () => {
+        console.log(formData)
         if (validateStep2()) {
             // Parse location into city, state, pincode, address
             const locationParts = formData.location.split(',').map(part => part.trim());
-            
+
             const submitData = {
                 lead: {
                     id: leadId,
                     name: formData.name,
                     contact: formData.contact,
-                    email : formData.email,
+                    email: formData.email,
                     city: locationParts[0] || '',
                     state: locationParts[1] || '',
                     country: formData.country,
@@ -279,6 +294,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
             };
 
             try {
+                console.log(submitData);
                 const response = await updateLeadById(leadId, submitData);
                 if (response.status == 201) {
                     toast.success(response.data[0].Message);
@@ -353,20 +369,18 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                         <>
                             {/* Step Indicator */}
                             <div className="flex items-center mb-6">
-                                <button 
+                                <button
                                     onClick={() => handleStepClick(1)}
-                                    className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium cursor-pointer transition-colors ${
-                                        currentStep >= 1 ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-300 text-gray-600 hover:bg-gray-400'
-                                    }`}
+                                    className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium cursor-pointer transition-colors ${currentStep >= 1 ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-300 text-gray-600 hover:bg-gray-400'
+                                        }`}
                                 >
                                     {currentStep > 1 ? '✓' : '1'}
                                 </button>
                                 <div className={`flex-1 h-0.5 mx-3 ${currentStep > 1 ? 'bg-green-600' : 'bg-gray-300'}`}></div>
-                                <button 
+                                <button
                                     onClick={() => handleStepClick(2)}
-                                    className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium cursor-pointer transition-colors ${
-                                        currentStep >= 2 ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-300 text-gray-600 hover:bg-gray-400'
-                                    }`}
+                                    className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium cursor-pointer transition-colors ${currentStep >= 2 ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-300 text-gray-600 hover:bg-gray-400'
+                                        }`}
                                 >
                                     2
                                 </button>
@@ -394,11 +408,10 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                                                 value={formData.name}
                                                 onChange={(e) => handleInputChange('name', e.target.value)}
                                                 placeholder="John Doe"
-                                                className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${
-                                                    isFieldInvalid('name') 
-                                                        ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
-                                                        : 'bg-gray-200 focus:bg-white'
-                                                }`}
+                                                className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('name')
+                                                    ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                                    : 'bg-gray-200 focus:bg-white'
+                                                    }`}
                                             />
                                         </div>
 
@@ -418,11 +431,10 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                                                     }
                                                 }}
                                                 placeholder="XXXXXXXXXX"
-                                                className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${
-                                                    isFieldInvalid('contact') || (attemptedNext && formData.contact && !isContactValid())
-                                                        ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
-                                                        : 'bg-gray-200 focus:bg-white'
-                                                }`}
+                                                className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('contact') || (attemptedNext && formData.contact && !isContactValid())
+                                                    ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                                    : 'bg-gray-200 focus:bg-white'
+                                                    }`}
                                             />
                                             {attemptedNext && formData.contact && !isContactValid() && (
                                                 <p className="mt-1 text-xs text-red-500">
@@ -441,11 +453,10 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                                                 value={formData.email}
                                                 onChange={(e) => handleInputChange('email', e.target.value)}
                                                 placeholder="john.doe@example.com"
-                                                className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${
-                                                    isFieldInvalid('email') || (attemptedNext && formData.email && !isEmailValid())
-                                                        ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
-                                                        : 'bg-gray-200 focus:bg-white'
-                                                }`}
+                                                className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('email') || (attemptedNext && formData.email && !isEmailValid())
+                                                    ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                                    : 'bg-gray-200 focus:bg-white'
+                                                    }`}
                                             />
                                             {attemptedNext && formData.email && !isEmailValid() && (
                                                 <p className="mt-1 text-xs text-red-500">
@@ -464,11 +475,10 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                                                 value={formData.location}
                                                 onChange={(e) => handleInputChange('location', e.target.value)}
                                                 placeholder="Ahmedabad, Gujarat"
-                                                className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${
-                                                    isFieldInvalid('location') 
-                                                        ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
-                                                        : 'bg-gray-200 focus:bg-white'
-                                                }`}
+                                                className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('location')
+                                                    ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                                    : 'bg-gray-200 focus:bg-white'
+                                                    }`}
                                             />
                                         </div>
 
@@ -482,11 +492,10 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                                                 value={formData.country}
                                                 onChange={(e) => handleInputChange('country', e.target.value)}
                                                 placeholder="India"
-                                                className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${
-                                                    isFieldInvalid('country') 
-                                                        ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
-                                                        : 'bg-gray-200 focus:bg-white'
-                                                }`}
+                                                className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('country')
+                                                    ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                                    : 'bg-gray-200 focus:bg-white'
+                                                    }`}
                                             />
                                         </div>
 
@@ -500,11 +509,10 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                                                 value={formData.address}
                                                 onChange={(e) => handleInputChange('address', e.target.value)}
                                                 placeholder="Address"
-                                                className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${
-                                                    isFieldInvalid('address') 
-                                                        ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
-                                                        : 'bg-gray-200 focus:bg-white'
-                                                }`}
+                                                className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('address')
+                                                    ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                                    : 'bg-gray-200 focus:bg-white'
+                                                    }`}
                                             />
                                         </div>
 
@@ -524,11 +532,10 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                                                     }
                                                 }}
                                                 placeholder="380001"
-                                                className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${
-                                                    isFieldInvalid('pincode') || (attemptedNext && formData.pincode && !isPincodeValid())
-                                                        ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
-                                                        : 'bg-gray-200 focus:bg-white'
-                                                }`}
+                                                className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('pincode') || (attemptedNext && formData.pincode && !isPincodeValid())
+                                                    ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                                    : 'bg-gray-200 focus:bg-white'
+                                                    }`}
                                             />
                                             {attemptedNext && formData.pincode && !isPincodeValid() && (
                                                 <p className="mt-1 text-xs text-red-500">
@@ -560,11 +567,10 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                                                 <select
                                                     value={formData.leadTypeId}
                                                     onChange={(e) => handleInputChange('leadTypeId', e.target.value)}
-                                                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-500 ${
-                                                        isFieldInvalid('leadTypeId') 
-                                                            ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
-                                                            : 'bg-gray-200 focus:bg-white'
-                                                    }`}
+                                                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('leadTypeId')
+                                                        ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                                        : 'bg-gray-200 focus:bg-white'
+                                                        }`}
                                                 >
                                                     <option value="">Select lead type</option>
                                                     {leadTypeOptions.map(type => (
@@ -588,11 +594,10 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                                                 <select
                                                     value={formData.leadSourceId}
                                                     onChange={(e) => handleInputChange('leadSourceId', e.target.value)}
-                                                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-500 ${
-                                                        isFieldInvalid('leadSourceId') 
-                                                            ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
-                                                            : 'bg-gray-200 focus:bg-white'
-                                                    }`}
+                                                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('leadSourceId')
+                                                        ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                                        : 'bg-gray-200 focus:bg-white'
+                                                        }`}
                                                 >
                                                     <option value="">Select source</option>
                                                     {sourceOptions.map(source => (
@@ -616,11 +621,10 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                                                 <select
                                                     value={formData.leadStatusId}
                                                     onChange={(e) => handleInputChange('leadStatusId', e.target.value)}
-                                                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-500 ${
-                                                        isFieldInvalid('leadStatusId') 
-                                                            ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
-                                                            : 'bg-gray-200 focus:bg-white'
-                                                    }`}
+                                                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('leadStatusId')
+                                                        ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                                        : 'bg-gray-200 focus:bg-white'
+                                                        }`}
                                                 >
                                                     <option value="">Select status</option>
                                                     {statusOptions.map(status => (
@@ -642,25 +646,35 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                                             </label>
                                             <div className="relative">
                                                 <select
-                                                    value={formData.userId}
+                                                    value={user.IsAdmin ? formData.userId : user.UserId} // Admin can select, non-admin stays fixed
                                                     onChange={(e) => handleInputChange('userId', e.target.value)}
-                                                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-500 ${
-                                                        isFieldInvalid('userId') 
-                                                            ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500' 
-                                                            : 'bg-gray-200 focus:bg-white'
-                                                    }`}
+                                                    disabled={!user.IsAdmin} // Non-admin cannot change
+                                                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-500 ${isFieldInvalid('userId')
+                                                        ? 'bg-red-100 focus:bg-red-50 focus:ring-red-500'
+                                                        : user.IsAdmin ? 'bg-gray-200 focus:bg-white' : 'bg-gray-100 cursor-not-allowed'
+                                                        }`}
                                                 >
-                                                    <option value="">Select user</option>
-                                                    {usersOptions.map(user => (
-                                                        <option key={user.UserId} value={user.UserId}>{user.Name}</option>
-                                                    ))}
+                                                    {user.IsAdmin ? (
+                                                        <>
+                                                            <option value="">Select user</option>
+                                                            {usersOptions.map(u => (
+                                                                <option key={u.UserId} value={u.UserId}>{u.Name}</option>
+                                                            ))}
+                                                        </>
+                                                    ) : (
+                                                        <option value={user.UserId}>{user.Name}</option>
+                                                    )}
                                                 </select>
-                                                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                                    </svg>
-                                                </div>
+
+                                                {user.IsAdmin && (
+                                                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                    </div>
+                                                )}
                                             </div>
+
                                         </div>
                                     </div>
                                 ) : (
@@ -705,7 +719,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                                                                     </button>
                                                                 )}
                                                             </div>
-                                                            
+
                                                             {/* Option to replace with real product */}
                                                             <div className="flex gap-2 items-center pl-2">
                                                                 <span className="text-xs text-gray-600">Replace with:</span>
