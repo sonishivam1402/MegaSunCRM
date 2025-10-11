@@ -28,8 +28,8 @@ export default function TopNavbar() {
         '/leads': 'My Leads',
         '/Followups': 'Follow-ups',
         '/quotation': 'Quotation',
-        '/notifications': 'Notifications',
-        '/orders': 'Orders'
+        '/orders': 'Orders',
+        '/target':'Target'
     };
 
     let currentPageTitle =  'Dashboard';

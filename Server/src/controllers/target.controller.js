@@ -44,12 +44,12 @@ export const getOrderByUserIdAndMonth = async (req, res, next) => {
             offset = 0,
             limit = 50,
             month,
-            year, 
+            year,
             userId
         } = req.query;
 
-        if(month>12 || month<1){
-            return res.json({Message: "Invalid Month"});
+        if (month > 12 || month < 1) {
+            return res.json({ Message: "Invalid Month" });
         }
 
         const pool = await poolPromise;
@@ -72,15 +72,18 @@ export const getOrderByUserIdAndMonth = async (req, res, next) => {
 export const createTarget = async (req, res, next) => {
     try {
         const {data} = req.body
-
         const pool = await poolPromise;
         const result = await pool
             .request()
-            .input("TargetsJSON ", sql.NVarChar, data)
-            .input("CreatedBy ", sql.UniqueIdentifier, req.user.id)
+            .input("TargetsJSON", sql.NVarChar(sql.MAX), JSON.stringify(data))
+            .input("CreatedBy", sql.UniqueIdentifier, req.user.id)
             .execute("sp_CreateTargets");
 
-        res.json(result.recordsets);
+        if (result.recordset[0].Success) {
+            res.status(201).json(result.recordsets[0]);
+        } else {
+            res.json(result.recordsets[0]);
+        }
     } catch (err) {
         console.error("Error in creating target :", err);
         res.status(500).json({ message: "Server error" });
