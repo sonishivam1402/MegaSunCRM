@@ -29,10 +29,10 @@ export const getLeadsDD = async () => {
 }; 
 
 // Get All New Leads
-export const getAllNewLeads = async ({ search = "", limit = 10, offset = 0, status, leadTypeId }) => {
+export const getAllNewLeads = async ({ search = "", limit = 10, offset = 0, status, leadTypeId, sourceId }) => {
   try {
     const res = await API.get("/lead/newLeads", {
-      params: { search, limit, offset, status, leadTypeId },
+      params: { search, limit, offset, status, leadTypeId, sourceId },
     });
     return res.data;
   } catch (err) {

@@ -140,6 +140,7 @@ export const getAllUnassignedLeads = async (req, res, next) => {
       offset = 0,
       status,
       leadTypeId,
+      sourceId
     } = req.query;
     const pool = await poolPromise;
     const result = await pool
@@ -149,6 +150,7 @@ export const getAllUnassignedLeads = async (req, res, next) => {
       .input("OffsetParameter", sql.Int, parseInt(offset))
       .input("StatusParam", sql.UniqueIdentifier, status)
       .input("LeadTypeId", sql.UniqueIdentifier, leadTypeId)
+      .input("SourceParameter", sql.UniqueIdentifier, sourceId)
       .execute("sp_GetUnAssignedLeads");
 
     res.json(result.recordsets);
