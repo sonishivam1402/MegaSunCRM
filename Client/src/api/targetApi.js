@@ -36,7 +36,7 @@ export const getOrderByUserIdAndMonth = async ({ offset, limit, month, year, use
     const res = await API.get(`/target/order`, {
       params: { offset, limit, month, year, userId }
     });
-    return res.data;
+    return res;
   } catch (err) {
     if (err.response && err.response.status !== 401) {
       console.error("Error in fetching order by user Id and month", err);
