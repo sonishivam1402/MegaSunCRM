@@ -24,11 +24,13 @@ export const getTargets = async (req, res, next) => {
 
 export const getTargetByUserId = async (req, res, next) => {
     try {
-        const userId = req.params.id;
+        const { userId, offset, limit } = req.query;
         const pool = await poolPromise;
         const result = await pool
             .request()
             .input("UserId", sql.UniqueIdentifier, userId)
+            .input("LimitParameter", sql.Int, parseInt(limit))
+            .input("OffsetParameter", sql.Int, parseInt(offset))
             .execute("sp_GetTargetByUserId");
 
         res.json(result.recordsets);
@@ -71,7 +73,7 @@ export const getOrderByUserIdAndMonth = async (req, res, next) => {
 
 export const createTarget = async (req, res, next) => {
     try {
-        const {data} = req.body
+        const { data } = req.body
         const pool = await poolPromise;
         const result = await pool
             .request()

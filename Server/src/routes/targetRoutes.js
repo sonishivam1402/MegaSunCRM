@@ -5,7 +5,7 @@ import { createTarget, getOrderByUserIdAndMonth, getTargetByUserId, getTargets }
 
 const targetRouter = Router();
 
-targetRouter.get("/:id", authenticate, checkPermission("ReadAccess", "Target"), getTargetByUserId);
+targetRouter.get("/detail", authenticate, checkPermission("ReadAccess", "Target"), getTargetByUserId);
 targetRouter.get("/order", authenticate, checkPermission("ReadAccess", "Target"), getOrderByUserIdAndMonth);
 targetRouter.get("/", authenticate, checkPermission("ReadAccess", "Target"), getTargets);
 targetRouter.post("/", authenticate, checkPermission("CreateAccess", "Target"), createTarget);
