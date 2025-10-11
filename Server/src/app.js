@@ -11,6 +11,7 @@ import followUpRouter from "./routes/followUpRoutes.js";
 import quotationRouter from "./routes/quotationRouter.js";
 import invoiceRouter from "./routes/invoiceRoutes.js";
 import orderRouter from "./routes/orderRouter.js";
+import targetRouter from "./routes/targetRoutes.js";
 
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
@@ -32,6 +33,7 @@ app.use("/api/followUp", followUpRouter);
 app.use("/api/quotation", quotationRouter);
 app.use("/api/invoice", invoiceRouter);
 app.use("/api/order", orderRouter);
+app.use("/api/target", targetRouter);
 
 app.get("/api/test", (req, res) => {
   res.json({ message: "Hello from backend!" });
