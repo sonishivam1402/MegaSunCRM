@@ -52,7 +52,8 @@ const FollowUpManagement = () => {
             const apiParams = {
                 filter: filter,
                 limit: limit,
-                offset: offset
+                offset: offset,
+                userId: user.UserId
             };
 
             const response = await getFollowUps(apiParams);

@@ -110,7 +110,8 @@ export const getAllLeads = async (req, res, next) => {
       offset = 0,
       status,
       leadTypeId,
-      sourceId
+      sourceId,
+      userId
     } = req.query;
     const pool = await poolPromise;
     const result = await pool
@@ -121,7 +122,7 @@ export const getAllLeads = async (req, res, next) => {
       .input("StatusParam", sql.UniqueIdentifier, status)
       .input("LeadTypeId", sql.UniqueIdentifier, leadTypeId)
       .input("LeadSourceId", sql.UniqueIdentifier, sourceId)
-      .input("UserId", sql.UniqueIdentifier, req.user.id)
+      .input("UserId", sql.UniqueIdentifier, userId)
       .execute("sp_GetLeads");
 
     res.json(result.recordsets);

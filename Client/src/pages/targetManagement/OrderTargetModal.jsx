@@ -29,7 +29,7 @@ const OrderTargetModal = ({ isOpen, onClose, data }) => {
               });
               
 
-            console.log(response);
+            //console.log(response);
 
             if (response && response.data) {
                 setOrders(response.data[0] || []);

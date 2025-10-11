@@ -143,7 +143,7 @@ const Targets = ({ refreshKey }) => {
                         </div>
                       </div>
                       <span className="text-sm text-gray-900">{target.Name || 'Unknown'}</span>
-                      <span className="text-xs text-gray-500">• {target.PhoneNumber || 'xxxxxxxxxx'}</span>
+                      <span className="text-xs text-gray-500">• {target.Contact || 'xxxxxxxxxx'}</span>
                     </div>
                   </td>
 

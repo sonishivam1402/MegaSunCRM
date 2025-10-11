@@ -7,7 +7,8 @@ export const getFollowUps = async (apiParams) => {
         params : {
             filter : apiParams.filter,
             limit : apiParams.limit,
-            offset : apiParams.offset
+            offset : apiParams.offset,
+            userId : apiParams.userId
         }
     });
     return res.data;

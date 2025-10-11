@@ -1,18 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { deleteLeadById, getAllLeads, getAllLeadSourcesDD, getAllLeadStatusDD, getAllLeadTypesDD } from '../../api/leadApi';
-import LeadDetailModal from './LeadDetailModal';
-import EditIcon from "../../assets/icons/EditIcon";
-import AddIcon from "../../assets/icons/AddIcon";
-import HistoryIcon from '../../assets/icons/HistoryIcon';
-import WhatsAppIcon from '../../assets/icons/WhatsAppIcon';
-import ThreeDotIcon from '../../assets/icons/ThreeDotIcon';
-import { toast } from 'react-toastify';
-import EditLeadModal from './EditLeadModal';
-import LastFollowUpModal from './LastFollowUpModal';
-import AddNewFollowUp from '../followUpManagement/AddNewFollowUp';
-import { useAuth } from '../../context/AuthContext';
+import { getAllLeads, getAllLeadSourcesDD, getAllLeadStatusDD, getAllLeadTypesDD } from '../../../api/leadApi';
 
-const LeadsTab = ({ refreshKey }) => {
+const UserLeadTab = ({ userId }) => {
   // State management
   const [leads, setLeads] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -29,18 +18,6 @@ const LeadsTab = ({ refreshKey }) => {
   const [sourceOptions, setSourceOptions] = useState([]);
   const [statusOptions, setStatusOptions] = useState([]);
 
-  // Modal and dropdown states
-  const [activeDropdown, setActiveDropdown] = useState(null);
-  const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [lastFollowUpModalOpen, setLastFollowUpModalOpen] = useState(false);
-  const [addFollowUpModalOpen, setAddFollowUpModalOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedLeadId, setSelectedLeadId] = useState(null);
-  const dropdownRefs = useRef({});
-  const {user} = useAuth();
-
   // Debounce timer ref
   const searchTimeoutRef = useRef(null);
 
@@ -49,17 +26,6 @@ const LeadsTab = ({ refreshKey }) => {
 
   // Fetch leads with pagination, search, and filters
   const fetchLeads = useCallback(async (search = '', page = 1, limit = 10, status = '', leadTypeId = '', sourceId = '') => {
-    // console.log('API CALL TRIGGERED:', {
-    //   search: search,
-    //   page: page,
-    //   limit: limit,
-    //   offset: (page - 1) * limit,
-    //   status: status,
-    //   leadTypeId: leadTypeId,
-    //   sourceId: sourceId,
-    //   timestamp: new Date().toISOString()
-    // });
-
     try {
       setLoading(true);
       const offset = (page - 1) * limit;
@@ -69,7 +35,7 @@ const LeadsTab = ({ refreshKey }) => {
         search: search,
         limit: limit,
         offset: offset,
-        userId: user.UserId
+        userId: userId
       };
 
       // Add status filter if provided
@@ -88,19 +54,16 @@ const LeadsTab = ({ refreshKey }) => {
       }
 
       const response = await getAllLeads(apiParams);
+      
       // Handle the actual API response structure
-      // Response is an array with [leads_array, total_count_array, success_message_array]
       if (response && Array.isArray(response) && response.length >= 2) {
-        // First array contains the leads data
         const leadsData = response[0] || [];
         setLeads(leadsData);
 
-        // Second array contains total count
         const totalCountData = response[1] || [];
         const totalCount = totalCountData[0]?.["Total Count"] || 0;
         setTotalRecords(totalCount);
       } else {
-        // Fallback if response structure is different
         setLeads([]);
         setTotalRecords(0);
       }
@@ -143,21 +106,15 @@ const LeadsTab = ({ refreshKey }) => {
 
   // Debounced search function
   const debouncedSearch = useCallback((searchValue, page = 1, limit = pageSize) => {
-    // Clear existing timeout
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
 
-    // If search term is less than 3 characters, don't make any API call
     if (searchValue.length < 3) {
-      //console.log('NO API CALL - Less than 3 characters');
       return;
     }
 
-    // Only set timeout and make API call if 3+ characters
-    // console.log('SETTING 1-SECOND TIMEOUT FOR SEARCH');
     searchTimeoutRef.current = setTimeout(() => {
-      //console.log('TIMEOUT COMPLETED - Making API call');
       fetchLeads(searchValue, page, limit, statusFilter, leadTypeFilter, sourceFilter);
     }, 1000);
   }, [pageSize, fetchLeads, statusFilter, leadTypeFilter, sourceFilter]);
@@ -166,16 +123,13 @@ const LeadsTab = ({ refreshKey }) => {
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
-    setPageNumber(1); // Reset to first page on search
+    setPageNumber(1);
 
-    // If search is cleared (empty), fetch all leads immediately
     if (value === '') {
-      //console.log('SEARCH CLEARED - Immediate API call for all leads');
       fetchLeads('', 1, pageSize, statusFilter, leadTypeFilter, sourceFilter);
       return;
     }
 
-    // Otherwise, use debounced search (only calls API for 3+ chars)
     debouncedSearch(value, 1, pageSize);
   };
 
@@ -191,7 +145,7 @@ const LeadsTab = ({ refreshKey }) => {
   // Handle page size change
   const handlePageSizeChange = (newPageSize) => {
     setPageSize(newPageSize);
-    setPageNumber(1); // Reset to first page
+    setPageNumber(1);
     const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
     fetchLeads(currentSearch, 1, newPageSize, statusFilter, leadTypeFilter, sourceFilter);
   };
@@ -200,7 +154,7 @@ const LeadsTab = ({ refreshKey }) => {
   const handleLeadTypeFilterChange = (e) => {
     const value = e.target.value;
     setLeadTypeFilter(value);
-    setPageNumber(1); // Reset to first page
+    setPageNumber(1);
     const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
     fetchLeads(currentSearch, 1, pageSize, statusFilter, value, sourceFilter);
   };
@@ -209,7 +163,7 @@ const LeadsTab = ({ refreshKey }) => {
   const handleSourceFilterChange = (e) => {
     const value = e.target.value;
     setSourceFilter(value);
-    setPageNumber(1); // Reset to first page
+    setPageNumber(1);
     const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
     fetchLeads(currentSearch, 1, pageSize, statusFilter, leadTypeFilter, value);
   };
@@ -218,19 +172,18 @@ const LeadsTab = ({ refreshKey }) => {
   const handleStatusFilterChange = (e) => {
     const value = e.target.value;
     setStatusFilter(value);
-    setPageNumber(1); // Reset to first page
+    setPageNumber(1);
     const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
     fetchLeads(currentSearch, 1, pageSize, value, leadTypeFilter, sourceFilter);
   };
 
   // Initial data fetch
   useEffect(() => {
-    //console.log('INITIAL LOAD - Component mounted or refreshKey changed');
     fetchLeads('', 1, pageSize, statusFilter, leadTypeFilter, sourceFilter);
     getLeadTypes();
     getSources();
     getStatuses();
-  }, [refreshKey, fetchLeads, pageSize]);
+  }, []);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -240,91 +193,6 @@ const LeadsTab = ({ refreshKey }) => {
       }
     };
   }, []);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (activeDropdown && dropdownRefs.current[activeDropdown]) {
-        if (!dropdownRefs.current[activeDropdown].contains(event.target)) {
-          setActiveDropdown(null);
-        }
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [activeDropdown]);
-
-  // Dropdown handlers
-  const toggleDropdown = (leadId) => {
-    setActiveDropdown(activeDropdown === leadId ? null : leadId);
-  };
-
-  const handleEdit = (leadId) => {
-    setEditModalOpen(true);
-    setSelectedLeadId(leadId);
-    setActiveDropdown(null);
-  };
-
-  const handleAdd = (leadId) => {
-    setAddFollowUpModalOpen(true);
-    setSelectedLeadId(leadId);
-    setActiveDropdown(null);
-  };
-
-  const handleDetails = (leadId) => {
-    setDetailModalOpen(true);
-    setSelectedLeadId(leadId);
-    setActiveDropdown(null);
-  };
-
-  const handleDelete = (leadId) => {
-    setDeleteModalOpen(true);
-    setSelectedLeadId(leadId);
-    setActiveDropdown(null);
-  };
-
-  const handleCall = (leadId) => {
-    setLastFollowUpModalOpen(true)
-    setSelectedLeadId(leadId)
-    setActiveDropdown(null);
-  };
-
-  const handleWhatsApp = (lead) => {
-    if (!lead?.Contact) {
-      console.error("No contact found for this lead");
-      return;
-    }
-
-    // Ensure correct format (without spaces, etc.)
-    const phone = lead.Contact.replace(/\D/g, "");
-
-    const whatsappUrl = `https://api.whatsapp.com/send?phone=91${phone}`;
-
-    // Open in new tab
-    window.open(whatsappUrl, "_blank");
-
-    setActiveDropdown(null);
-  };
-
-  const confirmDelete = async () => {
-    if (!selectedLeadId) return;
-    setDeleting(true);
-    try {
-      await deleteLeadById(selectedLeadId);
-      setSelectedLeadId(null)
-      setDeleteModalOpen(false);
-      toast.success('Deleted Successfully.');
-      await fetchLeads();
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to delete lead status.');
-    } finally {
-      setDeleting(false);
-    }
-  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -359,14 +227,13 @@ const LeadsTab = ({ refreshKey }) => {
     const productList = products.split(",").map(p => p.trim());
     const displayed = productList.slice(0, 2).join(", ");
     const extra = productList.length > 2 ? `, ${productList.length - 2} more..` : "";
-
     return displayed + extra;
-  }
+  };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-[#f1f0e9]">
       {/* Filter Controls */}
-      <div className="px-6 py-4 flex-shrink-0">
+      <div className="px-6 py-4 flex-shrink-0 bg-[#f1f0e9]">
         <div className="flex items-center gap-4">
           {/* Search */}
           <div className="relative flex-1 max-w-2xs">
@@ -432,8 +299,8 @@ const LeadsTab = ({ refreshKey }) => {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="px-6 flex-1 overflow-y-auto">
+      {/* Table Container with Scroll */}
+      <div className="px-6 flex-1 overflow-y-auto min-h-0">
         <table className="w-full">
           <thead className="border-b border-b-color">
             <tr>
@@ -443,13 +310,12 @@ const LeadsTab = ({ refreshKey }) => {
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ASSIGNED TO</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">LEAD SOURCE</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
-              <th className="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-400">
             {loading ? (
               <tr>
-                <td colSpan="7" className="px-6 py-4 text-center">
+                <td colSpan="6" className="px-6 py-4 text-center">
                   <div className="flex items-center justify-center">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
                     <span className="ml-2">Loading...</span>
@@ -458,7 +324,7 @@ const LeadsTab = ({ refreshKey }) => {
               </tr>
             ) : leads.length === 0 ? (
               <tr>
-                <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
+                <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
                   No leads found
                 </td>
               </tr>
@@ -519,77 +385,6 @@ const LeadsTab = ({ refreshKey }) => {
                       {lead.Status || 'N/A'}
                     </span>
                   </td>
-
-                  {/* Actions */}
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <div className="flex justify-end items-center gap-1">
-                      {/* Call Button */}
-                      <button
-                        onClick={() => handleCall(lead.LeadId)}
-                        className="p-2 hover:bg-gray-100 rounded-full"
-                        title="Call"
-                      >
-                        <HistoryIcon size={14} />
-                      </button>
-
-                      {/* Edit Button */}
-                      <button
-                        onClick={() => handleEdit(lead.LeadId)}
-                        className="p-2 hover:bg-gray-100 rounded-full"
-                        title="Edit"
-                      >
-                        <EditIcon size={14} />
-                      </button>
-
-                      {/* Add Button */}
-                      <button
-                        onClick={() => handleAdd(lead)}
-                        className="p-2 hover:bg-gray-100 rounded-full"
-                        title="Edit"
-                      >
-                        <AddIcon size={14} />
-                      </button>
-
-                      {/* WhatsApp Button */}
-                      <button
-                        onClick={() => handleWhatsApp(lead)}
-                        className="p-2 hover:bg-gray-100 rounded-full"
-                        title="WhatsApp"
-                      >
-                        <WhatsAppIcon size={14} />
-                      </button>
-
-                      {/* More Options */}
-                      <div className="relative" ref={el => dropdownRefs.current[lead.LeadId] = el}>
-                        <button
-                          className="p-1 hover:bg-gray-100 rounded"
-                          onClick={() => toggleDropdown(lead.LeadId)}
-                        >
-                          <ThreeDotIcon />
-                        </button>
-
-                        {/* Dropdown Menu */}
-                        {activeDropdown === lead.LeadId && (
-                          <div className="absolute right-0 mt-1 w-24 bg-white rounded-md shadow-lg border border-gray-200 z-50">
-                            <div className="py-1">
-                              <button
-                                onClick={() => handleDetails(lead.LeadId)}
-                                className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
-                              >
-                                Details
-                              </button>
-                              <button
-                                onClick={() => handleDelete(lead.LeadId)}
-                                className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </td>
                 </tr>
               ))
             )}
@@ -597,8 +392,8 @@ const LeadsTab = ({ refreshKey }) => {
         </table>
       </div>
 
-      {/* Pagination Footer */}
-      <div className="px-6 py-4 flex-shrink-0">
+      {/* Pagination Footer - Always Visible */}
+      <div className="px-6 py-4 flex-shrink-0 bg-[#f1f0e9]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">Show</span>
@@ -646,75 +441,8 @@ const LeadsTab = ({ refreshKey }) => {
           </div>
         </div>
       </div>
-
-      {deleteModalOpen && (
-        <div className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#f1f0e9] border rounded-lg shadow-lg p-6 w-full max-w-sm">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">
-              Confirm Delete
-            </h2>
-            <p className="text-sm text-gray-600 mb-6">
-              Are you sure you want to delete ?
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                className="px-4 py-2 text-sm rounded bg-gray-200 hover:bg-gray-300"
-                onClick={() => {
-                  setSelectedLeadId(null);
-                  setDeleteModalOpen(false);
-                }}
-                disabled={deleting}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 text-sm rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
-                onClick={confirmDelete}
-                disabled={deleting}
-              >
-                {deleting ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {detailModalOpen && (
-        <LeadDetailModal
-          isOpen={detailModalOpen}
-          onClose={() => setDetailModalOpen(false)}
-          leadId={selectedLeadId}
-        />
-      )}
-
-      {editModalOpen && (
-        <EditLeadModal
-          isOpen={editModalOpen}
-          onClose={() => setEditModalOpen(false)}
-          leadId={selectedLeadId}
-          onSuccess={fetchLeads}
-        />
-      )}
-
-      {lastFollowUpModalOpen && (
-        <LastFollowUpModal
-          isOpen={lastFollowUpModalOpen}
-          onClose={() => { setLastFollowUpModalOpen(false), setSelectedLeadId(null) }}
-          leadId={selectedLeadId}
-        />
-      )}
-
-      {addFollowUpModalOpen && (
-        <AddNewFollowUp
-          isOpen={addFollowUpModalOpen}
-          onClose={() => { setAddFollowUpModalOpen(false), setSelectedLeadId(null) }}
-          onSuccess={()=>null}
-          followUp={selectedLeadId}
-        />
-      )}
-
     </div>
   );
 };
 
-export default LeadsTab;
+export default UserLeadTab;

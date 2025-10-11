@@ -1,10 +1,10 @@
 import API from "./axios";
 
 // Get Quotations
-export const getQuotations = async ({search, offset, limit, type, assignedTo}) => {
+export const getQuotations = async ({search, offset, limit, type, assignedTo, userId}) => {
   try {
     const res = await API.get(`/quotation`,{
-        params : {search, offset, limit, type, assignedTo}
+        params : {search, offset, limit, type, assignedTo, userId}
     });
     return res;
   } catch (err) {
