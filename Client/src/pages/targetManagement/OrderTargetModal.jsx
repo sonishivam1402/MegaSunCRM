@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { getOrderByUserIdAndMonth } from '../../api/targetApi';
 import CloseIcon from '../../assets/icons/CloseIcon';
+import dayjs from 'dayjs';
 
 const OrderTargetModal = ({ isOpen, onClose, data }) => {
     const [orders, setOrders] = useState([]);
@@ -125,11 +126,11 @@ const OrderTargetModal = ({ isOpen, onClose, data }) => {
                                             <tr key={order.OrderId || index} className="hover:bg-gray-50">
                                                 {/* Date */}
                                                 <td className="px-4 py-4 whitespace-nowrap">
-                                                    <div className="text-sm text-blue-600 font-medium">
-                                                        -{order.LeadId || 'N/A'} {order.AssignedTo || ''}
+                                                    <div className="text-sm text-gray-800 font-medium">
+                                                        {order.SystemGeneratedId || 'N/A'} {order.UserName || ''}
                                                     </div>
-                                                    <div className="text-xs text-gray-500">
-                                                        {order.Date || 'N/A'}
+                                                    <div className="text-sm text-gray-500">
+                                                        {dayjs(order.OrderDate).format("DD-MM-YYYY") || 'N/A'}
                                                     </div>
                                                 </td>
 
@@ -142,20 +143,13 @@ const OrderTargetModal = ({ isOpen, onClose, data }) => {
                                                         <span>{order.City || ''}</span>
                                                         {order.City && order.State && <span>-</span>}
                                                         <span>{order.State || ''}</span>
-                                                        {order.Location && (
-                                                            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-yellow-100 text-yellow-600 ml-1">
-                                                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                                                                </svg>
-                                                            </span>
-                                                        )}
                                                     </div>
                                                 </td>
 
                                                 {/* Contact Details */}
                                                 <td className="px-4 py-4 whitespace-nowrap">
-                                                    <div className="text-sm text-blue-600">
-                                                        {order.ContactNumber || 'N/A'}
+                                                    <div className="text-sm text-gray-600">
+                                                        {order.LeadContact || 'N/A'}
                                                     </div>
                                                 </td>
 
@@ -171,15 +165,15 @@ const OrderTargetModal = ({ isOpen, onClose, data }) => {
 
                                                 {/* Lead Source */}
                                                 <td className="px-4 py-4 whitespace-nowrap">
-                                                    <span className="inline-flex px-3 py-1 rounded text-xs font-medium bg-gray-800 text-white">
-                                                        {order.LeadSource || 'Direct call'}
+                                                    <span className="inline-flex px-3 py-1 rounded text-sm font-medium text-gray-800">
+                                                        {order.LeadSourceName || 'Direct call'}
                                                     </span>
                                                 </td>
 
                                                 {/* Type */}
                                                 <td className="px-4 py-4 whitespace-nowrap">
                                                     <span className="inline-flex px-3 py-1 rounded text-xs font-medium bg-orange-500 text-white">
-                                                        {order.Type || 'Domestic'}
+                                                        {order.OrderType || 'Domestic'}
                                                     </span>
                                                 </td>
                                             </tr>
