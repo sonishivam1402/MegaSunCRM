@@ -369,7 +369,7 @@ export const createUserType = async (req, res) => {
 export const updateUserTypeById = async (req, res) => {
   try {
     const pool = await poolPromise;
-    console.log("update user : ", req.body)
+    //console.log("update user : ", req.body)
     const {
       UserTypeId,
       Name,
@@ -475,7 +475,7 @@ export const updateUserTypeById = async (req, res) => {
 
       .execute("sp_UpdateUserTypeByUserTypeId");
 
-    console.log(result.recordset[0])
+    //console.log(result.recordset[0])
 
     if (result.recordset[0].Success) {
       res.status(201).json(result.recordset[0]);
