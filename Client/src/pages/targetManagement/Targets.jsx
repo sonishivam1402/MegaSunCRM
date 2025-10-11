@@ -4,6 +4,7 @@ import { getTargets } from '../../api/targetApi';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
 import CreateTarget from './CreateTarget';
+import TargetDetailModal from './TargetDetailModal';
 
 const Targets = ({ refreshKey }) => {
   const { user } = useAuth();
@@ -13,9 +14,11 @@ const Targets = ({ refreshKey }) => {
   const [pageNumber, setPageNumber] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null);
 
   // Modal states
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [targetDetailModalOpen, setTargetDetailModalOpen] = useState(false);
 
   // Calculate total pages
   const totalPages = Math.ceil(totalRecords / pageSize);
@@ -71,6 +74,11 @@ const Targets = ({ refreshKey }) => {
   const handleAddTarget = () => {
     setAddModalOpen(true);
   };
+
+  const handleViewTarget = (id) => {
+    setSelectedUserId(id)
+    setTargetDetailModalOpen(true);
+  }
 
 
   const handleModalSuccess = () => {
@@ -167,6 +175,7 @@ const Targets = ({ refreshKey }) => {
                   {/* Actions */}
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <button
+                      onClick={() => handleViewTarget(target.UserID)}
                       className="p-2 hover:bg-gray-100 rounded text-gray-600 hover:text-gray-900"
                       title="View details"
                     >
@@ -238,6 +247,14 @@ const Targets = ({ refreshKey }) => {
           isOpen={addModalOpen}
           onClose={() => setAddModalOpen(false)}
           onSuccess={handleModalSuccess}
+        />
+      )}
+
+      {targetDetailModalOpen && (
+        <TargetDetailModal
+          isOpen={targetDetailModalOpen}
+          onClose={() => { setTargetDetailModalOpen(false); setSelectedUserId(null) }}
+          userId={selectedUserId}
         />
       )}
     </div>

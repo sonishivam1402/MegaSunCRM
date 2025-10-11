@@ -1,10 +1,10 @@
 import API from "./axios";
 
 // Get Targets
-export const getTargets = async ({offset, limit}) => {
+export const getTargets = async ({ offset, limit }) => {
   try {
-    const res = await API.get(`/target`,{
-        params : {offset, limit}
+    const res = await API.get(`/target`, {
+      params: { offset, limit }
     });
     return res;
   } catch (err) {
@@ -16,10 +16,12 @@ export const getTargets = async ({offset, limit}) => {
 };
 
 // Get target by user id
-export const getTargetByUserId = async (id) => {
+export const getTargetByUserId = async ({ userId, offset, limit }) => {
   try {
-    const res = await API.get(`/target/${id}`);
-    return res.data;
+    const res = await API.get(`/target/detail`, {
+      params: { userId, offset, limit }
+    });
+    return res;
   } catch (err) {
     if (err.response && err.response.status !== 401) {
       console.error("Error in fetching target by user Id", err);
@@ -29,10 +31,10 @@ export const getTargetByUserId = async (id) => {
 };
 
 // Get order by user id and month
-export const getOrderByUserIdAndMonth = async ({offset, limit, month, year, userId}) => {
+export const getOrderByUserIdAndMonth = async ({ offset, limit, month, year, userId }) => {
   try {
     const res = await API.get(`/target/order`, {
-        params : {offset, limit, month, year, userId}
+      params: { offset, limit, month, year, userId }
     });
     return res.data;
   } catch (err) {
@@ -45,13 +47,13 @@ export const getOrderByUserIdAndMonth = async ({offset, limit, month, year, user
 
 // Create Target
 export const createNewTarget = async (data) => {
-    try {
-      const res = await API.post(`/target`,{data});
-      return res;
-    } catch (err) {
-      if (err.response && err.response.status !== 401) {
-        console.error("Error in creating target", err);
-      }
-      throw err;
+  try {
+    const res = await API.post(`/target`, { data });
+    return res;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in creating target", err);
     }
-  };
+    throw err;
+  }
+};
