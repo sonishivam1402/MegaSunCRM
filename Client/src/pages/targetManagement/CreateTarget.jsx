@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CloseIcon from '../../assets/icons/CloseIcon';
-import { getAllUsersDD } from '../../api/userApi';
-import { createNewTarget } from '../../api/targetApi';
+import { getTargetUsers, createNewTarget } from '../../api/targetApi';
 import { toast } from 'react-toastify';
 
 const CreateTarget = ({ isOpen, onClose, onSuccess }) => {
@@ -10,47 +9,38 @@ const CreateTarget = ({ isOpen, onClose, onSuccess }) => {
     const [submitting, setSubmitting] = useState(false);
     const [targets, setTargets] = useState({});
 
-    // Get current month and year
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth() + 1;
-    const currentYear = currentDate.getFullYear();
-    
-    // Month names array
-    const monthNames = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-
-    // Fetch users on component mount
     useEffect(() => {
         if (isOpen) {
-            const fetchUsers = async () => {
-                try {
-                    setLoading(true);
-                    // Simulated API call - replace with actual API
-                    const response = await getAllUsersDD();
-
-                    if (response && response.data && Array.isArray(response.data)) {
-                        setUsers(response.data[0]);
-                        const initialTargets = {};
-                        response.data.forEach(user => {
-                            initialTargets[user.UserId] = '';
-                        });
-                        setTargets(initialTargets);
-                    }
-                } catch (error) {
-                    console.error('Error fetching users:', error);
-                    alert('Failed to fetch users');
-                } finally {
-                    setLoading(false);
-                }
-            };
-
             fetchUsers();
         }
     }, [isOpen]);
 
-    // Handle target input change
+    const fetchUsers = async () => {
+        try {
+            setLoading(true);
+            const response = await getTargetUsers();
+            
+            if (response?.data && Array.isArray(response.data)) {
+                // First array contains users with TotalTarget property
+                const usersData = response.data[0] || [];
+                
+                setUsers(usersData);
+                
+                // Pre-fill targets from TotalTarget in user object
+                const initialTargets = {};
+                usersData.forEach(user => {
+                    initialTargets[user.UserId] = user.TotalTarget?.toString() || '';
+                });
+                setTargets(initialTargets);
+            }
+        } catch (error) {
+            console.error('Error fetching users:', error);
+            toast.error('Failed to fetch users');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleTargetChange = (userId, value) => {
         const numericValue = value.replace(/[^0-9]/g, '');
         setTargets(prev => ({
@@ -59,32 +49,28 @@ const CreateTarget = ({ isOpen, onClose, onSuccess }) => {
         }));
     };
 
-    // Handle form submission
     const handleSubmit = async () => {
         try {
             setSubmitting(true);
 
             const payload = users.map(user => ({
-                    userId: user.UserId,
-                    target: parseInt(targets[user.UserId]) || 0,
-                    month: currentMonth,
-                    year: currentYear
-                }));
+                userId: user.UserId,
+                target: parseInt(targets[user.UserId]) || 0,
+                month: user.CurrentMonth,
+                year: user.CurrentYear
+            }));
 
             const hasValidTargets = payload.some(item => item.target > 0);
             if (!hasValidTargets) {
-                alert('Please enter at least one target value');
+                toast.warning('Please enter at least one target value');
                 return;
             }
 
-            //console.log('Submitting payload:', payload);
-
-            // Simulated API call - replace with actual API
             const response = await createNewTarget(payload);
 
             if (response.status === 201) {
                 toast.success(response.data.Message);
-                onClose()
+                onClose();
                 onSuccess();
             } else {
                 toast.error(
@@ -93,10 +79,9 @@ const CreateTarget = ({ isOpen, onClose, onSuccess }) => {
                     "Something went wrong"
                 );
             }
-
         } catch (error) {
             console.error('Error creating targets:', error);
-            alert('Failed to create targets');
+            toast.error('Failed to create targets');
         } finally {
             setSubmitting(false);
         }
@@ -106,8 +91,6 @@ const CreateTarget = ({ isOpen, onClose, onSuccess }) => {
 
     return (
         <div className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-end z-50 overflow-y-auto">
-            {/* Modal */}
-            {/* <div className="absolute inset-0 flex items-center justify-center p-4"> */}
             <div className="w-200 max-w-5xl h-full bg-[#f1f0e9] shadow-lg flex flex-col">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-3 border-b">
@@ -134,8 +117,9 @@ const CreateTarget = ({ isOpen, onClose, onSuccess }) => {
                             {users.map((user, index) => (
                                 <div
                                     key={user.UserId}
-                                    className={`grid grid-cols-3 gap-6 px-6 py-4 ${index !== users.length - 1 ? 'border-b border-gray-200' : ''
-                                        }`}
+                                    className={`grid grid-cols-3 gap-6 px-6 py-4 ${
+                                        index !== users.length - 1 ? 'border-b border-gray-200' : ''
+                                    }`}
                                 >
                                     {/* User Field */}
                                     <div>
@@ -146,7 +130,7 @@ const CreateTarget = ({ isOpen, onClose, onSuccess }) => {
                                             type="text"
                                             value={user.Name || 'Unknown'}
                                             disabled
-                                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-gray-100 text-gray-700"
+                                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-gray-100 text-gray-700 hover:cursor-not-allowed"
                                         />
                                     </div>
 
@@ -157,9 +141,9 @@ const CreateTarget = ({ isOpen, onClose, onSuccess }) => {
                                         </label>
                                         <input
                                             type="text"
-                                            value={monthNames[currentMonth - 1]}
+                                            value={user.CurrentMonthName}
                                             disabled
-                                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-gray-100 text-gray-700"
+                                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-gray-100 text-gray-700 hover:cursor-not-allowed"
                                         />
                                     </div>
 
@@ -172,7 +156,7 @@ const CreateTarget = ({ isOpen, onClose, onSuccess }) => {
                                             type="text"
                                             value={targets[user.UserId] || ''}
                                             onChange={(e) => handleTargetChange(user.UserId, e.target.value)}
-                                            placeholder=""
+                                            placeholder="Enter target"
                                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                                         />
                                     </div>
@@ -200,7 +184,6 @@ const CreateTarget = ({ isOpen, onClose, onSuccess }) => {
                     </button>
                 </div>
             </div>
-
         </div>
     );
 };

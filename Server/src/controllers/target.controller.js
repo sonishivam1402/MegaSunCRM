@@ -40,6 +40,20 @@ export const getTargetByUserId = async (req, res, next) => {
     }
 };
 
+export const getTargetUsers = async (req, res, next) => {
+    try {
+        const pool = await poolPromise;
+        const result = await pool
+            .request()
+            .execute("sp_GetUsersForTarget");
+
+        res.json(result.recordsets);
+    } catch (err) {
+        console.error("Error in fetching target users :", err);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
 export const getOrderByUserIdAndMonth = async (req, res, next) => {
     try {
         const {

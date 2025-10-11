@@ -30,6 +30,19 @@ export const getTargetByUserId = async ({ userId, offset, limit }) => {
   }
 };
 
+// Get target users
+export const getTargetUsers = async () => {
+  try {
+    const res = await API.get("/target/users");
+    return res;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in fetching target users", err);
+    }
+    throw err;
+  }
+};
+
 // Get order by user id and month
 export const getOrderByUserIdAndMonth = async ({ offset, limit, month, year, userId }) => {
   try {
