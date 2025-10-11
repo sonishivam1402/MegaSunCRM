@@ -4,14 +4,14 @@ import { Parser } from "json2csv";
 // Get all FollowUps
 export const getFollowUps = async (req, res, next) => {
   try {
-    const { filter, limit = 10, offset = 0 } = req.query;
+    const { filter, limit = 10, offset = 0, userId } = req.query;
     const pool = await poolPromise;
     const result = await pool
       .request()
       .input("FilterType", sql.NVarChar(50), filter)
       .input("LimitParameter", sql.Int, parseInt(limit))
       .input("OffsetParameter", sql.Int, parseInt(offset))
-      .input("UserId", sql.UniqueIdentifier, req.user.id)
+      .input("UserId", sql.UniqueIdentifier, userId)
       .execute("sp_GetFollowups");
 
     res.json(result.recordsets);

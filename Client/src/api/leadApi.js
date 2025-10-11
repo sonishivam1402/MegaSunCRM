@@ -1,10 +1,10 @@
 import API from "./axios";
 
 // Get All Leads
-export const getAllLeads = async ({ search = "", limit = 10, offset = 0, status, leadTypeId, sourceId }) => {
+export const getAllLeads = async ({ search = "", limit = 10, offset = 0, status, leadTypeId, sourceId, userId }) => {
   try {
     const res = await API.get("/lead", {
-      params: { search, limit, offset, status, leadTypeId, sourceId },
+      params: { search, limit, offset, status, leadTypeId, sourceId, userId },
     });
     return res.data;
   } catch (err) {

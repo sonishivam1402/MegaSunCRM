@@ -35,6 +35,7 @@ export const getQuotations = async (req, res, next) => {
       limit = 10,
       type,
       assignedTo,
+      userId
     } = req.query;
 
     const pool = await poolPromise;
@@ -45,7 +46,7 @@ export const getQuotations = async (req, res, next) => {
       .input("OffsetParameter", sql.Int, parseInt(offset))
       .input("IsDomestic", sql.Bit, parseInt(type))
       .input("AssignedTo", sql.UniqueIdentifier, assignedTo)
-      .input("UserId", sql.UniqueIdentifier, req.user.id)
+      .input("UserId", sql.UniqueIdentifier, userId)
       .execute("sp_GetQuotation");
 
     res.json(result.recordsets);

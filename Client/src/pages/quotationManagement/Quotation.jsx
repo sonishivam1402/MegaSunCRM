@@ -64,7 +64,8 @@ const Quotation = ({ refreshKey }) => {
                 search,
                 offset,
                 limit,
-                type
+                type,
+                userId : user.UserId
             };
 
             // Only add salesman if it has value
@@ -77,7 +78,7 @@ const Quotation = ({ refreshKey }) => {
             //console.log('API Request Params:', params);
 
             const response = await getQuotations(params);
-            console.log('API Response:', response.data);
+            //console.log('API Response:', response.data);
 
             if (response && response.data) {
                 setQuotations(response.data[0] || []);

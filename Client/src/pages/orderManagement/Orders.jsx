@@ -78,7 +78,7 @@ const Order = ({ refreshKey }) => {
             //console.log('API Request Params:', params);
 
             const response = await getOrders(params);
-            console.log('API Response:', response.data);
+            //console.log('API Response:', response.data);
 
             if (response && response.data) {
                 setOrders(response.data[0] || []);
@@ -432,8 +432,8 @@ const Order = ({ refreshKey }) => {
                 <table className="w-full">
                     <thead>
                         <tr className="border-b border-gray-300">
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">QUOTATION DETAILS</th>
-                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">QUOTATION BY</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ORDER DETAILS</th>
+                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ORDER BY</th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">LEAD DETAILS</th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ITEM</th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">AMOUNT</th>
