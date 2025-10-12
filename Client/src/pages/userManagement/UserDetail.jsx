@@ -9,6 +9,7 @@ import Quotation from '../quotationManagement/Quotation'
 import UserFollowUpTab from './userDetailSubTab/UserFollowUpTab';
 import UserQuotationTab from './userDetailSubTab/UserQuotationTab';
 import UserLeadTab from './userDetailSubTab/UserLeadTab';
+import UserTargetSalesTab from './userDetailSubTab/UserTargetSalesTab';
 
 const UserDetailsPage = () => {
     const { userId } = useParams();
@@ -246,8 +247,8 @@ const UserDetailsPage = () => {
                 )}
 
                 {activeTab === 'targetSales' && (
-                    <div className="text-center py-12">
-                        <p className="text-gray-500">Target & Sales content will be displayed here</p>
+                    <div className='h-full overflow-hidden'>
+                        <UserTargetSalesTab userId={userId} />
                     </div>
                 )}
 
@@ -262,7 +263,7 @@ const UserDetailsPage = () => {
                         <UserLeadTab userId={userId} />
                     </div>
                 )}
-                
+
                 {activeTab === 'quotations' && (
                     <div className='h-full overflow-hidden'>
                         <UserQuotationTab userId={userId} />
