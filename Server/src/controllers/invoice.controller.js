@@ -14,7 +14,7 @@ async function getLogoBuffer() {
     if (logoCache) {
         return logoCache;
     }
-    
+
     const logoUrl = 'https://megakitchensystem.in/wp-content/uploads/2019/05/MegaSun_PNG.png';
     const response = await axios.get(logoUrl, { responseType: 'arraybuffer' });
     logoCache = Buffer.from(response.data);
@@ -68,6 +68,7 @@ function convertToPDFFormat(dbData) {
             sr: index + 1,
             name: product.ProductName,
             hsnCode: product.HSNCode || "",
+            discount: product.Discount,
             qty: product.Quantity,
             rate: product.Rate,
             tax: `${product.Tax}%`,
@@ -87,7 +88,10 @@ function convertToPDFFormat(dbData) {
             email: "dhanvi@gmail.com"
         },
         totals: {
-            subtotal: header.BasicAmount,
+            subtotal: header.Total,
+            taxFormat: header.TaxFormat,
+            sgst: header.SGST,
+            cgst: header.CGST,
             igst: header.IGST,
             grandTotal: header.GrandTotal,
             amountInWords: amountInWords
@@ -279,17 +283,21 @@ export const getQuotationPdf = async (req, res, next) => {
 
         yPos += detailsBoxHeight;
 
+        // Check if any item has a discount
+        const hasDiscount = quotationData.items.some(item => item.discount > 0);
+
         // Items Table Header
         const tableHeaderHeight = 20;
         doc.rect(leftMargin, yPos, pageWidth, tableHeaderHeight).stroke();
 
         const srWidth = 25;
-        const itemWidth = 220;
+        const itemWidth = hasDiscount ? 182.5 : 220; // Reduce item width if discount exists
         const hsnWidth = 60;
-        const qtyWidth = 35;
+        const qtyWidth = 30;
         const rateWidth = 70;
-        const taxWidth = 35;
-        const amountWidth = pageWidth - srWidth - itemWidth - hsnWidth - qtyWidth - rateWidth - taxWidth;
+        const discountWidth = hasDiscount ? 70 : 0; // Add discount column width conditionally
+        const taxWidth = 30;
+        const amountWidth = pageWidth - srWidth - itemWidth - hsnWidth - qtyWidth - rateWidth - discountWidth - taxWidth;
 
         let xPos = leftMargin;
 
@@ -304,16 +312,30 @@ export const getQuotationPdf = async (req, res, next) => {
         xPos += qtyWidth;
         doc.moveTo(xPos + rateWidth, yPos).lineTo(xPos + rateWidth, yPos + tableHeaderHeight).stroke();
         xPos += rateWidth;
+
+        // Add discount column line if applicable
+        if (hasDiscount) {
+            doc.moveTo(xPos + discountWidth, yPos).lineTo(xPos + discountWidth, yPos + tableHeaderHeight).stroke();
+            xPos += discountWidth;
+        }
+
         doc.moveTo(xPos + taxWidth, yPos).lineTo(xPos + taxWidth, yPos + tableHeaderHeight).stroke();
 
+        // Table headers
         doc.fontSize(8).font('Helvetica-Bold')
             .text('Sr.', leftMargin + 2, yPos + 6, { width: srWidth - 4, align: 'center' })
-            .text('ITEM NAME', leftMargin + srWidth + 2, yPos + 6, { width: itemWidth - 4, align: 'left' })
+            .text('ITEM NAME', leftMargin + srWidth + 5, yPos + 6, { width: itemWidth - 4, align: 'left' })
             .text('HSN CODE', leftMargin + srWidth + itemWidth + 2, yPos + 6, { width: hsnWidth - 4, align: 'center' })
             .text('QTY', leftMargin + srWidth + itemWidth + hsnWidth + 2, yPos + 6, { width: qtyWidth - 4, align: 'center' })
-            .text('RATE', leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + 2, yPos + 6, { width: rateWidth - 4, align: 'center' })
-            .text('TAX', leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + rateWidth + 2, yPos + 6, { width: taxWidth - 4, align: 'center' })
-            .text('BASIC AMOUNT', leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + rateWidth + taxWidth + 2, yPos + 6, { width: amountWidth - 4, align: 'center' });
+            .text('RATE', leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + 2, yPos + 6, { width: rateWidth - 4, align: 'center' });
+
+        // Add discount header if applicable
+        if (hasDiscount) {
+            doc.text('DISCOUNT', leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + rateWidth + 2, yPos + 6, { width: discountWidth - 4, align: 'center' });
+        }
+
+        doc.text('TAX', leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + rateWidth + discountWidth + 2, yPos + 6, { width: taxWidth - 4, align: 'center' })
+            .text('BASIC AMOUNT', leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + rateWidth + discountWidth + taxWidth + 2, yPos + 6, { width: amountWidth - 4, align: 'center' });
 
         yPos += tableHeaderHeight;
 
@@ -333,6 +355,13 @@ export const getQuotationPdf = async (req, res, next) => {
         xPos += qtyWidth;
         doc.moveTo(xPos + rateWidth, yPos).lineTo(xPos + rateWidth, yPos + itemsBoxHeight).stroke();
         xPos += rateWidth;
+
+        // Add discount column line if applicable
+        if (hasDiscount) {
+            doc.moveTo(xPos + discountWidth, yPos).lineTo(xPos + discountWidth, yPos + itemsBoxHeight).stroke();
+            xPos += discountWidth;
+        }
+
         doc.moveTo(xPos + taxWidth, yPos).lineTo(xPos + taxWidth, yPos + itemsBoxHeight).stroke();
 
         // Add items
@@ -340,13 +369,31 @@ export const getQuotationPdf = async (req, res, next) => {
         quotationData.items.forEach((item) => {
             doc.fontSize(8).font('Helvetica')
                 .text(item.sr, leftMargin + 2, itemYPos, { width: srWidth - 4, align: 'center' })
-                .text(item.name, leftMargin + srWidth + 2, itemYPos, { width: itemWidth - 4 })
+                .text(item.name, leftMargin + srWidth + 5, itemYPos, { width: itemWidth - 4 })
                 .text(item.hsnCode, leftMargin + srWidth + itemWidth + 2, itemYPos, { width: hsnWidth - 4, align: 'center' })
                 .text(item.qty, leftMargin + srWidth + itemWidth + hsnWidth + 2, itemYPos, { width: qtyWidth - 4, align: 'center' })
-                .text(`Rs. ${item.rate.toLocaleString('en-IN')}.00`, leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + 2, itemYPos, { width: rateWidth - 4, align: 'right' })
-                .text(item.tax, leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + rateWidth + 2, itemYPos, { width: taxWidth - 4, align: 'center' })
-                .text(`Rs. ${item.basicAmount.toLocaleString('en-IN')}.00`, leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + rateWidth + taxWidth + 2, itemYPos, { width: amountWidth - 4, align: 'right' });
+                .text(`Rs. ${item.rate.toLocaleString('en-IN')}.00`, leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + 2, itemYPos, { width: rateWidth - 4, align: 'center' });
 
+            // Add discount column data if applicable
+            if (hasDiscount) {
+                if (item.discount > 0) {
+                    const discountAmount = (item.rate * item.qty * item.discount) / 100;
+                    doc.fontSize(8)
+                    .text(`Rs. ${discountAmount.toLocaleString('en-IN')} (${item.discount}%)`, leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + rateWidth + 2, itemYPos, { width: discountWidth - 4, align: 'center' });
+                        // .text(`(${item.discount}%)`, leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + rateWidth + 2, itemYPos + 8, { width: discountWidth - 4, align: 'center' });
+                } else {
+                    doc.fontSize(8).text('-', leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + rateWidth + 2, itemYPos, { width: discountWidth - 4, align: 'center' });
+                }
+            }
+            
+            // Calculate net amount (applies whether discount exists or not)
+            const discountAmount = item.discount > 0 ? (item.rate * item.qty * item.discount) / 100 : 0;
+            const netAmount = item.basicAmount - discountAmount;
+            
+            // Always render TAX and AMOUNT columns (outside the discount condition)
+            doc.fontSize(8)
+                .text(item.tax, leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + rateWidth + discountWidth + 2, itemYPos, { width: taxWidth - 4, align: 'center' })
+                .text(`Rs. ${netAmount.toLocaleString('en-IN')}.00`, leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + rateWidth + discountWidth + taxWidth + 2, itemYPos, { width: amountWidth - 4, align: 'center' });
             itemYPos += 15;
         });
 
@@ -355,12 +402,12 @@ export const getQuotationPdf = async (req, res, next) => {
         // Total row
         const totalRowHeight = 15;
         doc.rect(leftMargin, yPos, pageWidth, totalRowHeight).stroke();
-        doc.moveTo(leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + rateWidth + taxWidth, yPos)
-            .lineTo(leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + rateWidth + taxWidth, yPos + totalRowHeight).stroke();
+        doc.moveTo(leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + rateWidth + discountWidth + taxWidth, yPos)
+            .lineTo(leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + rateWidth + discountWidth + taxWidth, yPos + totalRowHeight).stroke();
 
         doc.fontSize(8).font('Helvetica-Bold')
-            .text('Total ', leftMargin + itemWidth + hsnWidth + qtyWidth + rateWidth + 10, yPos + 3, { width: taxWidth, align: 'right' })
-            .text(`Rs. ${quotationData.totals.subtotal.toLocaleString('en-IN')}.00`, leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + rateWidth + taxWidth + 2, yPos + 3, { width: amountWidth - 4, align: 'right' });
+            .text('Total ', leftMargin + itemWidth + hsnWidth + qtyWidth + rateWidth + discountWidth + 10, yPos + 3, { width: taxWidth, align: 'right' })
+            .text(`Rs. ${quotationData.totals.subtotal.toLocaleString('en-IN')}.00`, leftMargin + srWidth + itemWidth + hsnWidth + qtyWidth + rateWidth + discountWidth + taxWidth + 2, yPos + 3, { width: amountWidth - 4, align: 'center' });
 
         yPos += totalRowHeight + 5;
 
@@ -400,9 +447,19 @@ export const getQuotationPdf = async (req, res, next) => {
 
         // Tax row
         doc.rect(taxInfoStart, yPos, sectionWidth, taxRowHeight).stroke();
-        const taxCenterY = yPos + (taxRowHeight / 2) - 3; // Center vertically
-        doc.fontSize(7).font('Helvetica')
-            .text(`(+ Add Tax) IGST: Rs. ${quotationData.totals.igst.toLocaleString('en-IN')}.00`, taxInfoStart + 3, taxCenterY, { width: sectionWidth - 6, align: 'center' });
+        const taxLineHeight = 10; // Adjust this value based on your font size
+        let taxCenterY = yPos + 5; // Start position with some padding
+
+        doc.fontSize(7).font('Helvetica');
+
+        if (quotationData.totals.taxFormat === 'SGST - CGST') {
+            doc.text(`(+ Add Tax) SGST: Rs. ${quotationData.totals.sgst.toLocaleString('en-IN')}.00`, taxInfoStart + 3, taxCenterY, { width: sectionWidth - 6, align: 'center' });
+            taxCenterY += taxLineHeight;
+
+            doc.text(`(+ Add Tax) CGST: Rs. ${quotationData.totals.cgst.toLocaleString('en-IN')}.00`, taxInfoStart + 3, taxCenterY, { width: sectionWidth - 6, align: 'center' });
+        } else if (quotationData.totals.taxFormat === 'IGST') {
+            doc.text(`(+ Add Tax) IGST: Rs. ${quotationData.totals.igst.toLocaleString('en-IN')}.00`, taxInfoStart + 3, taxCenterY, { width: sectionWidth - 6, align: 'center' });
+        }
 
         // Grand Total row
         const grandTotalYPos = yPos + taxRowHeight;

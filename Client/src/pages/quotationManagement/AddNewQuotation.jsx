@@ -69,7 +69,7 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
     const [notes, setNotes] = useState('');
     const [terms, setTerms] = useState('');
     const [taxFormat, setTaxFormat] = useState('SGST - CGST');
-    const [roundOff, setRoundOff] = useState('0.80');
+    const [roundOff, setRoundOff] = useState('0.00');
 
     // Validation helper functions
     const validateEmail = (email) => {
