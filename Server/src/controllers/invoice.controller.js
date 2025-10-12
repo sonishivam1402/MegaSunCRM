@@ -132,8 +132,9 @@ export const getQuotationPdf = async (req, res, next) => {
         const pool = await poolPromise;
         const result = await pool
             .request()
-            .input("QuotationId", sql.UniqueIdentifier, quotationId)
-            .execute("sp_GetQuotationByQuotationID");
+            .input("Id", sql.UniqueIdentifier, quotationId)
+            .input("Type", sql.NVarChar, type)
+            .execute("sp_GetPDFByID");
 
         //console.log("result", result.recordsets);
         // Map DB resultsets into expected shape for PDF conversion

@@ -8,7 +8,7 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [loadingLeadData, setLoadingLeadData] = useState(false);
-    
+
     // Validation states
     const [validationErrors, setValidationErrors] = useState({});
 
@@ -289,6 +289,25 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
     };
 
     const handleItemRowChange = (id, field, value) => {
+
+        // Validate quantity must be greater than 0
+        if (field === 'qty') {
+            const numValue = parseFloat(value);
+            if (numValue <= 0) {
+                toast.error('Quantity must be greater than 0');
+                return;
+            }
+        }
+
+        // Validate negative values for qty, rate, and discount
+        if (['qty', 'rate', 'discount'].includes(field)) {
+            const numValue = parseFloat(value);
+            if (numValue < 0) {
+                toast.error(`${field === 'qty' ? 'Quantity' : field === 'rate' ? 'Rate' : 'Discount'} cannot be negative`);
+                return;
+            }
+        }
+
         setItemRows(prevRows => {
             return prevRows.map(row => {
                 if (row.id !== id) return row;
@@ -456,11 +475,11 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
             const rate = parseFloat(row.rate) || 0;
             return rate <= 0;
         });
-  
+
         if (invalidItems.length > 0) {
             toast.error('All items must have a price greater than zero');
             setLoading(false);
-        return;
+            return;
         }
 
         try {
@@ -562,9 +581,8 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
                         setSelectedLead(e.target.value);
                         clearFieldError('selectedLead');
                     }}
-                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm appearance-none cursor-pointer ${
-                        validationErrors.selectedLead ? 'border-2 border-red-500' : ''
-                    }`}
+                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm appearance-none cursor-pointer ${validationErrors.selectedLead ? 'border-2 border-red-500' : ''
+                        }`}
                     disabled={loading}
                 >
                     <option value="">Select a lead</option>
@@ -603,9 +621,8 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
                         setQuotationDate(e.target.value);
                         clearFieldError('quotationDate');
                     }}
-                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${
-                        validationErrors.quotationDate ? 'border-2 border-red-500' : ''
-                    }`}
+                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.quotationDate ? 'border-2 border-red-500' : ''
+                        }`}
                 />
                 {validationErrors.quotationDate && (
                     <p className="text-red-500 text-sm mt-1">{validationErrors.quotationDate}</p>
@@ -726,9 +743,8 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
                         clearFieldError('companyName');
                     }}
                     placeholder="Company name"
-                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${
-                        validationErrors.companyName ? 'border-2 border-red-500' : ''
-                    }`}
+                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.companyName ? 'border-2 border-red-500' : ''
+                        }`}
                 />
                 {validationErrors.companyName && (
                     <p className="text-red-500 text-sm mt-1">{validationErrors.companyName}</p>
@@ -745,9 +761,8 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
                         clearFieldError('email');
                     }}
                     placeholder="john.doe@gmail.com"
-                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${
-                        validationErrors.email ? 'border-2 border-red-500' : ''
-                    }`}
+                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.email ? 'border-2 border-red-500' : ''
+                        }`}
                 />
                 {validationErrors.email && (
                     <p className="text-red-500 text-sm mt-1">{validationErrors.email}</p>
@@ -764,9 +779,8 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
                     }}
                     placeholder="Flat no., Street name, area"
                     rows={4}
-                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm resize-none ${
-                        validationErrors.address ? 'border-2 border-red-500' : ''
-                    }`}
+                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm resize-none ${validationErrors.address ? 'border-2 border-red-500' : ''
+                        }`}
                 />
                 {validationErrors.address && (
                     <p className="text-red-500 text-sm mt-1">{validationErrors.address}</p>
@@ -784,9 +798,8 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
                             setShippingDetails({ ...shippingDetails, city: e.target.value });
                             clearFieldError('city');
                         }}
-                        className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${
-                            validationErrors.city ? 'border-2 border-red-500' : ''
-                        }`}
+                        className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.city ? 'border-2 border-red-500' : ''
+                            }`}
                     />
                     {validationErrors.city && (
                         <p className="text-red-500 text-sm mt-1">{validationErrors.city}</p>
@@ -804,9 +817,8 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
                             clearFieldError('pincode');
                         }}
                         placeholder="123456"
-                        className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${
-                            validationErrors.pincode ? 'border-2 border-red-500' : ''
-                        }`}
+                        className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.pincode ? 'border-2 border-red-500' : ''
+                            }`}
                     />
                     {validationErrors.pincode && (
                         <p className="text-red-500 text-sm mt-1">{validationErrors.pincode}</p>
@@ -824,9 +836,8 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
                         setShippingDetails({ ...shippingDetails, country: e.target.value });
                         clearFieldError('country');
                     }}
-                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${
-                        validationErrors.country ? 'border-2 border-red-500' : ''
-                    }`}
+                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.country ? 'border-2 border-red-500' : ''
+                        }`}
                 />
                 {validationErrors.country && (
                     <p className="text-red-500 text-sm mt-1">{validationErrors.country}</p>
@@ -916,13 +927,13 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
                                                 className="w-full px-2 py-1 bg-yellow-50 border border-yellow-300 rounded text-sm cursor-not-allowed"
                                             />
                                             <p className="text-xs text-yellow-700">⚠️ External product</p>
-                                            <select 
-                                                value="" 
+                                            <select
+                                                value=""
                                                 onChange={(e) => {
                                                     if (e.target.value) {
                                                         handleItemRowChange(row.id, 'itemName', e.target.value);
                                                     }
-                                                }} 
+                                                }}
                                                 className="w-full px-2 py-1 bg-gray-100 rounded text-xs"
                                             >
                                                 <option value="">Replace with product from list...</option>
