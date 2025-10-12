@@ -447,6 +447,25 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
     };
 
     const handleItemRowChange = (id, field, value) => {
+
+        // Validate quantity must be greater than 0
+        if (field === 'qty') {
+            const numValue = parseFloat(value);
+            if (numValue <= 0) {
+                toast.error('Quantity must be greater than 0');
+                return;
+            }
+        }
+
+        // Validate negative values for qty, rate, and discount
+        if (['qty', 'rate', 'discount'].includes(field)) {
+            const numValue = parseFloat(value);
+            if (numValue < 0) {
+                toast.error(`${field === 'qty' ? 'Quantity' : field === 'rate' ? 'Rate' : 'Discount'} cannot be negative`);
+                return;
+            }
+        }
+
         setItemRows(prevRows => {
             return prevRows.map(row => {
                 if (row.id !== id) return row;
