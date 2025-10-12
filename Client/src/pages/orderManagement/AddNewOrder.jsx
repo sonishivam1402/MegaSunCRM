@@ -3,12 +3,14 @@ import { getLeadById, getLeadsDD } from '../../api/leadApi';
 import { getAllProducts } from '../../api/productApi';
 import { createNewOrder } from '../../api/orderApi';
 import { toast } from 'react-toastify';
+import { getQuotationById } from '../../api/quotation';
 
-const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
+const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [loadingLeadData, setLoadingLeadData] = useState(false);
-    
+    const [loadingData, setLoadingData] = useState(false);
+
     // Validation states
     const [validationErrors, setValidationErrors] = useState({});
 
@@ -16,6 +18,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
     const [selectedLead, setSelectedLead] = useState('');
     const [salesRepresentative, setSalesRepresentative] = useState('');
     const [orderDate, setOrderDate] = useState('');
+    const [orderBy, setOrderBy] = useState(null);
     const [leadOptions, setLeadOptions] = useState([]);
     const [leadData, setLeadData] = useState({});
     const [productData, setProductData] = useState([]);
@@ -197,13 +200,168 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
         }
     };
 
-    // Initialize on modal open
+    const loadOrder = async () => {
+        if (!quotationId) return;
+        setLoadingData(true);
+        try {
+            const res = await getQuotationById(quotationId);
+            //console.log(res)
+            // Validate response
+            if (!res || !res[0] || !res[0][0]) {
+                toast.error('Quotation data not found');
+                return;
+            }
+
+            const order = res?.[0]?.[0] || {};
+            const products = res?.[1] || [];
+
+            // Step 1
+            setSelectedLead(order.LeadId || '');
+            setSalesRepresentative(order.LeadAssignedTo || '');
+            setOrderDate(order.QuotationDate ? order.QuotationDate.substring(0, 10) : '');
+            setOrderBy(order.QuotationById || null);
+
+            // Step 2
+            setBillingDetails({
+                customerName: order.BillingCompanyName || '',
+                mobileNumber: order.ContactNumber || '',
+                gstNumber: order.GSTNumber || '',
+                email: order.BillingEmail || '',
+                address: order.BillingAddress || '',
+                city: order.BillingCity || '',
+                state: order.BillingState || '',
+                pincode: order.BillingPincode || '',
+                country: order.BillingCountry || ''
+            });
+
+            // Step 3
+            setShippingDetails({
+                companyName: order.ShippingCompanyName || '',
+                email: order.ShippingEmailAddress || '',
+                address: order.ShippingAddress || '',
+                city: order.ShippingCity || '',
+                state: order.ShippingState || '',
+                pincode: (order.ShippingPincode || '').toString(),
+                country: order.ShippingCountry || ''
+            });
+
+            // Step 4
+            setOrderType(order.IsDomestic ? 'domestic' : 'international');
+            const currencyMapBack = { INR: 'rupees', USD: 'dollar', GBP: 'pound', EUR: 'euro' };
+            setCurrency(currencyMapBack[order.Currency] || 'rupees');
+            setExpectedDispatchDays(order.ExpectedDispatchDays?.toString?.() || '');
+            setPaymentTerms(order.PaymentTerms || '');
+            setNotes(order.Notes || '');
+            setTerms(order.Terms || '');
+            setTaxFormat(order.TaxFormat || 'SGST - CGST');
+            setRoundOff((order.RoundOff != null ? Number(order.RoundOff) : 0).toFixed(2));
+
+            // Items
+            if (Array.isArray(products) && products.length) {
+                const mapped = products.map((p, idx) => {
+                    const qty = Number(p.Quantity) || 0;
+                    const rate = Number(p.Rate) || 0;
+                    const basic = qty * rate;
+                    const discount = Number(p.Discount) || 0;
+                    const taxPercent = Number(p.Tax) || 0;
+                    const net = basic - (basic * discount / 100);
+                    const taxAmount = (order.IsDomestic ? (net * taxPercent / 100) : 0);
+                    const total = net + taxAmount;
+                    return {
+                        id: idx + 1,
+                        productId: p.ProductId || null,
+                        itemName: p.ProductName || '',
+                        hsnCode: p.HSNCode || '',
+                        qty: qty.toString(),
+                        rate: rate.toString(),
+                        basicAmount: basic.toFixed(2),
+                        discount: (discount || 0).toString(),
+                        tax: `${taxPercent}%`,
+                        totalAmount: total.toFixed(2),
+                        description: p.ItemDescription || '',
+                        isExternalProduct: !p.ProductId && p.ProductName
+                    };
+                });
+                setItemRows(mapped);
+            }
+        } catch (e) {
+            console.error('Error loading quotation:', e);
+            toast.error(e?.response?.data?.message || 'Failed to load quotation');
+        } finally {
+            setLoadingData(false);
+        }
+    };
+
+    // Reset form function
+    const resetForm = () => {
+        setCurrentStep(1);
+        setSelectedLead('');
+        setSalesRepresentative('');
+        setOrderDate('');
+        setOrderBy(null);
+        setLeadData({});
+        setProductData([]);
+        setBillingDetails({
+            customerName: '',
+            mobileNumber: '',
+            gstNumber: '',
+            email: '',
+            address: '',
+            city: '',
+            state: '',
+            pincode: '',
+            country: ''
+        });
+        setShippingDetails({
+            companyName: '',
+            email: '',
+            address: '',
+            city: '',
+            state: '',
+            pincode: '',
+            country: ''
+        });
+        setOrderType('domestic');
+        setCurrency('rupees');
+        setExpectedDispatchDays('');
+        setPaymentTerms('');
+        setNotes('');
+        setTerms('');
+        setTaxFormat('SGST - CGST');
+        setRoundOff('0.80');
+        setItemRows([{
+            id: 1,
+            productId: null,
+            itemName: '',
+            hsnCode: '',
+            qty: '1',
+            rate: '100',
+            basicAmount: '100.00',
+            discount: '10',
+            tax: '18%',
+            totalAmount: '106.20',
+            description: '',
+            isExternalProduct: false
+        }]);
+        setValidationErrors({});
+        setLoadingData(false);
+    };
+
+    // Initialize on modal open/close
     useEffect(() => {
         if (isOpen) {
-            fetchLeads();
-            getProducts();
+            if (quotationId) {
+                loadOrder();
+                getProducts();
+            } else {
+                fetchLeads();
+                getProducts();
+            }
+        } else {
+            // Reset form when modal closes
+            resetForm();
         }
-    }, [isOpen]);
+    }, [isOpen, quotationId]);
 
     // Fetch lead data when lead is selected
     const getData = async (id) => {
@@ -255,17 +413,17 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
             }
         } catch (error) {
             console.error('Error fetching lead:', error);
+            toast.error('Failed to fetch lead details');
         } finally {
             setLoadingLeadData(false);
         }
     };
 
     useEffect(() => {
-        if (selectedLead) {
+        if (selectedLead && !quotationId) {
             getData(selectedLead);
         }
-    }, [selectedLead]);
-
+    }, [selectedLead, quotationId]);
 
     const handleNext = () => {
         if (currentStep === 1) {
@@ -456,11 +614,11 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
             const rate = parseFloat(row.rate) || 0;
             return rate <= 0;
         });
-  
+
         if (invalidItems.length > 0) {
             toast.error('All items must have a price greater than zero');
             setLoading(false);
-        return;
+            return;
         }
 
         try {
@@ -483,7 +641,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
 
             const finalData = {
                 leadId: selectedLead,
-                orderBy: leadData.AssignedTo || null,
+                orderBy: orderBy || leadData.AssignedTo || null,
                 orderDate: orderDate,
                 shippingCompanyName: shippingDetails.companyName,
                 shippingEmailAddress: shippingDetails.email,
@@ -512,7 +670,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                 productMappings: productMappings
             };
 
-            console.log('Final Data to Submit:', finalData);
+            //console.log('Final Data to Submit:', finalData);
             // API call to create order
             const response = await createNewOrder(finalData);
             if (response.status == 201) {
@@ -525,6 +683,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
             }
         } catch (error) {
             console.error('Error creating order:', error);
+            toast.error('Failed to create order');
         } finally {
             setLoading(false);
         }
@@ -550,36 +709,57 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
 
     const renderStep1 = () => (
         <div className="space-y-6">
+            {quotationId && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                    <p className="text-sm text-blue-800">
+                        ℹ️ Converting quotation to order - form is pre-filled
+                    </p>
+                </div>
+            )}
+
             <div>
                 <h3 className="text-lg font-semibold text-gray-800 mb-1">Lead details</h3>
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Select lead *</label>
-                <select
-                    value={selectedLead}
-                    onChange={(e) => {
-                        setSelectedLead(e.target.value);
-                        clearFieldError('selectedLead');
-                    }}
-                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm appearance-none cursor-pointer ${
-                        validationErrors.selectedLead ? 'border-2 border-red-500' : ''
-                    }`}
-                    disabled={loading}
-                >
-                    <option value="">Select a lead</option>
-                    {leadOptions.map(lead => (
-                        <option key={lead.LeadId} value={lead.LeadId}>{lead.Name}</option>
-                    ))}
-                </select>
-                {validationErrors.selectedLead && (
-                    <p className="text-red-500 text-sm mt-1">{validationErrors.selectedLead}</p>
-                )}
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {quotationId ? 'Lead Name' : 'Select lead *'}
+                </label>
+
+                <>
+                    <select
+                        value={quotationId ? leadData.LeadId : selectedLead}
+                        onChange={(e) => {
+                            setSelectedLead(e.target.value);
+                            clearFieldError('selectedLead');
+                        }}
+                        className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm appearance-none cursor-pointer ${validationErrors.selectedLead ? 'border-2 border-red-500' : ''
+                            }`}
+                        disabled={loading}
+                    >
+                        {quotationId ?
+                            <>
+                                <option value={leadData.LeadId}>{billingDetails.customerName}</option>
+                            </> :
+                            <>
+                                <option value="">Select a lead</option>
+                                {leadOptions.map(lead => (
+                                    <option key={lead.LeadId} value={lead.LeadId}>{lead.Name}</option>
+                                ))}
+                            </>
+                        }
+
+                    </select>
+                    {validationErrors.selectedLead && (
+                        <p className="text-red-500 text-sm mt-1">{validationErrors.selectedLead}</p>
+                    )}
+                </>
+
             </div>
 
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Sales Representative</label>
-                {loadingLeadData ? (
+                {loadingLeadData || loadingData ? (
                     <div className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-500">
                         Loading...
                     </div>
@@ -603,9 +783,9 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                         setOrderDate(e.target.value);
                         clearFieldError('orderDate');
                     }}
-                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${
-                        validationErrors.orderDate ? 'border-2 border-red-500' : ''
-                    }`}
+                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.orderDate ? 'border-2 border-red-500' : ''
+                        }`}
+                    disabled={loadingData}
                 />
                 {validationErrors.orderDate && (
                     <p className="text-red-500 text-sm mt-1">{validationErrors.orderDate}</p>
@@ -620,25 +800,16 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                 <h3 className="text-lg font-semibold text-gray-800 mb-1">Billing details</h3>
             </div>
 
-            {loadingLeadData ? (
+            {loadingLeadData || loadingData ? (
                 <div className="text-center py-8 text-gray-500">Loading billing details...</div>
             ) : (
                 <>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Customer name</label>
-                            <input
-                                type="text"
-                                value={leadData.LeadName || ''}
-                                readOnly
-                                className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed"
-                            />
-                        </div>
-                        <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Mobile number</label>
                             <input
                                 type="text"
-                                value={leadData.LeadPhoneNumber || ''}
+                                value={quotationId ? billingDetails.mobileNumber : (leadData.LeadPhoneNumber || '')}
                                 readOnly
                                 className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed"
                             />
@@ -649,7 +820,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-2">GST number</label>
                         <input
                             type="text"
-                            value={leadData.GSTNumber || ''}
+                            value={quotationId ? billingDetails.gstNumber : (leadData.GSTNumber || '')}
                             readOnly
                             className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed"
                         />
@@ -659,7 +830,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-2">Email address</label>
                         <input
                             type="email"
-                            value={leadData.Email || ''}
+                            value={quotationId ? billingDetails.email : (leadData.Email || '')}
                             readOnly
                             className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed"
                         />
@@ -668,7 +839,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
                         <textarea
-                            value={leadData.Address || ''}
+                            value={quotationId ? billingDetails.address : (leadData.Address || '')}
                             readOnly
                             rows={4}
                             className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed resize-none"
@@ -680,7 +851,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                             <label className="block text-sm font-medium text-gray-700 mb-2">City, state</label>
                             <input
                                 type="text"
-                                value={leadData.LeadAddress || ''}
+                                value={quotationId ? `${billingDetails.city}, ${billingDetails.state}` : (leadData.LeadAddress || '')}
                                 readOnly
                                 className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed"
                             />
@@ -689,7 +860,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                             <label className="block text-sm font-medium text-gray-700 mb-2">Pincode</label>
                             <input
                                 type="text"
-                                value={leadData.Pincode || ''}
+                                value={quotationId ? billingDetails.pincode : (leadData.Pincode || '')}
                                 readOnly
                                 className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed"
                             />
@@ -700,7 +871,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
                         <input
                             type="text"
-                            value={leadData.Country || ''}
+                            value={quotationId ? billingDetails.country : (leadData.Country || '')}
                             readOnly
                             className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed"
                         />
@@ -726,9 +897,9 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                         clearFieldError('companyName');
                     }}
                     placeholder="Company name"
-                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${
-                        validationErrors.companyName ? 'border-2 border-red-500' : ''
-                    }`}
+                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.companyName ? 'border-2 border-red-500' : ''
+                        }`}
+                    disabled={loadingData}
                 />
                 {validationErrors.companyName && (
                     <p className="text-red-500 text-sm mt-1">{validationErrors.companyName}</p>
@@ -745,9 +916,9 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                         clearFieldError('email');
                     }}
                     placeholder="john.doe@gmail.com"
-                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${
-                        validationErrors.email ? 'border-2 border-red-500' : ''
-                    }`}
+                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.email ? 'border-2 border-red-500' : ''
+                        }`}
+                    disabled={loadingData}
                 />
                 {validationErrors.email && (
                     <p className="text-red-500 text-sm mt-1">{validationErrors.email}</p>
@@ -764,9 +935,9 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                     }}
                     placeholder="Flat no., Street name, area"
                     rows={4}
-                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm resize-none ${
-                        validationErrors.address ? 'border-2 border-red-500' : ''
-                    }`}
+                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm resize-none ${validationErrors.address ? 'border-2 border-red-500' : ''
+                        }`}
+                    disabled={loadingData}
                 />
                 {validationErrors.address && (
                     <p className="text-red-500 text-sm mt-1">{validationErrors.address}</p>
@@ -784,9 +955,9 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                             setShippingDetails({ ...shippingDetails, city: e.target.value });
                             clearFieldError('city');
                         }}
-                        className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${
-                            validationErrors.city ? 'border-2 border-red-500' : ''
-                        }`}
+                        className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.city ? 'border-2 border-red-500' : ''
+                            }`}
+                        disabled={loadingData}
                     />
                     {validationErrors.city && (
                         <p className="text-red-500 text-sm mt-1">{validationErrors.city}</p>
@@ -804,9 +975,9 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                             clearFieldError('pincode');
                         }}
                         placeholder="123456"
-                        className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${
-                            validationErrors.pincode ? 'border-2 border-red-500' : ''
-                        }`}
+                        className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.pincode ? 'border-2 border-red-500' : ''
+                            }`}
+                        disabled={loadingData}
                     />
                     {validationErrors.pincode && (
                         <p className="text-red-500 text-sm mt-1">{validationErrors.pincode}</p>
@@ -824,9 +995,9 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                         setShippingDetails({ ...shippingDetails, country: e.target.value });
                         clearFieldError('country');
                     }}
-                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${
-                        validationErrors.country ? 'border-2 border-red-500' : ''
-                    }`}
+                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.country ? 'border-2 border-red-500' : ''
+                        }`}
+                    disabled={loadingData}
                 />
                 {validationErrors.country && (
                     <p className="text-red-500 text-sm mt-1">{validationErrors.country}</p>
@@ -852,6 +1023,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                             checked={orderType === 'domestic'}
                             onChange={(e) => setOrderType(e.target.value)}
                             className="w-4 h-4 text-[#0d4715]"
+                            disabled={loadingData}
                         />
                         <span className="text-sm">Domestic-India</span>
                     </label>
@@ -862,6 +1034,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                             checked={orderType === 'international'}
                             onChange={(e) => setOrderType(e.target.value)}
                             className="w-4 h-4 text-[#0d4715]"
+                            disabled={loadingData}
                         />
                         <span className="text-sm">International</span>
                     </label>
@@ -880,6 +1053,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                                 checked={currency === curr.toLowerCase()}
                                 onChange={(e) => setCurrency(e.target.value)}
                                 className="w-4 h-4 text-[#0d4715]"
+                                disabled={loadingData}
                             />
                             <span className="text-sm">{curr}</span>
                         </label>
@@ -916,13 +1090,13 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                                                 className="w-full px-2 py-1 bg-yellow-50 border border-yellow-300 rounded text-sm cursor-not-allowed"
                                             />
                                             <p className="text-xs text-yellow-700">⚠️ External product</p>
-                                            <select 
-                                                value="" 
+                                            <select
+                                                value=""
                                                 onChange={(e) => {
                                                     if (e.target.value) {
                                                         handleItemRowChange(row.id, 'itemName', e.target.value);
                                                     }
-                                                }} 
+                                                }}
                                                 className="w-full px-2 py-1 bg-gray-100 rounded text-xs"
                                             >
                                                 <option value="">Replace with product from list...</option>
@@ -1146,15 +1320,19 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                         <button
                             onClick={currentStep === 1 ? onClose : handleBack}
                             className="p-1 hover:bg-gray-200 rounded"
-                            disabled={loading || loadingLeadData}
+                            disabled={loading || loadingLeadData || loadingData}
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                             </svg>
                         </button>
                         <div>
-                            <h2 className="text-xl font-bold text-gray-900">New order</h2>
-                            <p className="text-sm text-gray-600">Add in the details of the new order</p>
+                            <h2 className="text-xl font-bold text-gray-900">
+                                {quotationId ? 'Convert Quotation to Order' : 'New order'}
+                            </h2>
+                            <p className="text-sm text-gray-600">
+                                {quotationId ? 'Review and confirm order details' : 'Add in the details of the new order'}
+                            </p>
                         </div>
                     </div>
                     <button
@@ -1170,22 +1348,33 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
 
                 {/* Body */}
                 <div className="px-6 py-6 flex-1 overflow-y-auto">
-                    {renderStepIndicator()}
+                    {loadingData ? (
+                        <div className="flex items-center justify-center h-full">
+                            <div className="text-center">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0d4715] mx-auto mb-4"></div>
+                                <p className="text-gray-600">Loading quotation data...</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            {renderStepIndicator()}
 
-                    <div className="mb-4">
-                        <p className="text-sm font-medium text-gray-600 uppercase">STEP-{currentStep}</p>
-                        <h3 className="text-2xl font-bold text-gray-900 mt-1">
-                            {currentStep === 1 && 'Lead details'}
-                            {currentStep === 2 && 'Billing details'}
-                            {currentStep === 3 && 'Shipping details'}
-                            {currentStep === 4 && 'Payment & Tax Details'}
-                        </h3>
-                    </div>
+                            <div className="mb-4">
+                                <p className="text-sm font-medium text-gray-600 uppercase">STEP-{currentStep}</p>
+                                <h3 className="text-2xl font-bold text-gray-900 mt-1">
+                                    {currentStep === 1 && 'Lead details'}
+                                    {currentStep === 2 && 'Billing details'}
+                                    {currentStep === 3 && 'Shipping details'}
+                                    {currentStep === 4 && 'Payment & Tax Details'}
+                                </h3>
+                            </div>
 
-                    {currentStep === 1 && renderStep1()}
-                    {currentStep === 2 && renderStep2()}
-                    {currentStep === 3 && renderStep3()}
-                    {currentStep === 4 && renderStep4()}
+                            {currentStep === 1 && renderStep1()}
+                            {currentStep === 2 && renderStep2()}
+                            {currentStep === 3 && renderStep3()}
+                            {currentStep === 4 && renderStep4()}
+                        </>
+                    )}
                 </div>
 
                 {/* Footer */}
@@ -1193,15 +1382,15 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                     {currentStep < 4 ? (
                         <button
                             onClick={handleNext}
-                            disabled={loading || loadingLeadData}
+                            disabled={loading || loadingLeadData || loadingData}
                             className="w-full py-3 bg-[#0d4715] text-white rounded-md font-medium hover:bg-[#0a3811] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {loadingLeadData ? 'Loading...' : 'Next'}
+                            {loadingLeadData || loadingData ? 'Loading...' : 'Next'}
                         </button>
                     ) : (
                         <button
                             onClick={handleSubmit}
-                            disabled={loading}
+                            disabled={loading || loadingData}
                             className="w-full py-3 bg-[#0d4715] text-white rounded-md font-medium hover:bg-[#0a3811] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? 'Creating...' : 'Confirm'}

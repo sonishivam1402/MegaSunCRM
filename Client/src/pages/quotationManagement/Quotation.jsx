@@ -7,6 +7,7 @@ import { getAllUsersDD } from '../../api/userApi';
 import { toast } from 'react-toastify';
 import ViewLastFollowUp from './ViewLastFollowUp';
 import EditQuotationModal from './EditQuotationModal';
+import AddNewOrder from '../orderManagement/AddNewOrder';
 import { getQuotationPdf } from '../../api/invoiceApi';
 import { useAuth } from '../../context/AuthContext';
 
@@ -34,6 +35,7 @@ const Quotation = ({ refreshKey }) => {
     const [activeDropdown, setActiveDropdown] = useState(null);
     const dropdownRefs = useRef({});
     const [editModalOpen, setEditModalOpen] = useState(false);
+    const [orderModalOpen, setOrderModalOpen] = useState(false);
 
     // Debounce timer ref
     const searchTimeoutRef = useRef(null);
@@ -311,6 +313,12 @@ const Quotation = ({ refreshKey }) => {
         setActiveDropdown(null);
     };
 
+    const handleQuotationOrder = (id) => {
+        setOrderModalOpen(true)
+        setSelectedQuotation(id);
+        setActiveDropdown(null);
+    }
+
     const handleDownloadQuotation = async (id, type) => {
         try {
             setLoading(true);
@@ -524,9 +532,9 @@ const Quotation = ({ refreshKey }) => {
                                                             <button onClick={() => handleDownloadQuotation(quotation.QuotationId, "quotation")} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
                                                                 Download Quotation
                                                             </button>
-                                                            {/* <button onClick={() => handleDownloadQuotation(quotation.QuotationId, "performaInvoice")} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
-                                                                Download Performa Invoice
-                                                            </button> */}
+                                                            <button onClick={() => handleQuotationOrder(quotation.QuotationId)} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
+                                                                Convert to Order
+                                                            </button>
                                                             <button
                                                                 onClick={() => {
                                                                     setLastFollowUpModalOpen(true);
@@ -666,6 +674,15 @@ const Quotation = ({ refreshKey }) => {
                     isOpen={editModalOpen}
                     onClose={() => setEditModalOpen(false)}
                     onSuccess={handleModalSuccess}
+                    quotationId={selectedQuotation}
+                />
+            )}
+
+            {orderModalOpen && (
+                <AddNewOrder
+                    isOpen={orderModalOpen}
+                    onClose={() => setOrderModalOpen(false)}
+                    onSuccess={()=>null}
                     quotationId={selectedQuotation}
                 />
             )}
