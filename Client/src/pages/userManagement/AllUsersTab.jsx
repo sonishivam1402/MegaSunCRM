@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllUsers, getAllUserTypeNames } from '../../api/userApi';
 import EditUserModal from './EditUserModal';
+import { useAuth } from '../../context/AuthContext';
 
 const AllUsersTab = ({ refreshKey }) => {
     const navigate = useNavigate();
@@ -24,6 +25,10 @@ const AllUsersTab = ({ refreshKey }) => {
     const [userInfo, setUserInfo] = useState();
     const [activeDropdown, setActiveDropdown] = useState(null);
     const dropdownRefs = useRef({});
+
+    const { menus } = useAuth();
+
+    const userMenu = menus.find(item => item.Name === "User Management");
 
     // Debounce timer ref
     const searchTimeoutRef = useRef(null);
@@ -360,12 +365,14 @@ const AllUsersTab = ({ refreshKey }) => {
                                                         >
                                                             Details
                                                         </button>
-                                                        <button
-                                                            onClick={() => handleEdit(user)}
-                                                            className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
-                                                        >
-                                                            Edit
-                                                        </button>
+                                                        {userMenu?.UpdateAccess && (
+                                                            <button
+                                                                onClick={() => handleEdit(user)}
+                                                                className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
+                                                            >
+                                                                Edit
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </div>
                                             )}

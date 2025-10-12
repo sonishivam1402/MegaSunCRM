@@ -29,8 +29,10 @@ const FollowUpManagement = () => {
     const [historyModalOpen, setHistoryModalOpen] = useState(false);
     const [selectedFollowUp, setSelectedFollowUp] = useState(null);
     const [deleting, setDeleting] = useState(false);
-    const { user } = useAuth();
+    const { user, menus } = useAuth();
     const dropdownRefs = useRef({});
+
+    const followUpMenu = menus.find(item => item.Name === "Followups");
 
     // Calculate total pages
     const totalPages = Math.ceil(totalRecords / pageSize);
@@ -307,7 +309,7 @@ const FollowUpManagement = () => {
 
                     {/* Action Buttons */}
                     <div className="flex items-center gap-2">
-                        {user.IsAdmin ? (
+                        {user.IsAdmin && (
                             <button
                                 onClick={handleExport}
                                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700"
@@ -315,14 +317,17 @@ const FollowUpManagement = () => {
                                 <img src="/icons/Export.png" alt="Export" className="w-4 h-4" />
                                 Export
                             </button>
-                        ) : ""}
-                        <button
-                            onClick={handleAddNewFollowUp}
-                            className="flex items-center gap-2 px-4 py-2 text-green-900 rounded-sm text-sm font-medium border !border-green-900"
-                        >
-                            <AddIcon color='green' />
-                            Add new follow-up
-                        </button>
+                        )}
+
+                        {followUpMenu?.CreateAccess && (
+                            <button
+                                onClick={handleAddNewFollowUp}
+                                className="flex items-center gap-2 px-4 py-2 text-green-900 rounded-sm text-sm font-medium border !border-green-900"
+                            >
+                                <AddIcon color='green' />
+                                Add new follow-up
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -455,22 +460,26 @@ const FollowUpManagement = () => {
                                             </button>
 
                                             {/* Edit Button */}
-                                            <button
-                                                onClick={() => handleEdit(followUp)}
-                                                className="p-2 hover:bg-gray-100 rounded-full"
-                                                title="Edit"
-                                            >
-                                                <EditIcon size={14} />
-                                            </button>
+                                            {followUpMenu?.UpdateAccess && (
+                                                <button
+                                                    onClick={() => handleEdit(followUp)}
+                                                    className="p-2 hover:bg-gray-100 rounded-full"
+                                                    title="Edit"
+                                                >
+                                                    <EditIcon size={14} />
+                                                </button>
+                                            )}
 
                                             {/* Add Button */}
-                                            <button
-                                                onClick={() => handleAdd(followUp)}
-                                                className="p-2 hover:bg-gray-100 rounded-full"
-                                                title="Add"
-                                            >
-                                                <AddIcon size={14} />
-                                            </button>
+                                            {followUpMenu?.CreateAccess && (
+                                                <button
+                                                    onClick={() => handleAdd(followUp)}
+                                                    className="p-2 hover:bg-gray-100 rounded-full"
+                                                    title="Add"
+                                                >
+                                                    <AddIcon size={14} />
+                                                </button>
+                                            )}
 
                                             {/* WhatsApp Button */}
                                             <button
@@ -504,15 +513,18 @@ const FollowUpManagement = () => {
                                                             >
                                                                 View Details
                                                             </button>
-                                                            <button
-                                                                onClick={() => {
-                                                                    handleDelete(followUp.FollowUpId)
-                                                                    setActiveDropdown(null);
-                                                                }}
-                                                                className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
-                                                            >
-                                                                Delete
-                                                            </button>
+
+                                                            {followUpMenu?.DeleteAccess && (
+                                                                <button
+                                                                    onClick={() => {
+                                                                        handleDelete(followUp.FollowUpId)
+                                                                        setActiveDropdown(null);
+                                                                    }}
+                                                                    className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
+                                                                >
+                                                                    Delete
+                                                                </button>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 )}
@@ -621,7 +633,7 @@ const FollowUpManagement = () => {
             {addFollowUpModalOpen && (
                 <AddNewFollowUp
                     isOpen={addFollowUpModalOpen}
-                    onClose={() => {setAddFollowUpModalOpen(false), setSelectedFollowUp(null)}}
+                    onClose={() => { setAddFollowUpModalOpen(false), setSelectedFollowUp(null) }}
                     onSuccess={() => fetchFollowUps()}
                     followUp={selectedFollowUp}
                 />
@@ -632,7 +644,7 @@ const FollowUpManagement = () => {
                     id={selectedFollowUp?.FollowUpId}
                     comment={selectedFollowUp?.Comments}
                     isOpen={editFollowUpModalOpen}
-                    onClose={() => {setEditFollowUpModalOpen(false), setSelectedFollowUp(null)}}
+                    onClose={() => { setEditFollowUpModalOpen(false), setSelectedFollowUp(null) }}
                     onSuccess={() => fetchFollowUps()}
                 />
             )}
@@ -640,7 +652,7 @@ const FollowUpManagement = () => {
             {detailFollowUpModalOpen && (
                 <DetailFollowUpModal
                     isOpen={detailFollowUpModalOpen}
-                    onClose={() => {setDetailFollowUpModalOpen(false), setSelectedFollowUp(null)}}
+                    onClose={() => { setDetailFollowUpModalOpen(false), setSelectedFollowUp(null) }}
                     followUp={selectedFollowUp?.FollowUpId}
                 />
             )}
@@ -648,7 +660,7 @@ const FollowUpManagement = () => {
             {historyModalOpen && (
                 <HistoryModal
                     isOpen={historyModalOpen}
-                    onClose={() => {setHistoryModalOpen(false), setSelectedFollowUp(null)}}
+                    onClose={() => { setHistoryModalOpen(false), setSelectedFollowUp(null) }}
                     followUp={selectedFollowUp}
                 />
             )}

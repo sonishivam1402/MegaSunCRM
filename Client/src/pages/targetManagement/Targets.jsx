@@ -7,7 +7,8 @@ import CreateTarget from './CreateTarget';
 import TargetDetailModal from './TargetDetailModal';
 
 const Targets = ({ refreshKey }) => {
-  const { user } = useAuth();
+  const { menus } = useAuth();
+  const targetMenus = menus.find(item => item.Name === "Target");
   // State management
   const [targets, setTargets] = useState([]);
   const [pageSize, setPageSize] = useState(10);
@@ -91,13 +92,15 @@ const Targets = ({ refreshKey }) => {
       <div className="px-6 py-4 flex-shrink-0">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-semibold text-gray-800">Target Management</h1>
-          <button
-            onClick={handleAddTarget}
-            className="px-4 py-2 bg-[#0d4715] text-white rounded-md text-sm hover:bg-[#0a3811] flex items-center gap-2"
-          >
-            <AddIcon color='white' />
-            Add new target
-          </button>
+          {targetMenus?.CreateAccess && (
+            <button
+              onClick={handleAddTarget}
+              className="px-4 py-2 bg-[#0d4715] text-white rounded-md text-sm hover:bg-[#0a3811] flex items-center gap-2"
+            >
+              <AddIcon color='white' />
+              Add new target
+            </button>
+          )}
         </div>
 
       </div>
@@ -166,7 +169,7 @@ const Targets = ({ refreshKey }) => {
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${target.Status === 'On Track'
                       ? 'bg-yellow-100 text-yellow-800' : target.Status === 'Achieved' ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
+                        : 'bg-red-100 text-red-800'
                       }`}>
                       {target.Status || 'Below target'}
                     </span>

@@ -13,7 +13,7 @@ import UserTargetSalesTab from './userDetailSubTab/UserTargetSalesTab';
 
 const UserDetailsPage = () => {
     const { userId } = useParams();
-    const { user } = useAuth();
+    const { user, menus } = useAuth();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('userDetails');
     const [userDetails, setUserDetails] = useState(null);
@@ -21,6 +21,9 @@ const UserDetailsPage = () => {
     const [error, setError] = useState(null);
     const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
     const [isEditImageModalOpen, setIsEditImageModalOpen] = useState(false);
+
+    const userMenu = menus.find(item => item.Name === "User Management");
+
 
     const tabs = [
         { id: 'userDetails', label: 'User Details' },
@@ -139,17 +142,20 @@ const UserDetailsPage = () => {
                             </button>
                         ))}
                     </div>
-                    <button
-                        onClick={handleEditClick}
-                        className="flex items-center gap-2 px-4 py-1  border border-green-900 text-green-900 font-medium rounded-sm hover:bg-gray-50 transition-colors"
-                    >
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M2.05882 11.9412H2.94929L10.1751 4.71541L9.28459 3.82494L2.05882 11.0507V11.9412ZM1 13V10.6109L10.3109 1.30406C10.4176 1.20712 10.5355 1.13224 10.6644 1.07941C10.7935 1.02647 10.9288 1 11.0703 1C11.2118 1 11.3489 1.02512 11.4815 1.07535C11.6142 1.12559 11.7316 1.20547 11.8339 1.315L12.6959 2.18782C12.8055 2.29006 12.8835 2.40771 12.9301 2.54076C12.9767 2.67382 13 2.80688 13 2.93994C13 3.08194 12.9758 3.21741 12.9273 3.34635C12.8788 3.47541 12.8017 3.59329 12.6959 3.7L3.38906 13H1ZM9.72206 4.27794L9.28459 3.82494L10.1751 4.71541L9.72206 4.27794Z" fill="#0D4715" />
-                            <path d="M10.1751 4.71541L2.94929 11.9412H2.05882V11.0507L9.28459 3.82494M10.1751 4.71541L9.28459 3.82494M10.1751 4.71541L9.72206 4.27794L9.28459 3.82494M11.9479 2.93853L11.0615 2.05212M1 13V10.6109L10.3109 1.30406C10.4176 1.20712 10.5355 1.13224 10.6644 1.07941C10.7935 1.02647 10.9288 1 11.0703 1C11.2118 1 11.3489 1.02512 11.4815 1.07535C11.6142 1.12559 11.7316 1.20547 11.8339 1.315L12.6959 2.18782C12.8055 2.29006 12.8835 2.40771 12.9301 2.54076C12.9767 2.67382 13 2.80688 13 2.93994C13 3.08194 12.9758 3.21741 12.9273 3.34635C12.8788 3.47541 12.8017 3.59329 12.6959 3.7L3.38906 13H1Z" stroke="#0D4715" strokeWidth="0.2" />
-                        </svg>
 
-                        Edit User Detail
-                    </button>
+                    {userMenu?.UpdateAccess && (
+                        <button
+                            onClick={handleEditClick}
+                            className="flex items-center gap-2 px-4 py-1  border border-green-900 text-green-900 font-medium rounded-sm hover:bg-gray-50 transition-colors"
+                        >
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2.05882 11.9412H2.94929L10.1751 4.71541L9.28459 3.82494L2.05882 11.0507V11.9412ZM1 13V10.6109L10.3109 1.30406C10.4176 1.20712 10.5355 1.13224 10.6644 1.07941C10.7935 1.02647 10.9288 1 11.0703 1C11.2118 1 11.3489 1.02512 11.4815 1.07535C11.6142 1.12559 11.7316 1.20547 11.8339 1.315L12.6959 2.18782C12.8055 2.29006 12.8835 2.40771 12.9301 2.54076C12.9767 2.67382 13 2.80688 13 2.93994C13 3.08194 12.9758 3.21741 12.9273 3.34635C12.8788 3.47541 12.8017 3.59329 12.6959 3.7L3.38906 13H1ZM9.72206 4.27794L9.28459 3.82494L10.1751 4.71541L9.72206 4.27794Z" fill="#0D4715" />
+                                <path d="M10.1751 4.71541L2.94929 11.9412H2.05882V11.0507L9.28459 3.82494M10.1751 4.71541L9.28459 3.82494M10.1751 4.71541L9.72206 4.27794L9.28459 3.82494M11.9479 2.93853L11.0615 2.05212M1 13V10.6109L10.3109 1.30406C10.4176 1.20712 10.5355 1.13224 10.6644 1.07941C10.7935 1.02647 10.9288 1 11.0703 1C11.2118 1 11.3489 1.02512 11.4815 1.07535C11.6142 1.12559 11.7316 1.20547 11.8339 1.315L12.6959 2.18782C12.8055 2.29006 12.8835 2.40771 12.9301 2.54076C12.9767 2.67382 13 2.80688 13 2.93994C13 3.08194 12.9758 3.21741 12.9273 3.34635C12.8788 3.47541 12.8017 3.59329 12.6959 3.7L3.38906 13H1Z" stroke="#0D4715" strokeWidth="0.2" />
+                            </svg>
+
+                            Edit User Detail
+                        </button>
+                    )}
                 </div>
             </div>
 

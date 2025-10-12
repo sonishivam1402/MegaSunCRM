@@ -39,7 +39,10 @@ const LeadsTab = ({ refreshKey }) => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedLeadId, setSelectedLeadId] = useState(null);
   const dropdownRefs = useRef({});
-  const {user} = useAuth();
+  const { user, menus } = useAuth();
+
+  const leadMenu = menus.find(item => item.Name === "My Leads");
+  const followUpMenu = menus.find(item => item.Name === "Followups");
 
   // Debounce timer ref
   const searchTimeoutRef = useRef(null);
@@ -524,31 +527,37 @@ const LeadsTab = ({ refreshKey }) => {
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <div className="flex justify-end items-center gap-1">
                       {/* Call Button */}
-                      <button
-                        onClick={() => handleCall(lead.LeadId)}
-                        className="p-2 hover:bg-gray-100 rounded-full"
-                        title="Call"
-                      >
-                        <HistoryIcon size={14} />
-                      </button>
+                      {followUpMenu?.ReadAccess && (
+                        <button
+                          onClick={() => handleCall(lead.LeadId)}
+                          className="p-2 hover:bg-gray-100 rounded-full"
+                          title="Call"
+                        >
+                          <HistoryIcon size={14} />
+                        </button>
+                      )}
 
                       {/* Edit Button */}
-                      <button
-                        onClick={() => handleEdit(lead.LeadId)}
-                        className="p-2 hover:bg-gray-100 rounded-full"
-                        title="Edit"
-                      >
-                        <EditIcon size={14} />
-                      </button>
+                      {leadMenu?.UpdateAccess && (
+                        <button
+                          onClick={() => handleEdit(lead.LeadId)}
+                          className="p-2 hover:bg-gray-100 rounded-full"
+                          title="Edit"
+                        >
+                          <EditIcon size={14} />
+                        </button>
+                      )}
 
                       {/* Add Button */}
-                      <button
-                        onClick={() => handleAdd(lead)}
-                        className="p-2 hover:bg-gray-100 rounded-full"
-                        title="Edit"
-                      >
-                        <AddIcon size={14} />
-                      </button>
+                      {followUpMenu?.CreateAccess && (
+                        <button
+                          onClick={() => handleAdd(lead)}
+                          className="p-2 hover:bg-gray-100 rounded-full"
+                          title="Create FollowUp"
+                        >
+                          <AddIcon size={14} />
+                        </button>
+                      )}
 
                       {/* WhatsApp Button */}
                       <button
@@ -578,12 +587,14 @@ const LeadsTab = ({ refreshKey }) => {
                               >
                                 Details
                               </button>
-                              <button
-                                onClick={() => handleDelete(lead.LeadId)}
-                                className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
-                              >
-                                Delete
-                              </button>
+                              {leadMenu?.DeleteAccess && (
+                                <button
+                                  onClick={() => handleDelete(lead.LeadId)}
+                                  className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
+                                >
+                                  Delete
+                                </button>
+                              )}
                             </div>
                           </div>
                         )}
@@ -708,7 +719,7 @@ const LeadsTab = ({ refreshKey }) => {
         <AddNewFollowUp
           isOpen={addFollowUpModalOpen}
           onClose={() => { setAddFollowUpModalOpen(false), setSelectedLeadId(null) }}
-          onSuccess={()=>null}
+          onSuccess={() => null}
           followUp={selectedLeadId}
         />
       )}
