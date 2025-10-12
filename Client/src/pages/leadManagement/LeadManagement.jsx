@@ -23,7 +23,9 @@ const LeadManagement = () => {
     const [addStatusModalOpen, setAddStatusModalOpen] = useState(false);
     const [addSourceModalOpen, setAddSourceModalOpen] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
-    const { user } = useAuth();
+    const { user, menus } = useAuth();
+
+    const leadMenu = menus.find(item => item.Name === "My Leads");
 
     const handleNewCreatedData = () => {
         setRefreshKey(prev => prev + 1);
@@ -112,7 +114,7 @@ const LeadManagement = () => {
                         ))}
                     </div>
                     <div className='flex justify-between items-center gap-2'>
-                        {user.IsAdmin ? (
+                        {user.IsAdmin && (
                             <button
                                 className='p-2 border text-green-900 text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed'
                                 onClick={handleExport}
@@ -120,14 +122,15 @@ const LeadManagement = () => {
                             >
                                 <OpenIcon /> Export
                             </button>
-                        ) : ""}
-                        <button
-                            className='p-2 border text-green-900 text-sm flex items-center gap-2'
-                            onClick={currentTab?.openModal}
-                        >
-                            {currentTab.btnLabel == "Import New Lead" ? <OpenIcon size={10} /> : <AddIcon size={10} />}    {currentTab?.btnLabel}
-                        </button>
-
+                        )}
+                        {leadMenu?.CreateAccess && (
+                            <button
+                                className='p-2 border text-green-900 text-sm flex items-center gap-2'
+                                onClick={currentTab?.openModal}
+                            >
+                                {currentTab.btnLabel == "Import New Lead" ? <OpenIcon size={10} /> : <AddIcon size={10} />}    {currentTab?.btnLabel}
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

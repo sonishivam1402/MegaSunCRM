@@ -12,7 +12,12 @@ import { getQuotationPdf } from '../../api/invoiceApi';
 import { useAuth } from '../../context/AuthContext';
 
 const Quotation = ({ refreshKey }) => {
-    const { user } = useAuth();
+    const { user, menus } = useAuth();
+
+    const quotationMenus = menus.find(item => item.Name === "Quotation");
+    const ordersMenus = menus.find(item => item.Name === "Orders");
+    const followUpMenus = menus.find(item => item.Name === "Followups");
+
     // State management
     const [quotations, setQuotations] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -67,7 +72,7 @@ const Quotation = ({ refreshKey }) => {
                 offset,
                 limit,
                 type,
-                userId : user.UserId
+                userId: user.UserId
             };
 
             // Only add salesman if it has value
@@ -359,13 +364,15 @@ const Quotation = ({ refreshKey }) => {
             <div className="px-6 py-4 flex-shrink-0">
                 <div className="flex items-center justify-between mb-4">
                     <h1 className="text-xl font-semibold text-gray-800">Quotation History</h1>
-                    <button
-                        onClick={handleAddQuotation}
-                        className="px-4 py-2 bg-[#0d4715] text-white rounded-md text-sm hover:bg-[#0a3811] flex items-center gap-2"
-                    >
-                        <AddIcon color='white' />
-                        Add new quotation
-                    </button>
+                    {quotationMenus?.CreateAccess && (
+                        <button
+                            onClick={handleAddQuotation}
+                            className="px-4 py-2 bg-[#0d4715] text-white rounded-md text-sm hover:bg-[#0a3811] flex items-center gap-2"
+                        >
+                            <AddIcon color='white' />
+                            Add new quotation
+                        </button>
+                    )}
                 </div>
 
                 {/* Filter Controls */}
@@ -532,32 +539,45 @@ const Quotation = ({ refreshKey }) => {
                                                             <button onClick={() => handleDownloadQuotation(quotation.QuotationId, "quotation")} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
                                                                 Download Quotation
                                                             </button>
-                                                            <button onClick={() => handleQuotationOrder(quotation.QuotationId)} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
-                                                                Convert to Order
-                                                            </button>
-                                                            <button
-                                                                onClick={() => {
-                                                                    setLastFollowUpModalOpen(true);
-                                                                    setSelectedQuotation(quotation);
-                                                                    setActiveDropdown(null);
-                                                                }}
-                                                                className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
-                                                                View last follow-up
-                                                            </button>
+
+                                                            {ordersMenus?.CreateAccess && (
+                                                                <button onClick={() => handleQuotationOrder(quotation.QuotationId)} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
+                                                                    Convert to Order
+                                                                </button>
+                                                            )}
+
+                                                            {followUpMenus?.ReadAccess && (
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setLastFollowUpModalOpen(true);
+                                                                        setSelectedQuotation(quotation);
+                                                                        setActiveDropdown(null);
+                                                                    }}
+                                                                    className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
+                                                                    View last follow-up
+                                                                </button>
+                                                            )}
+
                                                             <button onClick={() => handleWhatsApp(quotation)} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
                                                                 Whatsapp
                                                             </button>
-                                                            <button onClick={() => handleEdit(quotation.QuotationId)} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
-                                                                Edit
-                                                            </button>
-                                                            <button className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
-                                                                onClick={() => {
-                                                                    handleDelete(quotation.QuotationId)
-                                                                    setActiveDropdown(null);
-                                                                }}
-                                                            >
-                                                                Delete
-                                                            </button>
+
+                                                            {quotationMenus?.UpdateAccess && (
+                                                                <button onClick={() => handleEdit(quotation.QuotationId)} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
+                                                                    Edit
+                                                                </button>
+                                                            )}
+
+                                                            {quotationMenus?.DeleteAccess && (
+                                                                <button className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
+                                                                    onClick={() => {
+                                                                        handleDelete(quotation.QuotationId)
+                                                                        setActiveDropdown(null);
+                                                                    }}
+                                                                >
+                                                                    Delete
+                                                                </button>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 )}
@@ -682,7 +702,7 @@ const Quotation = ({ refreshKey }) => {
                 <AddNewOrder
                     isOpen={orderModalOpen}
                     onClose={() => setOrderModalOpen(false)}
-                    onSuccess={()=>null}
+                    onSuccess={() => null}
                     quotationId={selectedQuotation}
                 />
             )}

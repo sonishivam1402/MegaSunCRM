@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import EditUserTypeModal from './EditUserTypeModal';
 
 const AllUserTypesTab = ({ refreshKey }) => {
-    const { user } = useAuth();
+    const { user, menus } = useAuth();
     const navigate = useNavigate();
     const [userTypes, setUserTypes] = useState([]);
     const [userTypeInfo, setUserTypeInfo] = useState([]);
@@ -14,6 +14,8 @@ const AllUserTypesTab = ({ refreshKey }) => {
     const [activeDropdown, setActiveDropdown] = useState(null);
     const [isEditUserTypeModalOpen, setIsEditUserTypeModalOpen] = useState(false);
     const dropdownRefs = useRef({});
+
+    const userMenu = menus.find(item => item.Name === "User Management");
 
     // Fetch user types data
     const getUserTypes = async () => {
@@ -78,7 +80,7 @@ const AllUserTypesTab = ({ refreshKey }) => {
         setIsEditUserTypeModalOpen(true);
         setActiveDropdown(null);
     };
-    
+
     // Handle details page
     const handleDetails = (userTypeId) => {
         navigate(`/userTypes/${userTypeId}/details`);
@@ -141,12 +143,15 @@ const AllUserTypesTab = ({ refreshKey }) => {
                                                     >
                                                         Details
                                                     </button>
-                                                    <button
-                                                        onClick={() => handleEdit(userType)}
-                                                        className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
-                                                    >
-                                                        Edit
-                                                    </button>
+
+                                                    {userMenu?.UpdateAccess && (
+                                                        <button
+                                                            onClick={() => handleEdit(userType)}
+                                                            className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
+                                                        >
+                                                            Edit
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         )}
@@ -183,24 +188,24 @@ const AllUserTypesTab = ({ refreshKey }) => {
                     </div>
 
                     <div className=" flex items-center gap-2 px-2 border border-b-color">
-                    <button
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className="px-2 py-1 text-sm text-gray-500 hover:text-gray-700 disabled:!opacity-50 disabled:!cursor-not-allowed"
-                    >
-                        &lt;
-                    </button>
-                    <span className="px-3 py-1 text-sm text-gray-700  border-x border-b-color">
-                        {currentPage}/{totalPages}
-                    </span>
-                    <button
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                        className="px-2 py-1 text-sm text-gray-700 disabled:!opacity-50 disabled:!cursor-not-allowed"
-                    >
-                        &gt;
-                    </button>
-                </div>
+                        <button
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="px-2 py-1 text-sm text-gray-500 hover:text-gray-700 disabled:!opacity-50 disabled:!cursor-not-allowed"
+                        >
+                            &lt;
+                        </button>
+                        <span className="px-3 py-1 text-sm text-gray-700  border-x border-b-color">
+                            {currentPage}/{totalPages}
+                        </span>
+                        <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="px-2 py-1 text-sm text-gray-700 disabled:!opacity-50 disabled:!cursor-not-allowed"
+                        >
+                            &gt;
+                        </button>
+                    </div>
                 </div>
             </div>
 

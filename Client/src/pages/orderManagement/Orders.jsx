@@ -11,7 +11,10 @@ import { getQuotationPdf } from '../../api/invoiceApi';
 import { useAuth } from '../../context/AuthContext';
 
 const Order = ({ refreshKey }) => {
-    const { user } = useAuth();
+    const { user, menus } = useAuth();
+    const orderMenus = menus.find(item => item.Name === "Orders");
+    const followUpMenu = menus.find(item => item.Name === "Followups");
+
     // State management
     const [orders, setOrders] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -351,13 +354,15 @@ const Order = ({ refreshKey }) => {
             <div className="px-6 py-4 flex-shrink-0">
                 <div className="flex items-center justify-between mb-4">
                     <h1 className="text-xl font-semibold text-gray-800">Order History</h1>
-                    <button
-                        onClick={handleAddOrder}
-                        className="px-4 py-2 bg-[#0d4715] text-white rounded-md text-sm hover:bg-[#0a3811] flex items-center gap-2"
-                    >
-                        <AddIcon color='white' />
-                        Add new order
-                    </button>
+                    {orderMenus?.CreateAccess && (
+                        <button
+                            onClick={handleAddOrder}
+                            className="px-4 py-2 bg-[#0d4715] text-white rounded-md text-sm hover:bg-[#0a3811] flex items-center gap-2"
+                        >
+                            <AddIcon color='white' />
+                            Add new order
+                        </button>
+                    )}
                 </div>
 
                 {/* Filter Controls */}
@@ -522,32 +527,43 @@ const Order = ({ refreshKey }) => {
                                                             {/* <button onClick={() => handleDownloadOrder(order.OrderId, "order")} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
                                                                 Download Order
                                                             </button> */}
+
                                                             <button onClick={() => handleDownloadOrder(order.OrderId, "performaInvoice")} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
                                                                 Download Performa Invoice
                                                             </button>
-                                                            <button
-                                                                onClick={() => {
-                                                                    setLastFollowUpModalOpen(true);
-                                                                    setSelectedOrder(order);
-                                                                    setActiveDropdown(null);
-                                                                }}
-                                                                className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
-                                                                View last follow-up
-                                                            </button>
+
+                                                            {followUpMenu?.ReadAccess && (
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setLastFollowUpModalOpen(true);
+                                                                        setSelectedOrder(order);
+                                                                        setActiveDropdown(null);
+                                                                    }}
+                                                                    className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
+                                                                    View last follow-up
+                                                                </button>
+                                                            )}
+
                                                             <button onClick={() => handleWhatsApp(order)} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
                                                                 Whatsapp
                                                             </button>
-                                                            <button onClick={() => handleEdit(order.OrderId)} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
-                                                                Edit
-                                                            </button>
-                                                            <button className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
-                                                                onClick={() => {
-                                                                    handleDelete(order.OrderId)
-                                                                    setActiveDropdown(null);
-                                                                }}
-                                                            >
-                                                                Delete
-                                                            </button>
+
+                                                            {orderMenus?.UpdateAccess && (
+                                                                <button onClick={() => handleEdit(order.OrderId)} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
+                                                                    Edit
+                                                                </button>
+                                                            )}
+
+                                                            {orderMenus?.DeleteAccess && (
+                                                                <button className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
+                                                                    onClick={() => {
+                                                                        handleDelete(order.OrderId)
+                                                                        setActiveDropdown(null);
+                                                                    }}
+                                                                >
+                                                                    Delete
+                                                                </button>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 )}
