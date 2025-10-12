@@ -118,7 +118,7 @@ const UserTargetSalesTab = ({ userId }) => {
             {/* Stats Cards */}
             <div className="grid grid-cols-4 gap-4 mb-8">
                 {/* Total Sales Amount */}
-                <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                <div className="rounded-lg p-4 border border-gray-200 shadow-sm">
                     <div className="flex items-center justify-between mb-2">
                         <span className="text-sm text-gray-600">Total sales(amount)</span>
                         <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
@@ -131,7 +131,7 @@ const UserTargetSalesTab = ({ userId }) => {
                 </div>
 
                 {/* Total Sales Number */}
-                <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                <div className=" rounded-lg p-4 border border-gray-200 shadow-sm">
                     <div className="flex items-center justify-between mb-2">
                         <span className="text-sm text-gray-600">Total sales(number)</span>
                         <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
@@ -144,7 +144,7 @@ const UserTargetSalesTab = ({ userId }) => {
                 </div>
 
                 {/* Deal Done */}
-                <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                <div className=" rounded-lg p-4 border border-gray-200 shadow-sm">
                     <div className="flex items-center justify-between mb-2">
                         <span className="text-sm text-gray-600">Deal done</span>
                         <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
@@ -157,7 +157,7 @@ const UserTargetSalesTab = ({ userId }) => {
                 </div>
 
                 {/* Open Leads */}
-                <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                <div className=" rounded-lg p-4 border border-gray-200 shadow-sm">
                     <div className="flex items-center justify-between mb-2">
                         <span className="text-sm text-gray-600">Open Leads</span>
                         <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
@@ -172,7 +172,7 @@ const UserTargetSalesTab = ({ userId }) => {
             </div>
 
             {/* Chart Section */}
-            <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+            <div className="rounded-lg p-6 border border-gray-200 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-lg font-semibold text-gray-900">Target achieved in</h3>
                     <div className="relative">
