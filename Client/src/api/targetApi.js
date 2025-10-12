@@ -58,6 +58,21 @@ export const getOrderByUserIdAndMonth = async ({ offset, limit, month, year, use
   }
 };
 
+// Get order by user id and month
+export const getTargetSalesByUserId = async ({userId, year }) => {
+  try {
+    const res = await API.get(`/target/stats`, {
+      params: { userId, year }
+    });
+    return res;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in fetching target sales deatil by user Id : ", err);
+    }
+    throw err;
+  }
+};
+
 // Create Target
 export const createNewTarget = async (data) => {
   try {

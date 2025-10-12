@@ -105,3 +105,20 @@ export const createTarget = async (req, res, next) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
+export const getTargetSalesByUserId = async (req, res, next) => {
+    try {
+        const { userId, year } = req.query;
+        const pool = await poolPromise;
+        const result = await pool
+            .request()
+            .input("UserId", sql.UniqueIdentifier, userId)
+            .input("Year", sql.Int, parseInt(year))
+            .execute("GetTargetAndSalesByUserID");
+
+        res.json(result.recordsets);
+    } catch (err) {
+        console.error("Error in fetching target sales deatil by user id :", err);
+        res.status(500).json({ message: "Server error" });
+    }
+};
