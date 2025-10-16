@@ -100,8 +100,10 @@ const EditOrderModal = ({ isOpen, onClose, onSuccess, orderId }) => {
     const errors = {};
     let ok = true;
     if (!shippingDetails.companyName.trim()) { errors.companyName = 'Company name is required'; ok = false; }
-    if (!shippingDetails.email.trim()) { errors.email = 'Email is required'; ok = false; }
-    else if (!validateEmail(shippingDetails.email)) { errors.email = 'Please enter a valid email address'; ok = false; }
+    if (shippingDetails.email.trim() && !validateEmail(shippingDetails.email)) {
+      errors.email = 'Please enter a valid email address';
+      ok = false;
+    }
     if (!shippingDetails.address.trim()) { errors.address = 'Address is required'; ok = false; }
     if (!shippingDetails.city.trim()) { errors.city = 'City is required'; ok = false; }
     if (!shippingDetails.pincode.trim()) { errors.pincode = 'Pincode is required'; ok = false; }
@@ -568,7 +570,7 @@ const EditOrderModal = ({ isOpen, onClose, onSuccess, orderId }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Email address *</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Email address</label>
         <input
           type="email"
           value={shippingDetails.email}

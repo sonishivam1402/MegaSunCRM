@@ -483,19 +483,26 @@ const Order = ({ refreshKey }) => {
                                     </td>
 
                                     {/* Lead Details */}
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                        {order.LeadName || '-'}
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-300 flex-shrink-0">
+                                                <div className="w-full h-full flex items-center justify-center text-white text-xs font-medium bg-[#cd8b65]">
+                                                    {order.LeadName?.charAt(0).toUpperCase() || 'U'}
+                                                </div>
+                                            </div>
+                                            <span className="text-sm text-gray-900">{order.LeadName || 'Unknown'}</span>
+                                        </div>
                                     </td>
 
                                     {/* Item */}
-                                    <td className="px-6 py-4 text-sm text-gray-900 text-center">
+                                    <td className="px-6 py-4 text-sm text-gray-900 text-left">
                                         <div className="max-w-xs mx-auto">
                                             {formatProducts(order.Products || order.Item)}
                                         </div>
                                     </td>
 
                                     {/* Amount */}
-                                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                                    <td className="px-6 py-4 whitespace-nowrap text-left">
                                         <div className="flex flex-col text-sm">
                                             <span className="text-gray-600">Basic : ₹<span className="text-gray-900">{order.BasicAmount || '-'}</span></span>
                                             <span className="text-gray-600">Final : ₹<span className="text-gray-900">{order.FinalAmount || '-'}</span></span>
@@ -671,7 +678,7 @@ const Order = ({ refreshKey }) => {
                 <ViewLastFollowUp
                     isOpen={lastFollowUpModalOpen}
                     onClose={() => setLastFollowUpModalOpen(false)}
-                    order={selectedOrder?.OrderId}
+                    followUp={selectedOrder?.OrderId}
                 />
             )}
 

@@ -133,10 +133,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
             isValid = false;
         }
 
-        if (!shippingDetails.email.trim()) {
-            errors.email = 'Email is required';
-            isValid = false;
-        } else if (!validateEmail(shippingDetails.email)) {
+        if (shippingDetails.email.trim() && !validateEmail(shippingDetails.email)) {
             errors.email = 'Please enter a valid email address';
             isValid = false;
         }
@@ -926,7 +923,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email address *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email address</label>
                 <input
                     type="email"
                     value={shippingDetails.email}

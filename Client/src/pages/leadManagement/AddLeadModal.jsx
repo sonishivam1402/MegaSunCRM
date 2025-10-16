@@ -148,7 +148,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
   };
 
   const requiredFields = () => {
-    const fields = ['name', 'contact', 'email', 'address', 'city', 'state', 'country', 'pincode', 'gst', 'leadTypeId', 'leadSourceId'];
+    const fields = ['name', 'contact', 'address', 'city', 'state', 'country', 'pincode', 'gst', 'leadTypeId', 'leadSourceId'];
     if (user.IsAdmin) fields.push('userId');
     return fields;
   };
@@ -384,7 +384,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                 {/* Lead's Email */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <span className="text-red-500">*</span> Lead's Email
+                    Lead's Email
                   </label>
                   <input
                     type="email"

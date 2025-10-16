@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authenticate } from "../middlewares/authMiddleware.js";
 import { checkPermission } from "../middlewares/checkPermission.js";
-import { createNewQuotation, deleteQuotationById, exportQuotations, getLastFollowUpByQuotationId, getQuotationById, getQuotations, updateQuotationById } from "../controllers/quotation.controller.js";
+import { createNewQuotation, deleteQuotationById, exportQuotations, getFollowUpByQuotationId, getQuotationById, getQuotations, updateQuotationById } from "../controllers/quotation.controller.js";
 
 const quotationRouter = Router();
 
@@ -9,7 +9,7 @@ quotationRouter.get("/export-csv", authenticate, checkPermission("ReadAccess", "
 
 quotationRouter.put("/:id", authenticate, checkPermission("UpdateAccess", "Quotation"), updateQuotationById);
 quotationRouter.get("/:id", authenticate, checkPermission("ReadAccess", "Quotation"), getQuotationById);
-quotationRouter.get("/followup/:id", authenticate, checkPermission("ReadAccess", "Quotation"), getLastFollowUpByQuotationId);
+quotationRouter.get("/followup/:id", authenticate, checkPermission("ReadAccess", "Quotation"), getFollowUpByQuotationId);
 quotationRouter.delete("/:id", authenticate, checkPermission("DeleteAccess", "Quotation"), deleteQuotationById);
 
 quotationRouter.get("/", authenticate, checkPermission("ReadAccess", "Quotation"), getQuotations);

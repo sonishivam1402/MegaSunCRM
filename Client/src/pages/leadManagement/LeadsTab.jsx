@@ -11,6 +11,7 @@ import EditLeadModal from './EditLeadModal';
 import LastFollowUpModal from './LastFollowUpModal';
 import AddNewFollowUp from '../followUpManagement/AddNewFollowUp';
 import { useAuth } from '../../context/AuthContext';
+import HistoryModal from '../followUpManagement/HistoryModal';
 
 const LeadsTab = ({ refreshKey }) => {
   // State management
@@ -442,8 +443,8 @@ const LeadsTab = ({ refreshKey }) => {
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">LEAD DETAILS</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">LAST FOLLOWUP DATE</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">ITEM</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ASSIGNED TO</th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-fit">ITEM</th>
+              {user.IsAdmin && <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ASSIGNED TO</th>}
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">LEAD SOURCE</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
               <th className="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
@@ -487,30 +488,31 @@ const LeadsTab = ({ refreshKey }) => {
                   </td>
 
                   {/* Item */}
-                  <td className="px-6 py-4 break-words whitespace-normal text-center text-sm text-gray-900">
+                  <td className="px-6 py-4 break-words whitespace-normal text-left text-sm text-gray-900">
                     {formatProducts(lead.Products)}
                   </td>
 
                   {/* Assigned To */}
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <div className="flex justify-center items-center gap-2">
-                      <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-300 flex-shrink-0">
-                        {lead.AssignedTo?.Avatar ? (
-                          <img
-                            src={lead.AssignedTo.Avatar}
-                            alt="Profile"
-                            className="w-6 h-6 object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-white text-xs font-medium bg-[#0d4715]">
-                            {lead.AssignedTo ? lead.AssignedTo.charAt(0).toUpperCase() : '?'}
-                          </div>
-                        )}
+                  {user.IsAdmin &&
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <div className="flex justify-left items-center gap-2">
+                        <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-300 flex-shrink-0">
+                          {lead.AssignedTo?.Avatar ? (
+                            <img
+                              src={lead.AssignedTo.Avatar}
+                              alt="Profile"
+                              className="w-6 h-6 object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-white text-xs font-medium bg-[#0d4715]">
+                              {lead.AssignedTo ? lead.AssignedTo.charAt(0).toUpperCase() : '?'}
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-sm text-gray-900">{lead.AssignedTo || 'N/A'}</span>
                       </div>
-                      <span className="text-sm text-gray-900">{lead.AssignedTo || 'N/A'}</span>
-                    </div>
-                  </td>
-
+                    </td>
+                  }
                   {/* Lead Source */}
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
                     {lead.LeadSource || 'N/A'}
@@ -707,11 +709,19 @@ const LeadsTab = ({ refreshKey }) => {
         />
       )}
 
-      {lastFollowUpModalOpen && (
+      {/* {lastFollowUpModalOpen && (
         <LastFollowUpModal
           isOpen={lastFollowUpModalOpen}
           onClose={() => { setLastFollowUpModalOpen(false), setSelectedLeadId(null) }}
           leadId={selectedLeadId}
+        />
+      )} */}
+
+      {lastFollowUpModalOpen && (
+        <HistoryModal
+          isOpen={lastFollowUpModalOpen}
+          onClose={() => { setLastFollowUpModalOpen(false), setSelectedLeadId(null) }}
+          followUp={selectedLeadId}
         />
       )}
 
