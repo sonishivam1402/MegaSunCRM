@@ -16,6 +16,7 @@ import { useAuth } from '../../context/AuthContext';
 const FollowUpManagement = () => {
     // State management
     const [followUps, setFollowUps] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
     const [pageSize, setPageSize] = useState(10);
     const [pageNumber, setPageNumber] = useState(1);
     const [totalRecords, setTotalRecords] = useState(0);
@@ -31,11 +32,13 @@ const FollowUpManagement = () => {
     const [deleting, setDeleting] = useState(false);
     const { user, menus } = useAuth();
     const dropdownRefs = useRef({});
+    const searchTimeoutRef = useRef(null);
 
     const followUpMenu = menus.find(item => item.Name === "Followups");
 
     // Calculate total pages
     const totalPages = Math.ceil(totalRecords / pageSize);
+
     // Filter tabs
     const filterTabs = [
         { label: 'All', value: 'All' },
@@ -46,12 +49,13 @@ const FollowUpManagement = () => {
     ];
 
     // Fetch follow-ups
-    const fetchFollowUps = useCallback(async (filter = 'All', page = 1, limit = 10) => {
+    const fetchFollowUps = useCallback(async (search = '', filter = 'All', page = 1, limit = 10) => {
         try {
             setLoading(true);
             const offset = (page - 1) * limit;
 
             const apiParams = {
+                search: search,
                 filter: filter,
                 limit: limit,
                 offset: offset,
@@ -59,7 +63,6 @@ const FollowUpManagement = () => {
             };
 
             const response = await getFollowUps(apiParams);
-            //console.log(response)
             // Handle response structure similar to leads
             if (response && Array.isArray(response) && response.length >= 2) {
                 const followUpsData = response[0] || [];
@@ -79,22 +82,52 @@ const FollowUpManagement = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [user.UserId]);
 
+    // Debounced search function
+    const debouncedSearch = useCallback((searchValue, page = 1, limit = pageSize) => {
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
 
+        if (searchValue.length < 3) {
+            return;
+        }
+
+        searchTimeoutRef.current = setTimeout(() => {
+            fetchFollowUps(searchValue, activeFilter, page, limit);
+        }, 1000);
+    }, [pageSize, fetchFollowUps, activeFilter]);
+
+    // Handle search input change
+    const handleSearchChange = (e) => {
+        const value = e.target.value;
+        setSearchTerm(value);
+        setPageNumber(1);
+
+        if (value === '' || value.trim().length < 3) {
+            // Fetch without search when cleared or less than 3 chars
+            fetchFollowUps('', activeFilter, 1, pageSize);
+            return;
+        }
+
+        debouncedSearch(value, 1, pageSize);
+    };
 
     // Handle filter change
     const handleFilterChange = (filter) => {
         setActiveFilter(filter);
         setPageNumber(1);
-        fetchFollowUps(filter, 1, pageSize);
+        const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
+        fetchFollowUps(currentSearch, filter, 1, pageSize);
     };
 
     // Handle page change
     const handlePageChange = (page) => {
         if (page >= 1 && page <= totalPages) {
             setPageNumber(page);
-            fetchFollowUps(activeFilter, page, pageSize);
+            const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
+            fetchFollowUps(currentSearch, activeFilter, page, pageSize);
         }
     };
 
@@ -102,20 +135,30 @@ const FollowUpManagement = () => {
     const handlePageSizeChange = (newPageSize) => {
         setPageSize(newPageSize);
         setPageNumber(1);
-        fetchFollowUps(activeFilter, 1, newPageSize);
+        const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
+        fetchFollowUps(currentSearch, activeFilter, 1, newPageSize);
     };
 
     // Initial data fetch
     useEffect(() => {
-        fetchFollowUps('All', 1, pageSize);
+        fetchFollowUps('', 'All', 1, pageSize);
     }, [fetchFollowUps, pageSize]);
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (searchTimeoutRef.current) {
+                clearTimeout(searchTimeoutRef.current);
+            }
+        };
+    }, []);
 
     // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (activeDropdown && dropdownRefs.current[activeDropdown]) {
                 if (!dropdownRefs.current[activeDropdown].contains(event.target)) {
-                    setActiveDropdown(null);
+                    setactiveDropdown(null);
                 }
             }
         };
@@ -155,28 +198,20 @@ const FollowUpManagement = () => {
             return;
         }
 
-        // Ensure correct format (without spaces, etc.)
         const phone = followUp.Contact.replace(/\D/g, "");
-
-        // Optional: prefill a message
         const message = encodeURIComponent("Hello, I'm following up regarding your inquiry.");
-
         const whatsappUrl = `https://api.whatsapp.com/send?phone=91${phone}&text=${message}`;
 
-        // Open in new tab
         window.open(whatsappUrl, "_blank");
-
         setActiveDropdown(null);
     };
-
 
     const handleExport = async () => {
         setLoading(true);
         try {
-            const response = await exportFollowUp(); // axios response
-            const blob = response.data;              // <-- axios puts the Blob here
+            const response = await exportFollowUp();
+            const blob = response.data;
 
-            // Try to read filename from Content-Disposition
             let filename = 'export_' + Date.now() + '.csv';
             const disp = response.headers?.['content-disposition'] || '';
             const m = /filename\*=UTF-8''([^;]+)|filename="([^"]+)"/i.exec(disp);
@@ -189,7 +224,6 @@ const FollowUpManagement = () => {
             const now = new Date();
             const pad = (n) => String(n).padStart(2, '0');
 
-            // Format as YYYYMMDD_HHMMSS
             const formatted =
                 now.getFullYear() +
                 pad(now.getMonth() + 1) +
@@ -199,7 +233,6 @@ const FollowUpManagement = () => {
                 pad(now.getSeconds());
 
             a.download = `export_follow-ups_${formatted}.csv`;
-            // a.download = filename;
             document.body.appendChild(a);
             a.click();
             a.remove();
@@ -210,7 +243,6 @@ const FollowUpManagement = () => {
             setLoading(false);
         }
     };
-
 
     const handleAddNewFollowUp = () => {
         setAddFollowUpModalOpen(true);
@@ -290,9 +322,23 @@ const FollowUpManagement = () => {
                 <h1 className="text-xl font-medium text-gray-900 mb-4">{activeFilter} follow-ups</h1>
 
                 {/* Filter Tabs and Actions */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-4 flex-wrap">
                     {/* Filter Tabs */}
                     <div className="flex items-center gap-2">
+                        {/* Search Bar */}
+                        <div className="relative w-64">
+                            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <input
+                                type="text"
+                                placeholder="Search (min 3 chars)"
+                                value={searchTerm}
+                                onChange={handleSearchChange}
+                                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#0d4715]"
+                            />
+                        </div>
+                        
                         {filterTabs.map((tab) => (
                             <button
                                 key={tab.value}
@@ -306,6 +352,8 @@ const FollowUpManagement = () => {
                             </button>
                         ))}
                     </div>
+
+
 
                     {/* Action Buttons */}
                     <div className="flex items-center gap-2">
@@ -349,9 +397,11 @@ const FollowUpManagement = () => {
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 ITEM
                             </th>
-                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                ASSIGNED TO
-                            </th>
+                            {user.IsAdmin &&
+                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    ASSIGNED TO
+                                </th>
+                            }
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 LEAD SOURCE
                             </th>
@@ -409,31 +459,33 @@ const FollowUpManagement = () => {
                                     </td>
 
                                     {/* Item */}
-                                    <td className="px-6 py-4 text-center text-sm text-gray-900">
+                                    <td className="px-6 py-4 text-left text-sm text-gray-900">
                                         <div className="max-w-xs mx-auto">
                                             {formatProducts(followUp.Products || followUp.Item)}
                                         </div>
                                     </td>
 
                                     {/* Assigned To */}
-                                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                                        <div className="flex justify-center items-center gap-2">
-                                            <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-300 flex-shrink-0">
-                                                {followUp.AssignedToAvatar ? (
-                                                    <img
-                                                        src={followUp.AssignedToAvatar}
-                                                        alt="Profile"
-                                                        className="w-6 h-6 object-cover"
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center text-white text-xs font-medium bg-[#0d4715]">
-                                                        {followUp.AssignedUser ? followUp.AssignedUser.charAt(0).toUpperCase() : '?'}
-                                                    </div>
-                                                )}
+                                    {user.IsAdmin &&
+                                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                                            <div className="flex justify-left items-center gap-2">
+                                                <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-300 flex-shrink-0">
+                                                    {followUp.AssignedToAvatar ? (
+                                                        <img
+                                                            src={followUp.AssignedToAvatar}
+                                                            alt="Profile"
+                                                            className="w-6 h-6 object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center text-white text-xs font-medium bg-[#0d4715]">
+                                                            {followUp.AssignedUser ? followUp.AssignedUser.charAt(0).toUpperCase() : '?'}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <span className="text-sm text-gray-900">{followUp.AssignedUser || 'N/A'}</span>
                                             </div>
-                                            <span className="text-sm text-gray-900">{followUp.AssignedUser || 'N/A'}</span>
-                                        </div>
-                                    </td>
+                                        </td>
+                                    }
 
                                     {/* Lead Source */}
                                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">

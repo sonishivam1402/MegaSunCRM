@@ -73,19 +73,19 @@ export const getOrderById = async (req, res, next) => {
 };
 
 // Get Last FollowUp By Order Id
-export const getLastFollowUpByOrderId = async (req, res, next) => {
+export const getFollowUpByOrderId = async (req, res, next) => {
   try {
     const orderId = req.params.id;
     const pool = await poolPromise;
     const result = await pool
       .request()
-      .input("OrderId", sql.UniqueIdentifier, orderId)
-      .execute("sp_GetLastFollowupByOrderId");
+      .input("orderid", sql.UniqueIdentifier, orderId)
+      .execute("sp_GetFollowupsByOrderId");
 
     res.json(result.recordsets);
   } catch (err) {
     console.error(
-      "Error in fetching last follow up deatils by order Id :",
+      "Error in fetching follow up deatils by order Id :",
       err
     );
     res.status(500).json({ message: "Server error" });

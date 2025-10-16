@@ -5,6 +5,7 @@ export const getFollowUps = async (apiParams) => {
   try {
     const res = await API.get(`/followUp/filter`,{
         params : {
+            search : apiParams.search,
             filter : apiParams.filter,
             limit : apiParams.limit,
             offset : apiParams.offset,

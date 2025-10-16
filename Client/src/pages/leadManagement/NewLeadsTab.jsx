@@ -8,8 +8,12 @@ import WhatsAppIcon from '../../assets/icons/WhatsAppIcon';
 import ThreeDotIcon from '../../assets/icons/ThreeDotIcon';
 import { toast } from 'react-toastify';
 import EditLeadModal from './EditLeadModal';
+import { useAuth } from '../../context/AuthContext';
 
 const NewLeadsTab = ({ refreshKey }) => {
+
+  const { user } = useAuth();
+
   // State management
   const [leads, setLeads] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -273,17 +277,17 @@ const NewLeadsTab = ({ refreshKey }) => {
     setActiveDropdown(null);
   };
 
-  const handleCall = (lead) => {
-    console.log('Call lead:', lead);
-    // Implement call functionality
-    setActiveDropdown(null);
-  };
+  // const handleCall = (lead) => {
+  //   console.log('Call lead:', lead);
+  //   // Implement call functionality
+  //   setActiveDropdown(null);
+  // };
 
-  const handleWhatsApp = (lead) => {
-    console.log('WhatsApp lead:', lead);
-    // Implement WhatsApp functionality
-    setActiveDropdown(null);
-  };
+  // const handleWhatsApp = (lead) => {
+  //   console.log('WhatsApp lead:', lead);
+  //   // Implement WhatsApp functionality
+  //   setActiveDropdown(null);
+  // };
 
   const confirmDelete = async () => {
     if (!selectedLeadId) return;
@@ -415,8 +419,8 @@ const NewLeadsTab = ({ refreshKey }) => {
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">LEAD DETAILS</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">LAST FOLLOWUP DATE</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-50">ITEM</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ASSIGNED TO</th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-fit">ITEM</th>
+              {user.IsAdmin && <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ASSIGNED TO</th>}
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">LEAD SOURCE</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
               <th className="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
@@ -460,29 +464,31 @@ const NewLeadsTab = ({ refreshKey }) => {
                   </td>
 
                   {/* Item */}
-                  <td className="px-6 py-4 break-words whitespace-normal text-center text-sm text-gray-900">
+                  <td className="px-6 py-4 break-words whitespace-normal text-left text-sm text-gray-900">
                     {formatProducts(lead.Products)}
                   </td>
 
                   {/* Assigned To */}
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <div className="flex justify-center items-center gap-2">
-                      <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-300 flex-shrink-0">
-                        {lead.AssignedTo?.Avatar ? (
-                          <img
-                            src={lead.AssignedTo.Avatar}
-                            alt="Profile"
-                            className="w-6 h-6 object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-white text-xs font-medium bg-[#0d4715]">
-                            {lead.AssignedTo ? lead.AssignedTo.charAt(0).toUpperCase() : '?'}
-                          </div>
-                        )}
+                  {user.IsAdmin &&
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <div className="flex justify-left items-center gap-2">
+                        <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-300 flex-shrink-0">
+                          {lead.AssignedTo?.Avatar ? (
+                            <img
+                              src={lead.AssignedTo.Avatar}
+                              alt="Profile"
+                              className="w-6 h-6 object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-white text-xs font-medium bg-[#0d4715]">
+                              {lead.AssignedTo ? lead.AssignedTo.charAt(0).toUpperCase() : '?'}
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-sm text-gray-900">{lead.AssignedTo || 'N/A'}</span>
                       </div>
-                      <span className="text-sm text-gray-900">{lead.AssignedTo || 'N/A'}</span>
-                    </div>
-                  </td>
+                    </td>
+                  }
 
                   {/* Lead Source */}
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
@@ -500,40 +506,40 @@ const NewLeadsTab = ({ refreshKey }) => {
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <div className="flex justify-end items-center gap-2">
                       {/* Call Button */}
-                      <button
+                      {/* <button
                         onClick={() => handleCall(lead)}
                         className="p-2 hover:bg-gray-100 rounded-full"
                         title="Call"
                       >
                         <HistoryIcon size={16} />
-                      </button>
+                      </button> */}
 
                       {/* Edit Button */}
-                      <button
+                      {/* <button
                         onClick={() => handleEdit(lead.LeadId)}
                         className="p-2 hover:bg-gray-100 rounded-full"
                         title="Edit"
                       >
                         <EditIcon size={16} />
-                      </button>
+                      </button> */}
 
                       {/* Add Button */}
-                      <button
+                      {/* <button
                         onClick={() => handleAdd(lead)}
                         className="p-2 hover:bg-gray-100 rounded-full"
                         title="Edit"
                       >
                         <AddIcon size={16} />
-                      </button>
+                      </button> */}
 
                       {/* WhatsApp Button */}
-                      <button
+                      {/* <button
                         onClick={() => handleWhatsApp(lead)}
                         className="p-2 hover:bg-gray-100 rounded-full"
                         title="WhatsApp"
                       >
                         <WhatsAppIcon size={16} />
-                      </button>
+                      </button> */}
 
                       {/* More Options */}
                       <div className="relative" ref={el => dropdownRefs.current[lead.LeadId] = el}>
@@ -553,6 +559,12 @@ const NewLeadsTab = ({ refreshKey }) => {
                                 className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
                               >
                                 Details
+                              </button>
+                              <button
+                                onClick={() => handleEdit(lead.LeadId)}
+                                className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
+                              >
+                                Edit
                               </button>
                               <button
                                 onClick={() => handleDelete(lead.LeadId)}

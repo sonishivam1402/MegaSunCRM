@@ -173,7 +173,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
 
   // ===================== Validation helpers =====================
   const requiredFields = () => {
-    const fields = ['name', 'contact', 'email', 'address', 'city', 'state', 'country', 'pincode', 'leadStatusId', 'leadTypeId', 'leadSourceId'];
+    const fields = ['name', 'contact', 'address', 'city', 'state', 'country', 'pincode', 'leadStatusId', 'leadTypeId', 'leadSourceId'];
     if (user.IsAdmin) fields.push('userId');
     return fields;
   };
@@ -399,7 +399,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
 
                     {/* Email */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2"><span className="text-red-500">*</span> Lead's email</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Lead's email</label>
                       <input
                         type="email"
                         value={formData.email}

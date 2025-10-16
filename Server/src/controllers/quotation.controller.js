@@ -74,19 +74,19 @@ export const getQuotationById = async (req, res, next) => {
 };
 
 // Get Last FollowUp By Quotation Id
-export const getLastFollowUpByQuotationId = async (req, res, next) => {
+export const getFollowUpByQuotationId = async (req, res, next) => {
   try {
     const quotationId = req.params.id;
     const pool = await poolPromise;
     const result = await pool
       .request()
-      .input("QuotationId", sql.UniqueIdentifier, quotationId)
-      .execute("sp_GetLastFollowupByQuotationId");
+      .input("quotationid", sql.UniqueIdentifier, quotationId)
+      .execute("sp_GetFollowupsByQuotationId");
 
     res.json(result.recordsets);
   } catch (err) {
     console.error(
-      "Error in fetching last follow up deatils by quotation Id :",
+      "Error in fetching follow up deatils by quotation Id :",
       err
     );
     res.status(500).json({ message: "Server error" });

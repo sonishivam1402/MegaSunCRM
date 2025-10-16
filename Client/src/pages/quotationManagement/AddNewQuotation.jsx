@@ -130,13 +130,10 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
             isValid = false;
         }
 
-        if (!shippingDetails.email.trim()) {
-            errors.email = 'Email is required';
-            isValid = false;
-        } else if (!validateEmail(shippingDetails.email)) {
+        if (shippingDetails.email.trim() && !validateEmail(shippingDetails.email)) {
             errors.email = 'Please enter a valid email address';
             isValid = false;
-        }
+        }        
 
         if (!shippingDetails.address.trim()) {
             errors.address = 'Address is required';
@@ -752,7 +749,7 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email address *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email address</label>
                 <input
                     type="email"
                     value={shippingDetails.email}
