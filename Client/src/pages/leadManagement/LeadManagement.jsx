@@ -12,6 +12,7 @@ import NewLeadsTab from './NewLeadsTab';
 import OpenIcon from '../../assets/icons/OpenIcon';
 import { exportLeads } from '../../api/leadApi';
 import { useAuth } from '../../context/AuthContext';
+import ImportLeadModal from './ImportLeadModal';
 
 const LeadManagement = () => {
 
@@ -120,7 +121,7 @@ const LeadManagement = () => {
                                 onClick={handleExport}
                                 disabled={loading}
                             >
-                                <OpenIcon /> Export
+                                <OpenIcon size={10} className="-rotate-180" /> Export
                             </button>
                         )}
                         {leadMenu?.CreateAccess && (
@@ -142,31 +143,48 @@ const LeadManagement = () => {
 
             {/* All Modals */}
             {/* Add Lead Modal - Uncomment when you create this component */}
-            <AddLeadModal
-                isOpen={addLeadModalOpen}
-                onClose={() => setAddLeadModalOpen(false)}
-                onSuccess={handleNewCreatedData}
-            />
+            {addLeadModalOpen && (
+                <AddLeadModal
+                    isOpen={addLeadModalOpen}
+                    onClose={() => setAddLeadModalOpen(false)}
+                    onSuccess={handleNewCreatedData}
+                />
+            )}
 
-            <AddLeadTypeModal
-                isOpen={addTypeModalOpen}
-                onClose={() => setAddTypeModalOpen(false)}
-                onSuccess={handleNewCreatedData}
-            />
+            {addTypeModalOpen && (
+                <AddLeadTypeModal
+                    isOpen={addTypeModalOpen}
+                    onClose={() => setAddTypeModalOpen(false)}
+                    onSuccess={handleNewCreatedData}
+                />
+            )}
 
             {/* Add Lead Source Modal - Uncomment when you create this component */}
-            <AddLeadSourceModal
-                isOpen={addSourceModalOpen}
-                onClose={() => setAddSourceModalOpen(false)}
-                onSuccess={handleNewCreatedData}
-            />
+            {addSourceModalOpen && (
+                <AddLeadSourceModal
+                    isOpen={addSourceModalOpen}
+                    onClose={() => setAddSourceModalOpen(false)}
+                    onSuccess={handleNewCreatedData}
+                />
+            )}
 
             {/* Add Lead Status Modal - Uncomment when you create this component */}
-            <AddLeadStatusModal
-                isOpen={addStatusModalOpen}
-                onClose={() => setAddStatusModalOpen(false)}
-                onSuccess={handleNewCreatedData}
-            />
+            {addStatusModalOpen && (
+                <AddLeadStatusModal
+                    isOpen={addStatusModalOpen}
+                    onClose={() => setAddStatusModalOpen(false)}
+                    onSuccess={handleNewCreatedData}
+                />
+            )}
+
+            {importLeadModalOpen && (
+                <ImportLeadModal
+                    isOpen={importLeadModalOpen}
+                    onClose={() => setImportLeadModalOpen(false)}
+                    onSuccess={handleNewCreatedData}
+                />
+            )}
+
         </div>
     )
 }
