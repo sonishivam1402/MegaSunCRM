@@ -23,7 +23,7 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
     { id: 'target', name: 'Target Page' },
     { id: 'quotation', name: 'Quotation Page' },
     { id: 'order', name: 'Order Page' },
-    { id: 'invoice', name: 'Invoice Page' },
+    // { id: 'invoice', name: 'Invoice Page' },
     { id: 'userManagement', name: 'User Management' },
     { id: 'followUps', name: 'Follow ups' },
     { id: 'leads', name: 'Leads Page' }
@@ -69,7 +69,7 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
         setApiResponse(response.data[3]?.[0] || null);
 
         // Prefill form data
-        prefillFormData(response.data[0]?.[0], response.data[1]);
+        prefillFormData(response.data[0]?.[0], response.data[1], response.data[2]?.[0]);
       } else {
         setError('Failed to fetch user type details');
       }
@@ -82,7 +82,7 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
   };
 
   // Prefill form data based on API response
-  const prefillFormData = (basicInfo, permissions) => {
+  const prefillFormData = (basicInfo, permissions, dashboardCards) => {
     if (!basicInfo) return;
 
     // Determine access type from existing user data
@@ -115,11 +115,22 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
       });
     }
 
+    // Convert dashboard cards to dashboardAccess format
+    const dashboardAccess = {};
+    if (dashboardCards) {
+      // Map API response properties to dashboard item IDs
+      dashboardAccess.followUps = dashboardCards['Followups Card'] || false;
+      dashboardAccess.leads = dashboardCards['Leads Card'] || false;
+      dashboardAccess.order = dashboardCards['Orders Card'] || false;
+      dashboardAccess.quotation = dashboardCards['Quotations Card'] || false;
+      dashboardAccess.target = dashboardCards['Targets Card'] || false;
+    }
+
     setFormData({
       accessName: basicInfo.Name || '',
       status: basicInfo.IsActive ? 'active' : 'inactive',
       accessType: accessType,
-      dashboardAccess: {}, // Dashboard access is not saved, so start empty
+      dashboardAccess: dashboardAccess,
       pageAccess: pageAccess
     });
   };
@@ -145,11 +156,18 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
         });
       }
 
+      const dashboardAccess = {};
+      if (userData.dashboardAccess) {
+        dashboardItems.forEach(item => {
+          dashboardAccess[item.id] = userData.dashboardAccess[item.id] || false;
+        });
+      }
+
       setFormData({
         accessName: userData.Name || '',
         status: userData.IsActive ? 'active' : 'inactive',
         accessType: accessType,
-        dashboardAccess: {},
+        dashboardAccess: dashboardAccess,
         pageAccess: pageAccess
       });
     }
@@ -186,12 +204,12 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
   };
 
   const buildPermissionsPayload = () => {
-    const permissions = {};
+    const pagePermissions = {};
 
     pageItems.forEach(item => {
       if (formData.accessType === 'full') {
         // For full access (admin), all permissions are true
-        permissions[item.apiKey] = {
+        pagePermissions[item.apiKey] = {
           read: true,
           create: true,
           update: true,
@@ -200,7 +218,7 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
       } else {
         // For limited access (regular user), use the selected permissions
         const itemPermissions = formData.pageAccess[item.id] || {};
-        permissions[item.apiKey] = {
+        pagePermissions[item.apiKey] = {
           read: itemPermissions.read || false,
           create: itemPermissions.create || false,
           update: itemPermissions.update || false,
@@ -209,17 +227,35 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
       }
     });
 
-    return permissions;
+    // Build dashboard permissions
+    const dashboardPermissions = {};
+    dashboardItems.forEach(item => {
+      if (formData.accessType === 'full') {
+        // For full access (admin), all dashboard items are visible
+        dashboardPermissions[item.id] = true;
+      } else {
+        // For limited access, use the selected dashboard access
+        dashboardPermissions[item.id] = formData.dashboardAccess[item.id] || false;
+      }
+    });
+
+    return {
+      pageAccess: pagePermissions,
+      dashboardAccess: dashboardPermissions
+    };
   };
 
   const handleSubmit = async () => {
+    const permissionsPayload = buildPermissionsPayload();
+
     const payload = {
       UserTypeId: userData, // Use basicInfo.Id if available, otherwise userData (userTypeId)
       Name: formData.accessName,
       IsAdmin: formData.accessType === 'full',
       IsRegularUser: formData.accessType === 'limited',
       IsActive: formData.status === 'active',
-      permissions: buildPermissionsPayload()
+      pageAccess: permissionsPayload.pageAccess,
+      dashboardAccess: permissionsPayload.dashboardAccess
     };
 
     try {
@@ -378,6 +414,7 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
                     checked={formData.dashboardAccess[item.id] || false}
                     onChange={(e) => handleDashboardAccessChange(item.id, e.target.checked)}
                     className="mr-3 text-green-600"
+                    disabled={formData.accessType === 'full'}
                   />
                   <span className="text-sm">{item.name}</span>
                 </label>

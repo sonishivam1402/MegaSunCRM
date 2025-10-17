@@ -256,7 +256,8 @@ export const createUserType = async (req, res) => {
       Name,
       IsAdmin,
       IsRegularUser,
-      permissions = {}
+      pageAccess = {},
+      dashboardAccess = {}
     } = req.body;
 
     // Validate main fields
@@ -267,7 +268,7 @@ export const createUserType = async (req, res) => {
     validateBit(IsAdmin, "IsAdmin");
     validateBit(IsRegularUser, "IsRegularUser");
 
-    // Validate all permissions
+    // Validate page permissions
     const modules = [
       "lead",
       "quotation",
@@ -280,18 +281,35 @@ export const createUserType = async (req, res) => {
     const actions = ["read", "create", "update", "delete"];
 
     for (const module of modules) {
-      if (!permissions[module]) {
-        throw new Error(`Missing permissions object for module: ${module}`);
+      if (!pageAccess[module]) {
+        throw new Error(`Missing pageAccess object for module: ${module}`);
       }
       for (const action of actions) {
         if (
-          permissions[module][action] === undefined ||
-          permissions[module][action] === null
+          pageAccess[module][action] === undefined ||
+          pageAccess[module][action] === null
         ) {
           throw new Error(`Missing permission: ${module}.${action}`);
         }
-        validateBit(permissions[module][action], `${module}.${action}`);
+        validateBit(pageAccess[module][action], `${module}.${action}`);
       }
+    }
+
+    // Validate dashboard permissions
+    const dashboardModules = [
+      "target",
+      "quotation",
+      "order",
+      "userManagement",
+      "followUps",
+      "leads",
+    ];
+
+    for (const module of dashboardModules) {
+      if (dashboardAccess[module] === undefined || dashboardAccess[module] === null) {
+        throw new Error(`Missing dashboardAccess for module: ${module}`);
+      }
+      validateBit(dashboardAccess[module], `dashboardAccess.${module}`);
     }
 
     // If validation passed, proceed with SP call
@@ -303,55 +321,56 @@ export const createUserType = async (req, res) => {
       .input("CreatedBy", sql.UniqueIdentifier, req.user.id)
       .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
 
-      // Lead
-      .input("LeadReadAccess", sql.Bit, permissions.lead.read)
-      .input("LeadCreateAccess", sql.Bit, permissions.lead.create)
-      .input("LeadUpdateAccess", sql.Bit, permissions.lead.update)
-      .input("LeadDeleteAccess", sql.Bit, permissions.lead.delete)
+      // Page Access - Lead
+      .input("LeadReadAccess", sql.Bit, pageAccess.lead.read)
+      .input("LeadCreateAccess", sql.Bit, pageAccess.lead.create)
+      .input("LeadUpdateAccess", sql.Bit, pageAccess.lead.update)
+      .input("LeadDeleteAccess", sql.Bit, pageAccess.lead.delete)
 
-      // Invoices
-      // .input("InvoiceReadAccess", sql.Bit, permissions.invoice.read)
-      // .input("InvoiceCreateAccess", sql.Bit, permissions.invoice.create)
-      // .input("InvoiceUpdateAccess", sql.Bit, permissions.invoice.update)
-      // .input("InvoiceDeleteAccess", sql.Bit, permissions.invoice.delete)
+      // Page Access - Quotation
+      .input("QuotationReadAccess", sql.Bit, pageAccess.quotation.read)
+      .input("QuotationCreateAccess", sql.Bit, pageAccess.quotation.create)
+      .input("QuotationUpdateAccess", sql.Bit, pageAccess.quotation.update)
+      .input("QuotationDeleteAccess", sql.Bit, pageAccess.quotation.delete)
 
-      // Quotation
-      .input("QuotationReadAccess", sql.Bit, permissions.quotation.read)
-      .input("QuotationCreateAccess", sql.Bit, permissions.quotation.create)
-      .input("QuotationUpdateAccess", sql.Bit, permissions.quotation.update)
-      .input("QuotationDeleteAccess", sql.Bit, permissions.quotation.delete)
+      // Page Access - User
+      .input("UserReadAccess", sql.Bit, pageAccess.user.read)
+      .input("UserCreateAccess", sql.Bit, pageAccess.user.create)
+      .input("UserUpdateAccess", sql.Bit, pageAccess.user.update)
+      .input("UserDeleteAccess", sql.Bit, pageAccess.user.delete)
 
-      // User
-      .input("UserReadAccess", sql.Bit, permissions.user.read)
-      .input("UserCreateAccess", sql.Bit, permissions.user.create)
-      .input("UserUpdateAccess", sql.Bit, permissions.user.update)
-      .input("UserDeleteAccess", sql.Bit, permissions.user.delete)
+      // Page Access - FollowUps
+      .input("FollowUpsReadAccess", sql.Bit, pageAccess.followUps.read)
+      .input("FollowUpsCreateAccess", sql.Bit, pageAccess.followUps.create)
+      .input("FollowUpsUpdateAccess", sql.Bit, pageAccess.followUps.update)
+      .input("FollowUpsDeleteAccess", sql.Bit, pageAccess.followUps.delete)
 
-      // FollowUps
-      .input("FollowUpsReadAccess", sql.Bit, permissions.followUps.read)
-      .input("FollowUpsCreateAccess", sql.Bit, permissions.followUps.create)
-      .input("FollowUpsUpdateAccess", sql.Bit, permissions.followUps.update)
-      .input("FollowUpsDeleteAccess", sql.Bit, permissions.followUps.delete)
+      // Page Access - Target
+      .input("TargetReadAccess", sql.Bit, pageAccess.target.read)
+      .input("TargetCreateAccess", sql.Bit, pageAccess.target.create)
+      .input("TargetUpdateAccess", sql.Bit, pageAccess.target.update)
+      .input("TargetDeleteAccess", sql.Bit, pageAccess.target.delete)
 
-      // Target
-      .input("TargetReadAccess", sql.Bit, permissions.target.read)
-      .input("TargetCreateAccess", sql.Bit, permissions.target.create)
-      .input("TargetUpdateAccess", sql.Bit, permissions.target.update)
-      .input("TargetDeleteAccess", sql.Bit, permissions.target.delete)
+      // Page Access - Orders
+      .input("OrdersReadAccess", sql.Bit, pageAccess.orders.read)
+      .input("OrdersCreateAccess", sql.Bit, pageAccess.orders.create)
+      .input("OrdersUpdateAccess", sql.Bit, pageAccess.orders.update)
+      .input("OrdersDeleteAccess", sql.Bit, pageAccess.orders.delete)
 
-      // Orders
-      .input("OrdersReadAccess", sql.Bit, permissions.orders.read)
-      .input("OrdersCreateAccess", sql.Bit, permissions.orders.create)
-      .input("OrdersUpdateAccess", sql.Bit, permissions.orders.update)
-      .input("OrdersDeleteAccess", sql.Bit, permissions.orders.delete)
+      // Page Access - Product
+      .input("ProductReadAccess", sql.Bit, pageAccess.product.read)
+      .input("ProductCreateAccess", sql.Bit, pageAccess.product.create)
+      .input("ProductUpdateAccess", sql.Bit, pageAccess.product.update)
+      .input("ProductDeleteAccess", sql.Bit, pageAccess.product.delete)
 
-      // Product
-      .input("ProductReadAccess", sql.Bit, permissions.product.read)
-      .input("ProductCreateAccess", sql.Bit, permissions.product.create)
-      .input("ProductUpdateAccess", sql.Bit, permissions.product.update)
-      .input("ProductDeleteAccess", sql.Bit, permissions.product.delete)
+      // Dashboard Access
+      .input("LeadPermission", sql.Bit, dashboardAccess.leads)
+      .input("FollowupPermission", sql.Bit, dashboardAccess.followUps)
+      .input("QuotationPermission", sql.Bit, dashboardAccess.quotation)
+      .input("OrdersPermission", sql.Bit, dashboardAccess.order)
+      .input("TargetPermission", sql.Bit, dashboardAccess.target)
 
-      .execute("sp_CreateUserType");
+      .execute("sp_CreateUserType_v1");
 
     if (result.recordset[0].Success) {
       res.status(201).json(result.recordset[0]);
@@ -376,7 +395,8 @@ export const updateUserTypeById = async (req, res) => {
       IsAdmin,
       IsRegularUser,
       IsActive,
-      permissions = {}
+      pageAccess = {},
+      dashboardAccess = {}
     } = req.body;
 
     // validate required fields
@@ -389,7 +409,7 @@ export const updateUserTypeById = async (req, res) => {
     validateBit(IsRegularUser, "IsRegularUser");
     validateBit(IsActive, "IsActive");
 
-    // Validate all permissions
+    // Validate page permissions
     const modules = [
       "lead",
       "quotation",
@@ -402,16 +422,33 @@ export const updateUserTypeById = async (req, res) => {
     const actions = ["read", "create", "update", "delete"];
 
     for (const module of modules) {
-      if (permissions[module]) {
+      if (pageAccess[module]) {
         for (const action of actions) {
-          if (permissions[module][action] === undefined || permissions[module][action] === null) {
+          if (pageAccess[module][action] === undefined || pageAccess[module][action] === null) {
             throw new Error(`Missing permission: ${module}.${action}`);
           }
-          validateBit(permissions[module][action], `${module}.${action}`);
+          validateBit(pageAccess[module][action], `${module}.${action}`);
         }
       } else {
-        throw new Error(`Missing permissions object for module: ${module}`);
+        throw new Error(`Missing pageAccess object for module: ${module}`);
       }
+    }
+
+    // Validate dashboard permissions
+    const dashboardModules = [
+      "target",
+      "quotation",
+      "order",
+      "userManagement",
+      "followUps",
+      "leads",
+    ];
+
+    for (const module of dashboardModules) {
+      if (dashboardAccess[module] === undefined || dashboardAccess[module] === null) {
+        throw new Error(`Missing dashboardAccess for module: ${module}`);
+      }
+      validateBit(dashboardAccess[module], `dashboardAccess.${module}`);
     }
 
     // Proceed only if all validations passed
@@ -425,55 +462,56 @@ export const updateUserTypeById = async (req, res) => {
       .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
       .input("IsActive", sql.Bit, IsActive)
 
-      // Lead
-      .input("LeadReadAccess", sql.Bit, permissions.lead.read)
-      .input("LeadCreateAccess", sql.Bit, permissions.lead.create)
-      .input("LeadUpdateAccess", sql.Bit, permissions.lead.update)
-      .input("LeadDeleteAccess", sql.Bit, permissions.lead.delete)
+      // Page Access - Lead
+      .input("LeadReadAccess", sql.Bit, pageAccess.lead.read)
+      .input("LeadCreateAccess", sql.Bit, pageAccess.lead.create)
+      .input("LeadUpdateAccess", sql.Bit, pageAccess.lead.update)
+      .input("LeadDeleteAccess", sql.Bit, pageAccess.lead.delete)
 
-      // Invoice
-      // .input("InvoiceReadAccess", sql.Bit, permissions.invoice.read)
-      // .input("InvoiceCreateAccess", sql.Bit, permissions.invoice.create)
-      // .input("InvoiceUpdateAccess", sql.Bit, permissions.invoice.update)
-      // .input("InvoiceDeleteAccess", sql.Bit, permissions.invoice.delete)
+      // Page Access - Quotation
+      .input("QuotationReadAccess", sql.Bit, pageAccess.quotation.read)
+      .input("QuotationCreateAccess", sql.Bit, pageAccess.quotation.create)
+      .input("QuotationUpdateAccess", sql.Bit, pageAccess.quotation.update)
+      .input("QuotationDeleteAccess", sql.Bit, pageAccess.quotation.delete)
 
-      // Quotation
-      .input("QuotationReadAccess", sql.Bit, permissions.quotation.read)
-      .input("QuotationCreateAccess", sql.Bit, permissions.quotation.create)
-      .input("QuotationUpdateAccess", sql.Bit, permissions.quotation.update)
-      .input("QuotationDeleteAccess", sql.Bit, permissions.quotation.delete)
+      // Page Access - User
+      .input("UserReadAccess", sql.Bit, pageAccess.user.read)
+      .input("UserCreateAccess", sql.Bit, pageAccess.user.create)
+      .input("UserUpdateAccess", sql.Bit, pageAccess.user.update)
+      .input("UserDeleteAccess", sql.Bit, pageAccess.user.delete)
 
-      // User
-      .input("UserReadAccess", sql.Bit, permissions.user.read)
-      .input("UserCreateAccess", sql.Bit, permissions.user.create)
-      .input("UserUpdateAccess", sql.Bit, permissions.user.update)
-      .input("UserDeleteAccess", sql.Bit, permissions.user.delete)
+      // Page Access - FollowUps
+      .input("FollowUpsReadAccess", sql.Bit, pageAccess.followUps.read)
+      .input("FollowUpsCreateAccess", sql.Bit, pageAccess.followUps.create)
+      .input("FollowUpsUpdateAccess", sql.Bit, pageAccess.followUps.update)
+      .input("FollowUpsDeleteAccess", sql.Bit, pageAccess.followUps.delete)
 
-      // FollowUps
-      .input("FollowUpsReadAccess", sql.Bit, permissions.followUps.read)
-      .input("FollowUpsCreateAccess", sql.Bit, permissions.followUps.create)
-      .input("FollowUpsUpdateAccess", sql.Bit, permissions.followUps.update)
-      .input("FollowUpsDeleteAccess", sql.Bit, permissions.followUps.delete)
+      // Page Access - Target
+      .input("TargetReadAccess", sql.Bit, pageAccess.target.read)
+      .input("TargetCreateAccess", sql.Bit, pageAccess.target.create)
+      .input("TargetUpdateAccess", sql.Bit, pageAccess.target.update)
+      .input("TargetDeleteAccess", sql.Bit, pageAccess.target.delete)
 
-      // Target
-      .input("TargetReadAccess", sql.Bit, permissions.target.read)
-      .input("TargetCreateAccess", sql.Bit, permissions.target.create)
-      .input("TargetUpdateAccess", sql.Bit, permissions.target.update)
-      .input("TargetDeleteAccess", sql.Bit, permissions.target.delete)
+      // Page Access - Orders
+      .input("OrdersReadAccess", sql.Bit, pageAccess.orders.read)
+      .input("OrdersCreateAccess", sql.Bit, pageAccess.orders.create)
+      .input("OrdersUpdateAccess", sql.Bit, pageAccess.orders.update)
+      .input("OrdersDeleteAccess", sql.Bit, pageAccess.orders.delete)
 
-      // Orders
-      .input("OrdersReadAccess", sql.Bit, permissions.orders.read)
-      .input("OrdersCreateAccess", sql.Bit, permissions.orders.create)
-      .input("OrdersUpdateAccess", sql.Bit, permissions.orders.update)
-      .input("OrdersDeleteAccess", sql.Bit, permissions.orders.delete)
+      // Page Access - Product
+      .input("ProductReadAccess", sql.Bit, pageAccess.product.read)
+      .input("ProductCreateAccess", sql.Bit, pageAccess.product.create)
+      .input("ProductUpdateAccess", sql.Bit, pageAccess.product.update)
+      .input("ProductDeleteAccess", sql.Bit, pageAccess.product.delete)
 
-      // Product
-      .input("ProductReadAccess", sql.Bit, permissions.product.read)
-      .input("ProductCreateAccess", sql.Bit, permissions.product.create)
-      .input("ProductUpdateAccess", sql.Bit, permissions.product.update)
-      .input("ProductDeleteAccess", sql.Bit, permissions.product.delete)
+      // Dashboard Access
+      .input("LeadPermission", sql.Bit, dashboardAccess.leads)
+      .input("FollowupPermission", sql.Bit, dashboardAccess.followUps)
+      .input("QuotationPermission", sql.Bit, dashboardAccess.quotation)
+      .input("OrdersPermission", sql.Bit, dashboardAccess.order)
+      .input("TargetPermission", sql.Bit, dashboardAccess.target)
 
-      .execute("sp_UpdateUserTypeByUserTypeId");
+      .execute("sp_UpdateUserTypeByUserTypeId_v1");
 
     //console.log(result.recordset[0])
 
@@ -498,7 +536,7 @@ export const getUserTypeById = async (req, res, next) => {
       .request()
       .input("UserId", sql.UniqueIdentifier, req.user.id)
       .input("UserTypeId", sql.UniqueIdentifier, userTypeId)
-      .execute("sp_GetUserTypeByUserTypeId");
+      .execute("sp_GetUserTypeByUserTypeId_v1");
 
     if (result.recordset[0].Success) {
       res.status(201).json(result.recordsets);

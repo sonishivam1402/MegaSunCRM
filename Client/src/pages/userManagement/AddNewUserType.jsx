@@ -15,7 +15,7 @@ const AddNewUserTypeModal = ({ isOpen, onClose, onUserCreated }) => {
     { id: 'target', name: 'Target Page' },
     { id: 'quotation', name: 'Quotation Page' },
     { id: 'order', name: 'Order Page' },
-    { id: 'invoice', name: 'Invoice Page' },
+    // { id: 'invoice', name: 'Invoice Page' },
     { id: 'userManagement', name: 'User Management' },
     { id: 'followUps', name: 'Follow ups' },
     { id: 'leads', name: 'Leads Page' }
@@ -91,6 +91,7 @@ const AddNewUserTypeModal = ({ isOpen, onClose, onUserCreated }) => {
   const buildPermissionsPayload = () => {
     const permissions = {};
 
+    // Build page permissions
     pageItems.forEach(item => {
       if (formData.accessType === 'full') {
         // For full access (admin), all permissions are true
@@ -112,16 +113,36 @@ const AddNewUserTypeModal = ({ isOpen, onClose, onUserCreated }) => {
       }
     });
 
-    return permissions;
+    // Build dashboard permissions
+    const dashboardPermissions = {};
+    dashboardItems.forEach(item => {
+      if (formData.accessType === 'full') {
+        // For full access (admin), all dashboard items are visible
+        dashboardPermissions[item.id] = true;
+      } else {
+        // For limited access, use the selected dashboard access
+        dashboardPermissions[item.id] = formData.dashboardAccess[item.id] || false;
+      }
+    });
+
+    return {
+      pageAccess: permissions,
+      dashboardAccess: dashboardPermissions
+    };
   };
 
   const handleSubmit = async () => {
+    const permissionsPayload = buildPermissionsPayload();
+    
     const payload = {
       Name: formData.accessName,
       IsAdmin: formData.accessType === 'full',
       IsRegularUser: formData.accessType === 'limited',
-      permissions: buildPermissionsPayload()
+      pageAccess: permissionsPayload.pageAccess,
+      dashboardAccess: permissionsPayload.dashboardAccess
     };
+
+    //console.log(payload);
 
     try {
       const response = await createUserType(payload);
@@ -240,6 +261,7 @@ const AddNewUserTypeModal = ({ isOpen, onClose, onUserCreated }) => {
                     checked={formData.dashboardAccess[item.id] || false}
                     onChange={(e) => handleDashboardAccessChange(item.id, e.target.checked)}
                     className="mr-3 text-green-600"
+                    disabled={formData.accessType === 'full'}
                   />
                   <span className="text-sm">{item.name}</span>
                 </label>
