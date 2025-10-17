@@ -26,7 +26,7 @@ export const getLeadsDD = async () => {
     }
     throw err;
   }
-}; 
+};
 
 // Get All New Leads
 export const getAllNewLeads = async ({ search = "", limit = 10, offset = 0, status, leadTypeId, sourceId }) => {
@@ -93,7 +93,7 @@ export const deleteLeadById = async (id) => {
     }
     throw err;
   }
-}; 
+};
 
 // Get All Lead Sources
 export const getAllLeadSources = async () => {
@@ -119,12 +119,12 @@ export const getAllLeadSourcesDD = async () => {
     }
     throw err;
   }
-}; 
+};
 
 // Create Lead Source
 export const createLeadSource = async (data) => {
   try {
-    const res = await API.post("/lead/source", {data});
+    const res = await API.post("/lead/source", { data });
     return res;
   } catch (err) {
     if (err.response && err.response.status !== 401) {
@@ -137,7 +137,7 @@ export const createLeadSource = async (data) => {
 // Update Lead Source
 export const updateLeadSource = async (id, data) => {
   try {
-    const res = await API.put(`/lead/source/${id}`, {data});
+    const res = await API.put(`/lead/source/${id}`, { data });
     return res;
   } catch (err) {
     if (err.response && err.response.status !== 401) {
@@ -158,7 +158,7 @@ export const deleteLeadSource = async (id) => {
     }
     throw err;
   }
-}; 
+};
 
 
 // Get All Lead Status
@@ -172,7 +172,7 @@ export const getAllLeadStatus = async () => {
     }
     throw err;
   }
-}; 
+};
 
 // Get All Lead Status for Dropdown
 export const getAllLeadStatusDD = async () => {
@@ -190,7 +190,7 @@ export const getAllLeadStatusDD = async () => {
 // Create Lead Status
 export const createLeadStatus = async (data) => {
   try {
-    const res = await API.post("/lead/status", {data});
+    const res = await API.post("/lead/status", { data });
     return res;
   } catch (err) {
     if (err.response && err.response.status !== 401) {
@@ -203,7 +203,7 @@ export const createLeadStatus = async (data) => {
 // Update Lead Status
 export const updateLeadStatus = async (id, data) => {
   try {
-    const res = await API.put(`/lead/status/${id}`, {data});
+    const res = await API.put(`/lead/status/${id}`, { data });
     return res;
   } catch (err) {
     if (err.response && err.response.status !== 401) {
@@ -224,7 +224,7 @@ export const deleteLeadStatus = async (id) => {
     }
     throw err;
   }
-}; 
+};
 
 
 // Get All Lead Types
@@ -238,7 +238,7 @@ export const getAllLeadTypes = async () => {
     }
     throw err;
   }
-}; 
+};
 
 // Get All Lead Types for Dropdown
 export const getAllLeadTypesDD = async () => {
@@ -256,7 +256,7 @@ export const getAllLeadTypesDD = async () => {
 // Create Lead Type
 export const createLeadType = async (data) => {
   try {
-    const res = await API.post("/lead/type", {data});
+    const res = await API.post("/lead/type", { data });
     return res;
   } catch (err) {
     if (err.response && err.response.status !== 401) {
@@ -269,7 +269,7 @@ export const createLeadType = async (data) => {
 // Update Lead Types
 export const updateLeadType = async (id, data) => {
   try {
-    const res = await API.put(`/lead/type/${id}`, {data});
+    const res = await API.put(`/lead/type/${id}`, { data });
     return res;
   } catch (err) {
     if (err.response && err.response.status !== 401) {
@@ -290,17 +290,41 @@ export const deleteLeadType = async (id) => {
     }
     throw err;
   }
-}; 
+};
 
 export const exportLeads = async () => {
   try {
-    const res = await API.get("/lead/export-csv" , {
-      responseType : 'blob',
+    const res = await API.get("/lead/export-csv", {
+      responseType: 'blob',
     });
     return res;
   } catch (err) {
     if (err.response && err.response.status !== 401) {
       console.error("Error in exporting leads", err);
+    }
+    throw err;
+  }
+};
+
+
+export const importLeads = async ({ data, selectedUser }) => {
+  try {
+    const res = await API.post(
+      "/lead/bulk-import",
+      {
+        leads: data,
+        assignedTo: selectedUser
+      },
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    return res;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in importing leads", err);
     }
     throw err;
   }

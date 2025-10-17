@@ -38,7 +38,7 @@ export const createLead = async (req, res, next) => {
         JSON.stringify(lead.productMappings)
       )
       .execute("sp_CreateLead");
-    
+
     // console.log(result.recordsets);
     if (result.recordset[0].Success) {
       res.status(201).json(result.recordsets[0]);
@@ -478,8 +478,8 @@ export const getLeadsForDropdown = async (req, res, next) => {
   try {
     const pool = await poolPromise;
     const result = await pool.request()
-    .input("UserId", sql.UniqueIdentifier, req.user.id)
-    .execute("sp_GetLeadsForDDN");
+      .input("UserId", sql.UniqueIdentifier, req.user.id)
+      .execute("sp_GetLeadsForDDN");
 
     res.json(result.recordsets);
   } catch (err) {
@@ -510,5 +510,70 @@ export const exportLeads = async (req, res, next) => {
   } catch (err) {
     console.error("Error in exporting leads deatils :", err);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const importLeads = async (req, res, next) => {
+  const { leads, assignedTo } = req.body;
+  
+  if (!leads || !Array.isArray(leads) || leads.length === 0) {
+    return res.status(400).json({
+      message: 'Invalid data format. Expected array of lead objects.'
+    });
+  }
+
+  if (!assignedTo) {
+    return res.status(400).json({
+      message: 'Assign leads to someone.'
+    });
+  }
+
+  try {
+    const pool = await poolPromise;
+
+    // Convert to JSON string for the stored procedure
+    const leadsJson = JSON.stringify(leads);
+
+    const result = await pool
+      .request()
+      .input('LeadsJSON', sql.NVarChar(sql.MAX), leadsJson)
+      .input('AssignedTo', sql.UniqueIdentifier, assignedTo)
+      .input('CreatedBy', sql.UniqueIdentifier, req.user.id)
+      .execute('sp_CreateBulkImportedLeads');
+
+    // Process the recordsets returned by SP
+    const recordsets = result.recordsets;
+    
+    if (!recordsets || recordsets.length === 0) {
+      return res.status(500).json({
+        message: 'No response from database'
+      });
+    }
+
+    // First recordset typically contains summary info
+    const summary = recordsets[0][0] || {};
+    
+    // Second recordset (if exists) contains failed leads
+    const failedLeads = recordsets[1] || [];
+
+    const response = {
+      successCount: summary.SuccessCount || 0,
+      failedCount: summary.FailedCount || 0,
+      totalCount: summary.TotalLeads || leads.length,
+      failedLeads: failedLeads.map(lead => ({
+        rowNumber: lead.RowNumber,
+        CompanyName: lead.CompanyName,
+        Contact: lead.Contact,
+        errorMessage: lead.ErrorMessage
+      }))
+    };
+
+    return res.json(response);
+
+  } catch (error) {
+    console.error('Import error:', error);
+    return res.status(500).json({
+      message: error.message || 'Failed to import leads'
+    });
   }
 };
