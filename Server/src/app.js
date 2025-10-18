@@ -12,6 +12,7 @@ import quotationRouter from "./routes/quotationRouter.js";
 import invoiceRouter from "./routes/invoiceRoutes.js";
 import orderRouter from "./routes/orderRouter.js";
 import targetRouter from "./routes/targetRoutes.js";
+import dashboardRouter from "./routes/dashboardRoutes.js";
 
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
@@ -26,6 +27,7 @@ app.use(express.json());
 //app.use('/public', express.static(path.join(__dirname, '../public')));
 
 app.use("/api/auth", authRouter);
+app.use("/api/dashboard", dashboardRouter);
 app.use("/api/user", userRouter);
 app.use("/api/products", productRouter);
 app.use("/api/lead", leadRouter);
