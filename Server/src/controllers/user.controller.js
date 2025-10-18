@@ -300,7 +300,6 @@ export const createUserType = async (req, res) => {
       "target",
       "quotation",
       "order",
-      "userManagement",
       "followUps",
       "leads",
     ];
@@ -439,7 +438,6 @@ export const updateUserTypeById = async (req, res) => {
       "target",
       "quotation",
       "order",
-      "userManagement",
       "followUps",
       "leads",
     ];

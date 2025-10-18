@@ -16,7 +16,7 @@ const AddNewUserTypeModal = ({ isOpen, onClose, onUserCreated }) => {
     { id: 'quotation', name: 'Quotation Page' },
     { id: 'order', name: 'Order Page' },
     // { id: 'invoice', name: 'Invoice Page' },
-    { id: 'userManagement', name: 'User Management' },
+    // { id: 'userManagement', name: 'User Management' },
     { id: 'followUps', name: 'Follow ups' },
     { id: 'leads', name: 'Leads Page' }
   ];
@@ -133,7 +133,7 @@ const AddNewUserTypeModal = ({ isOpen, onClose, onUserCreated }) => {
 
   const handleSubmit = async () => {
     const permissionsPayload = buildPermissionsPayload();
-    
+
     const payload = {
       Name: formData.accessName,
       IsAdmin: formData.accessType === 'full',
@@ -249,25 +249,27 @@ const AddNewUserTypeModal = ({ isOpen, onClose, onUserCreated }) => {
           </div>
 
           {/* Dashboard View (Same for both Full and Limited Access) */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-3">
-              Dashboard view
-            </h3>
-            <div className="space-y-2">
-              {dashboardItems.map(item => (
-                <label key={item.id} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.dashboardAccess[item.id] || false}
-                    onChange={(e) => handleDashboardAccessChange(item.id, e.target.checked)}
-                    className="mr-3 text-green-600"
-                    disabled={formData.accessType === 'full'}
-                  />
-                  <span className="text-sm">{item.name}</span>
-                </label>
-              ))}
+          {formData.accessType === 'limited' && (
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-3">
+                Dashboard view
+              </h3>
+              <div className="space-y-2">
+                {dashboardItems.map(item => (
+                  <label key={item.id} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.dashboardAccess[item.id] || false}
+                      onChange={(e) => handleDashboardAccessChange(item.id, e.target.checked)}
+                      className="mr-3 text-green-600"
+                      disabled={formData.accessType === 'full'}
+                    />
+                    <span className="text-sm">{item.name}</span>
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Page Access - Only show CRUD table for Limited Access */}
           {formData.accessType === 'limited' && (
