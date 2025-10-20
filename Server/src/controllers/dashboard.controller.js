@@ -6,9 +6,20 @@ export const getDashboardDetails = async (req, res, next) => {
         const result = await pool
             .request()
             .input("UserId", sql.UniqueIdentifier, req.user.id)
-            .execute("sp_GetDashboardData");
+            .execute("sp_GetDashboardData_v1");
 
-        res.json(result.recordsets);
+        // Assuming the SP returns [{ DashboardData: '...json string...' }]
+        let data = result.recordset[0];
+
+        if (data && data.DashboardData) {
+            try {
+                data.DashboardData = JSON.parse(data.DashboardData);
+            } catch (err) {
+                console.error("Error parsing DashboardData JSON:", err);
+            }
+        }
+
+        res.json(data);
 
     } catch (err) {
         console.error("Error in fetching dashboard details :", err);
