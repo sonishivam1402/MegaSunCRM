@@ -15,7 +15,7 @@ const Dashboard = () => {
       try {
         const response = await getDashboardData();
         setDashboardData(response.DashboardData);
-        // console.log(response.DashboardData)
+        //console.log(response.DashboardData)
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
@@ -88,7 +88,7 @@ const Dashboard = () => {
       <div className="overflow-y-auto max-h-96" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         <style>{`div::-webkit-scrollbar { display: none; }`}</style>
         <table className="w-full text-sm">
-          <thead className="border-b sticky top-0 bg-white">
+          <thead className="border-b sticky top-0 bg-[#f1f0e9]">
             <tr className="text-gray-600 font-semibold">
               {config.columns.map((col) => (
                 <th key={col} className="text-left py-3 px-2">{config.headers[col]}</th>
@@ -121,40 +121,64 @@ const Dashboard = () => {
 
       <div className="flex flex-col gap-2">
         {/* Lead Analytics Cards */}
-        {(permissions.leads || permissions.followups || permissions.quotations || permissions.orders) && (
-          <div className="p-6" style={{ paddingBottom: '2rem' }}>
-            <div className="flex justify-center items-center gap-4">
-              {Object.entries(cards || {})
-                .filter(([key]) => permissions[key] === 1)
-                .map(([key, data]) => (
-                  <div key={key} className="p-4 border border-gray-200 rounded flex flex-col justify-center w-full">
-                    <div className="mb-3">
-                      <span className="font-semibold text-gray-800">{getStatusLabel(key)}</span>
+        {Boolean(
+          permissions.leads === 1 ||
+          permissions.followups === 1 ||
+          permissions.quotations === 1 ||
+          permissions.orders === 1
+        ) && (
+            <div className="p-6" style={{ paddingBottom: '2rem' }}>
+              <div className="flex justify-center items-center gap-4">
+                {Object.entries(cards || {})
+                  .filter(([key]) => permissions[key] === 1)
+                  .map(([key, data]) => (
+                    <div key={key} className="p-4 border border-gray-200 rounded flex flex-col justify-center w-full">
+                      <div className="mb-3 flex justify-between items-center">
+                        <span className="font-semibold text-gray-800">{getStatusLabel(key)}</span>
+                        <div
+                          className="flex items-center justify-center rounded-md shadow-sm"
+                          style={{
+                            backgroundColor: data.iconBGColor,
+                            width: 32,
+                            height: 32,
+                            padding: 4,
+                          }}
+                        >
+                          <img
+                            src={data.iconPath}
+                            alt={data.key}
+                            width={20}
+                            height={20}
+                            className="object-contain"
+                          />
+                        </div>
+
+                      </div>
+                      <div className="space-y-1">
+                        <div className="flex justify-between items-center">
+                          <p className="text-sm text-gray-600">All Time</p>
+                          <p className="text-sm font-medium text-gray-800">{data.allTime}</p>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <p className="text-sm text-gray-600">Current Month</p>
+                          <p className="text-sm font-medium text-gray-800">{data.currentMonth}</p>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <p className="text-sm text-gray-600">Today</p>
+                          <p className="text-sm font-medium text-gray-800">{data.today}</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <div className="flex justify-between items-center">
-                        <p className="text-sm text-gray-600">All Time</p>
-                        <p className="text-sm font-medium text-gray-800">{data.allTime}</p>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <p className="text-sm text-gray-600">Current Month</p>
-                        <p className="text-sm font-medium text-gray-800">{data.currentMonth}</p>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <p className="text-sm text-gray-600">Today</p>
-                        <p className="text-sm font-medium text-gray-800">{data.today}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Charts Section */}
-        <div className='flex justify-center gap-10 border-y'>
-          {/* Lead Source Chart */}
-          {permissions.leads === 1 && (
+
+        {/* Lead Source Chart */}
+        {permissions.leads === 1 && (
+          <div className='flex justify-center gap-10 border-y'>
             <div className="p-6 w-full border-r" style={{ paddingBottom: '2rem' }}>
               <h2 className="text-lg font-bold text-gray-800 mb-4">Lead Source Analytics</h2>
               <ResponsiveContainer width="100%" height={180}>
@@ -163,7 +187,11 @@ const Dashboard = () => {
                   <XAxis type="number" />
                   <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 14 }} />
                   <Tooltip />
-                  <Bar dataKey="value" fill="#7cb342" />
+                  <Bar dataKey="value">
+                    {leadSourceData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
               <div className="m-10 text-sm p-10">
@@ -176,31 +204,29 @@ const Dashboard = () => {
                 ))}
               </div>
             </div>
-          )}
 
-          {/* Lead State Chart */}
-          {permissions.leads === 1 && (
+
+            {/* Lead State Chart */}
+
             <div className="p-6 w-full" style={{ paddingTop: '2rem' }}>
               <h2 className="text-lg font-bold text-gray-800 mb-4">Lead State Analytics</h2>
 
               <div className="flex border-b border-gray-300 mb-4">
                 <button
                   onClick={() => setLeadStateTab('chart')}
-                  className={`px-4 py-2 text-sm font-medium transition-colors ${
-                    leadStateTab === 'chart'
-                      ? 'text-gray-900 border-b-2 border-green-900'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${leadStateTab === 'chart'
+                    ? 'text-gray-900 border-b-2 border-green-900'
+                    : 'text-gray-600 hover:text-gray-900'
+                    }`}
                 >
                   Lead State Chart
                 </button>
                 <button
                   onClick={() => setLeadStateTab('list')}
-                  className={`px-4 py-2 text-sm font-medium transition-colors ${
-                    leadStateTab === 'list'
-                      ? 'text-gray-900 border-b-2 border-green-900'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${leadStateTab === 'list'
+                    ? 'text-gray-900 border-b-2 border-green-900'
+                    : 'text-gray-600 hover:text-gray-900'
+                    }`}
                 >
                   Lead State List
                 </button>
@@ -252,68 +278,70 @@ const Dashboard = () => {
                 )}
               </div>
             </div>
-          )}
-        </div>
-
-        {/* Analytics Tables Section */}
-        {(permissions.targets || permissions.followups || permissions.quotations || permissions.orders) && (
-          <div className="p-6" style={{ paddingTop: '2rem' }}>
-            <h2 className="text-lg font-bold text-gray-800 mb-4">Analytics</h2>
-
-            <div className="flex border-b border-gray-300 mb-4">
-              {permissions.targets === 1 && (
-                <button
-                  onClick={() => setAnalyticsTab('targets')}
-                  className={`px-4 py-2 text-sm font-medium transition-colors ${
-                    analyticsTab === 'targets'
-                      ? 'text-gray-900 border-b-2 border-gray-900'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Targets Analytics
-                </button>
-              )}
-              {permissions.followups === 1 && (
-                <button
-                  onClick={() => setAnalyticsTab('followups')}
-                  className={`px-4 py-2 text-sm font-medium transition-colors ${
-                    analyticsTab === 'followups'
-                      ? 'text-gray-900 border-b-2 border-gray-900'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Followup Analytics
-                </button>
-              )}
-              {permissions.quotations === 1 && (
-                <button
-                  onClick={() => setAnalyticsTab('quotations')}
-                  className={`px-4 py-2 text-sm font-medium transition-colors ${
-                    analyticsTab === 'quotations'
-                      ? 'text-gray-900 border-b-2 border-gray-900'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Quotation Analytics
-                </button>
-              )}
-              {permissions.orders === 1 && (
-                <button
-                  onClick={() => setAnalyticsTab('orders')}
-                  className={`px-4 py-2 text-sm font-medium transition-colors ${
-                    analyticsTab === 'orders'
-                      ? 'text-gray-900 border-b-2 border-gray-900'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Order Analytics
-                </button>
-              )}
-            </div>
-
-            {renderTable(analyticsTab)}
           </div>
         )}
+
+
+        {/* Analytics Tables Section */}
+        {Boolean(
+          permissions.targets === 1 ||
+          permissions.followups === 1 ||
+          permissions.quotations === 1 ||
+          permissions.orders === 1
+        ) && (
+            <div className="p-6" style={{ paddingTop: '2rem' }}>
+              <h2 className="text-lg font-bold text-gray-800 mb-4">Analytics</h2>
+
+              <div className="flex border-b border-gray-300 mb-4">
+                {permissions.targets === 1 && (
+                  <button
+                    onClick={() => setAnalyticsTab('targets')}
+                    className={`px-4 py-2 text-sm font-medium transition-colors ${analyticsTab === 'targets'
+                      ? 'text-gray-900 border-b-2 border-gray-900'
+                      : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                  >
+                    Targets Analytics
+                  </button>
+                )}
+                {permissions.followups === 1 && (
+                  <button
+                    onClick={() => setAnalyticsTab('followups')}
+                    className={`px-4 py-2 text-sm font-medium transition-colors ${analyticsTab === 'followups'
+                      ? 'text-gray-900 border-b-2 border-gray-900'
+                      : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                  >
+                    Followup Analytics
+                  </button>
+                )}
+                {permissions.quotations === 1 && (
+                  <button
+                    onClick={() => setAnalyticsTab('quotations')}
+                    className={`px-4 py-2 text-sm font-medium transition-colors ${analyticsTab === 'quotations'
+                      ? 'text-gray-900 border-b-2 border-gray-900'
+                      : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                  >
+                    Quotation Analytics
+                  </button>
+                )}
+                {permissions.orders === 1 && (
+                  <button
+                    onClick={() => setAnalyticsTab('orders')}
+                    className={`px-4 py-2 text-sm font-medium transition-colors ${analyticsTab === 'orders'
+                      ? 'text-gray-900 border-b-2 border-gray-900'
+                      : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                  >
+                    Order Analytics
+                  </button>
+                )}
+              </div>
+
+              {renderTable(analyticsTab)}
+            </div>
+          )}
       </div>
     </div>
   );
