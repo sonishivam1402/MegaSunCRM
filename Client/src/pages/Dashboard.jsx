@@ -38,8 +38,7 @@ const Dashboard = () => {
 
   const leadSourceData = Object.entries(leadSourceChart || {})
     .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 3);
+    .sort((a, b) => b.value - a.value);
 
   const leadStateData = leadStateChart
     ? Object.entries(leadStateChart).map(([name, value]) => ({ name, value }))
@@ -181,11 +180,11 @@ const Dashboard = () => {
           <div className='flex justify-center gap-10 border-y'>
             <div className="p-6 w-full border-r" style={{ paddingBottom: '2rem' }}>
               <h2 className="text-lg font-bold text-gray-800 mb-4">Lead Source Analytics</h2>
-              <ResponsiveContainer width="100%" height={180}>
+              <ResponsiveContainer width="100%" height={Math.max(leadSourceData.length * 40, 180)}>
                 <BarChart data={leadSourceData} layout="vertical" margin={{ top: 20, right: 50 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                   <XAxis type="number" />
-                  <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 14 }} />
+                  <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 12 }} />
                   <Tooltip />
                   <Bar dataKey="value">
                     {leadSourceData.map((entry, index) => (
@@ -196,9 +195,11 @@ const Dashboard = () => {
               </ResponsiveContainer>
               <div className="m-10 text-sm p-10">
                 {leadSourceData.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-5">
-                    <div className="w-3 h-3 rounded" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></div>
-                    <span className="text-gray-600">{item.name}</span>
+                  <div key={idx} className="flex items-center justify-between gap-5">
+                    <div className="flex items-center  gap-5">
+                      <div className="w-3 h-3 rounded" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></div>
+                      <span className="text-gray-600">{item.name}</span>
+                    </div>
                     <span className="text-gray-800 font-semibold">{item.value}</span>
                   </div>
                 ))}
