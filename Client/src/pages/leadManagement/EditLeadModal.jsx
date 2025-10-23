@@ -7,6 +7,7 @@ import { getAllUsersDD } from '../../api/userApi';
 import { getProductOptions } from '../../api/productApi';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
+import { INDIAN_STATES } from '../../utils/Indian_States';
 
 const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -437,14 +438,23 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2"><span className="text-red-500">*</span> State</label>
-                        <input
-                          type="text"
-                          value={formData.state}
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <span className="text-red-500">*</span> State
+                        </label>
+                        <select
+                          value={formData.state || ""}
                           onChange={(e) => handleInputChange('state', e.target.value)}
-                          placeholder="Gujarat"
-                          className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('state') ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('state')}`}
-                        />
+                          className={`w-full max-w-sm px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('state') ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('state')}`}
+                        >
+                          <option value="" disabled>
+                            Select a state
+                          </option>
+                          {INDIAN_STATES.map((state) => (
+                            <option key={state} value={state}>
+                              {state}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     </div>
 

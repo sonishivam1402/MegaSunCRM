@@ -3,6 +3,7 @@ import { getLeadById, getLeadsDD } from '../../api/leadApi';
 import { getAllProducts } from '../../api/productApi';
 import { createQuotations } from '../../api/quotation';
 import { toast } from 'react-toastify';
+import { INDIAN_STATES } from '../../utils/Indian_States';
 
 const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
     const [currentStep, setCurrentStep] = useState(1);
@@ -133,7 +134,7 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
         if (shippingDetails.email.trim() && !validateEmail(shippingDetails.email)) {
             errors.email = 'Please enter a valid email address';
             isValid = false;
-        }        
+        }
 
         if (!shippingDetails.address.trim()) {
             errors.address = 'Address is required';
@@ -142,6 +143,11 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
 
         if (!shippingDetails.city.trim()) {
             errors.city = 'City is required';
+            isValid = false;
+        }
+
+        if (!shippingDetails.state) {
+            errors.state = 'State is required';
             isValid = false;
         }
 
@@ -165,6 +171,7 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
             delete newErrors.email;
             delete newErrors.address;
             delete newErrors.city;
+            delete newErrors.state;
             delete newErrors.pincode;
             delete newErrors.country;
             return { ...newErrors, ...errors };
@@ -784,12 +791,12 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
                 )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">City, state *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
                     <input
                         type='text'
-                        placeholder='City, State'
+                        placeholder='City'
                         value={shippingDetails.city}
                         onChange={(e) => {
                             setShippingDetails({ ...shippingDetails, city: e.target.value });
@@ -800,6 +807,29 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
                     />
                     {validationErrors.city && (
                         <p className="text-red-500 text-sm mt-1">{validationErrors.city}</p>
+                    )}
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                         State *
+                    </label>
+                    <select
+                        value={shippingDetails.state || ""}
+                        onChange={(e) => {setShippingDetails({...shippingDetails, state: e.target.value})}}
+                        className={`w-full max-w-sm px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${validationErrors.state ? 'border-2 border-red-500' : ''
+                            }`}
+                    >
+                        <option value="" disabled>
+                            Select a state
+                        </option>
+                        {INDIAN_STATES.map((state) => (
+                            <option key={state} value={state}>
+                                {state}
+                            </option>
+                        ))}
+                    </select>
+                    {validationErrors.state && (
+                        <p className="text-red-500 text-sm mt-1">{validationErrors.state}</p>
                     )}
                 </div>
                 <div>

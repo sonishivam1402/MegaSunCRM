@@ -4,6 +4,7 @@ import { getAllProducts } from '../../api/productApi';
 import { createNewOrder } from '../../api/orderApi';
 import { toast } from 'react-toastify';
 import { getQuotationById } from '../../api/quotation';
+import { INDIAN_STATES } from '../../utils/Indian_States';
 
 const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
     const [currentStep, setCurrentStep] = useState(1);
@@ -145,6 +146,11 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
 
         if (!shippingDetails.city.trim()) {
             errors.city = 'City is required';
+            isValid = false;
+        }
+
+        if (!shippingDetails.state) {
+            errors.state = 'State is required';
             isValid = false;
         }
 
@@ -365,7 +371,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
         setLoadingLeadData(true);
         try {
             const response = await getLeadById(id);
-            console.log("Response", response);
+            //console.log("Response", response);
             const lead = response[0][0];
             const products = response[1] || [];
 
@@ -960,12 +966,12 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
                 )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">City, state *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
                     <input
                         type='text'
-                        placeholder='City, State'
+                        placeholder='City'
                         value={shippingDetails.city}
                         onChange={(e) => {
                             setShippingDetails({ ...shippingDetails, city: e.target.value });
@@ -977,6 +983,29 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
                     />
                     {validationErrors.city && (
                         <p className="text-red-500 text-sm mt-1">{validationErrors.city}</p>
+                    )}
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                         State *
+                    </label>
+                    <select
+                        value={shippingDetails.state || ""}
+                        onChange={(e) => {setShippingDetails({...shippingDetails, state: e.target.value})}}
+                        className={`w-full max-w-sm px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${validationErrors.state ? 'border-2 border-red-500' : ''
+                            }`}
+                    >
+                        <option value="" disabled>
+                            Select a state
+                        </option>
+                        {INDIAN_STATES.map((state) => ( 
+                            <option key={state} value={state}>
+                                {state}
+                            </option>
+                        ))}
+                    </select>
+                    {validationErrors.state && (
+                        <p className="text-red-500 text-sm mt-1">{validationErrors.state}</p>
                     )}
                 </div>
                 <div>
