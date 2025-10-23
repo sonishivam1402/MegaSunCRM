@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getQuotationById, updateQuotationById } from '../../api/quotation';
 import { getAllProducts } from '../../api/productApi';
 import { toast } from 'react-toastify';
+import { INDIAN_STATES } from '../../utils/Indian_States';
 
 const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -106,6 +107,7 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
     }
     if (!shippingDetails.address.trim()) { errors.address = 'Address is required'; ok = false; }
     if (!shippingDetails.city.trim()) { errors.city = 'City is required'; ok = false; }
+    if (!shippingDetails.state) { errors.state = 'State is required'; ok = false; }
     if (!shippingDetails.pincode.trim()) { errors.pincode = 'Pincode is required'; ok = false; }
     else if (!validatePincode(shippingDetails.pincode)) { errors.pincode = 'Pincode must be 6 digits'; ok = false; }
     if (!shippingDetails.country.trim()) { errors.country = 'Country is required'; ok = false; }
@@ -593,17 +595,40 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
         {validationErrors.address && (<p className="text-red-500 text-sm mt-1">{validationErrors.address}</p>)}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">City, state *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
           <input
             type='text'
-            placeholder='City, State'
+            placeholder='City'
             value={shippingDetails.city}
             onChange={(e) => { setShippingDetails({ ...shippingDetails, city: e.target.value }); clearFieldError('city'); }}
             className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.city ? 'border-2 border-red-500' : ''}`}
           />
           {validationErrors.city && (<p className="text-red-500 text-sm mt-1">{validationErrors.city}</p>)}
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            State *
+          </label>
+          <select
+            value={shippingDetails.state || ""}
+            onChange={(e) => { setShippingDetails({ ...shippingDetails, state: e.target.value }) }}
+            className={`w-full max-w-sm px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${validationErrors.state ? 'border-2 border-red-500' : ''
+              }`}
+          >
+            <option value="" disabled>
+              Select a state
+            </option>
+            {INDIAN_STATES.map((state) => (
+              <option key={state} value={state}>
+                {state}
+              </option>
+            ))}
+          </select>
+          {validationErrors.state && (
+            <p className="text-red-500 text-sm mt-1">{validationErrors.state}</p>
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Pincode *</label>
