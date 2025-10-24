@@ -13,6 +13,7 @@ import invoiceRouter from "./routes/invoiceRoutes.js";
 import orderRouter from "./routes/orderRouter.js";
 import targetRouter from "./routes/targetRoutes.js";
 import dashboardRouter from "./routes/dashboardRoutes.js";
+import indiaMartRouter from "./routes/indiaMartRoutes.js";
 
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
@@ -36,6 +37,7 @@ app.use("/api/quotation", quotationRouter);
 app.use("/api/invoice", invoiceRouter);
 app.use("/api/order", orderRouter);
 app.use("/api/target", targetRouter);
+app.use("/api/indiaMart", indiaMartRouter);
 
 app.get("/api/test", (req, res) => {
   res.json({ message: "Hello from backend!" });
