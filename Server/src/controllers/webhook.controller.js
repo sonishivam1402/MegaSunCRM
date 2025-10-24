@@ -2,14 +2,14 @@ import { sql, poolPromise } from "../database/db.js";
 import { LEAD_SOURCE_NAME, CREATED_BY_USER_ID } from "../config/env.js";
 
 /* ============================================================
-   🧩 UTILITY HELPERS
+  UTILITY HELPERS
 ============================================================ */
 function getTimestamp() {
   return new Date().toISOString();
 }
 
 /* ============================================================
-   🧱 DATABASE LOGGING HELPER (same as before)
+  DATABASE LOGGING HELPER
 ============================================================ */
 async function logToDatabase({
   LogType,
@@ -90,7 +90,7 @@ async function logErrorToDatabase(error, context = "WEBHOOK") {
 }
 
 /* ============================================================
-   💾 DATABASE INSERTION FOR LEADS
+  DATABASE INSERTION FOR LEADS
 ============================================================ */
 async function insertLeadsToDatabase(leads) {
   try {
@@ -129,7 +129,7 @@ async function insertLeadsToDatabase(leads) {
 }
 
 /* ============================================================
-   🧩 DATA PROCESSING LOGIC (same as before)
+  DATA PROCESSING LOGIC (same as before)
 ============================================================ */
 async function processIndiaMartData(payload) {
   try {
@@ -167,12 +167,12 @@ async function processIndiaMartData(payload) {
 }
 
 /* ============================================================
-   🚀 MAIN WEBHOOK HANDLER
+  MAIN WEBHOOK HANDLER
 ============================================================ */
 export const indiaMartWebhook = async (req, res) => {
   try {
     const payload = req.body;
-    console.log("📦 Received IndiaMART Webhook:", JSON.stringify(payload, null, 2));
+    // console.log("Received IndiaMART Webhook:", JSON.stringify(payload, null, 2));
 
     await logToDatabase({
       LogType: "WEBHOOK_RECEIVED",
