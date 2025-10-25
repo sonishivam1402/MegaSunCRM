@@ -8,12 +8,14 @@ import { getProductOptions } from '../../api/productApi';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
 import { INDIAN_STATES } from '../../utils/Indian_States';
+import { countryCodes } from '../../utils/Country_Codes';
 
 const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [attemptedNext, setAttemptedNext] = useState(false); // Track if user clicked Next button
   const [formData, setFormData] = useState({
     name: '',
+    countryCode: '+91',
     contact: '',
     email: '',
     address: '',
@@ -149,7 +151,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
   };
 
   const requiredFields = () => {
-    const fields = ['name', 'contact', 'address', 'city', 'state', 'country', 'pincode', 'gst', 'leadTypeId', 'leadSourceId'];
+    const fields = ['name', 'contact', 'state', 'country', 'leadTypeId', 'leadSourceId'];
     if (user.IsAdmin) fields.push('userId');
     return fields;
   };
@@ -184,7 +186,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
   const isFieldInvalid = (fieldName) => attemptedNext && (!formData[fieldName] || formData[fieldName].toString().trim() === '');
 
   // Validate formats
-  const isContactValid = () => /^[0-9]{10}$/.test(formData.contact);
+  const isContactValid = () => /^[0-9]+$/.test(formData.contact);
   const isEmailValid = () => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
 
   const handleNext = () => {
@@ -192,7 +194,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
 
     // Input format validation first (only if user typed something)
     if (formData.contact && !isContactValid()) {
-      toast.error('Please enter a valid 10-digit mobile number.');
+      toast.error('Please enter a valid mobile number.');
       return;
     }
     if (formData.email && !isEmailValid()) {
@@ -230,7 +232,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
       const submitData = {
         lead: {
           name: formData.name,
-          contact: formData.contact,
+          contact: formData.countryCode + "-" + formData.contact,
           email: formData.email,
           city: formData.city,
           state: formData.state,
@@ -270,6 +272,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
     setAttemptedNext(false);
     setFormData({
       name: '',
+      countryCode : '+91',
       contact: '',
       email: '',
       address: '',
@@ -365,20 +368,35 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <span className="text-red-500">*</span> Lead's mobile number
                   </label>
-                  <input
-                    type="tel"
-                    value={formData.contact}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (/^\d*$/.test(value)) {
-                        handleInputChange('contact', value);
-                      }
-                    }}
-                    placeholder="XXXXXXXXXX"
-                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('contact') || (attemptedNext && formData.contact && !isContactValid()) ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('contact')}`}
-                  />
+                  <div className='flex items-center gap-5'>
+                    <select
+                      name='countryCode'
+                      value={formData.countryCode}
+                      onChange={(e) => handleInputChange('countryCode', e.target.value)}
+                      className='w-fit px-4 py-3 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50'
+                    >
+                      {countryCodes.map((c) => (
+                        <option key={c.flag} value={c.code}>
+                          {c.flag} {c.code}
+                        </option>
+                      ))}
+                    </select>
+
+                    <input
+                      type="tel"
+                      value={formData.contact}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d*$/.test(value)) {
+                          handleInputChange('contact', value);
+                        }
+                      }}
+                      placeholder="XXXXXXXXXX"
+                      className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('contact') || (attemptedNext && formData.contact && !isContactValid()) ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('contact')}`}
+                    />
+                  </div>
                   {attemptedNext && formData.contact && !isContactValid() && (
-                    <p className="mt-1 text-xs text-red-500">Please enter a valid 10-digit mobile number.</p>
+                    <p className="mt-1 text-xs text-red-500">Please enter a valid mobile number.</p>
                   )}
                 </div>
 
@@ -392,7 +410,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     placeholder="Email"
-                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('email') || (attemptedNext && formData.email && !isEmailValid()) ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('email')}`}
+                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${!isEmailValid() ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'}`}
                   />
                   {attemptedNext && formData.email && !isEmailValid() && (
                     <p className="mt-1 text-xs text-red-500">Please enter a valid email address.</p>
@@ -402,14 +420,14 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                 {/* Lead Address */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <span className="text-red-500">*</span> Lead's Address
+                    Lead's Address
                   </label>
                   <input
                     type="text"
                     value={formData.address}
                     onChange={(e) => handleInputChange('address', e.target.value)}
-                    placeholder="Address"
-                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('address') ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('address')}`}
+                    placeholder="Address Line 1, Address Line 2"
+                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 bg-gray-200 focus:bg-white`}
                   />
                 </div>
 
@@ -417,14 +435,14 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      <span className="text-red-500">*</span> City
+                      City
                     </label>
                     <input
                       type="text"
                       value={formData.city}
                       onChange={(e) => handleInputChange('city', e.target.value)}
                       placeholder="Vadodara"
-                      className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('city') ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('city')}`}
+                      className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 bg-gray-200 focus:bg-white`}
                     />
                   </div>
 
@@ -466,7 +484,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                 {/* Lead Pincode */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <span className="text-red-500">*</span> Pincode
+                    Pincode
                   </label>
                   <input
                     type="text"
@@ -478,21 +496,21 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                       }
                     }}
                     placeholder="390001"
-                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('pincode') ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('pincode')}`}
+                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 bg-gray-200 focus:bg-white`}
                   />
                 </div>
 
                 {/* Lead Gst */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <span className="text-red-500">*</span> GST Number
+                    GST Number
                   </label>
                   <input
                     type="text"
                     value={formData.gst}
                     onChange={(e) => handleInputChange('gst', e.target.value)}
                     placeholder="GST Number"
-                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('gst') ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('gst')}`}
+                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 bg-gray-200 focus:bg-white`}
                   />
                 </div>
 
@@ -546,7 +564,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
 
                 {/* Lead status (fixed) */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-500 mb-2">
                     <span className="text-red-500">*</span> Lead status
                   </label>
                   <div className="relative">

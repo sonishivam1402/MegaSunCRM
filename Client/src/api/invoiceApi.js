@@ -1,10 +1,11 @@
 import API from "./axios";
 
-export const getQuotationPdf = async (id, type) => {
+export const getQuotationPdf = async (id, type, triggerFrom) => {
     try {
         const res = await API.get(`/invoice/${id}`, {
             responseType: 'blob',
             params: {
+                triggerFrom: triggerFrom,
                 type: type
             }
         });

@@ -8,6 +8,7 @@ import { getProductOptions } from '../../api/productApi';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
 import { INDIAN_STATES } from '../../utils/Indian_States';
+import { countryCodes } from '../../utils/Country_Codes';
 
 const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -15,6 +16,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
   const [attemptedNext, setAttemptedNext] = useState(false); // Track if user clicked Next button
   const [formData, setFormData] = useState({
     name: '',
+    countryCode : '+91',
     contact: '',
     email: '',
     address: '',
@@ -37,6 +39,20 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
   const [usersOptions, setUsersOptions] = useState([]);
   const [productOptions, setProductOptions] = useState([]);
 
+  const parsePhone = (phone) => {
+    console.log(phone);
+    if (!phone) return { countryCode: "", contact: "" };
+
+    const match = phone.match(/^(\+\d{1,4})[-\s]?(\d{6,15})$/);
+    if (match) {
+      return {
+        countryCode: match[1],
+        newContact: match[2],
+      };
+    }
+    return { countryCode: "", newContact: phone }; // fallback
+  };
+
   // Fetch lead details by ID
   const fetchLeadDetails = async () => {
     if (!leadId) return;
@@ -56,9 +72,12 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
         state = state || parts[1] || '';
       }
 
+      const {countryCode, newContact} = parsePhone(leadData.LeadPhoneNumber);
+
       const formDataToSet = {
         name: leadData.LeadName || '',
-        contact: leadData.LeadPhoneNumber || '',
+        countryCode: countryCode || '+91',
+        contact: newContact || '',
         email: leadData.Email || '',
         address: leadData.Address || '',
         city,
@@ -203,7 +222,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
   // Only after Next is clicked
   const isFieldInvalid = (fieldName) => attemptedNext && (!formData[fieldName] || formData[fieldName].toString().trim() === '');
 
-  const isContactValid = () => /^[0-9]{10}$/.test(formData.contact);
+  const isContactValid = () => /^[0-9]+$/.test(formData.contact);
   const isEmailValid = () => formData.email ? (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) : true;
   const isPincodeValid = () => /^[0-9]{6}$/.test(formData.pincode);
 
@@ -212,7 +231,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
 
     // Format validations (only if typed)
     if (formData.contact && !isContactValid()) {
-      toast.error('Please enter a valid 10-digit mobile number.');
+      toast.error('Please enter a valid mobile number.');
       return;
     }
     if (formData.email && !isEmailValid()) {
@@ -265,7 +284,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
       lead: {
         id: leadId,
         name: formData.name,
-        contact: formData.contact,
+        contact: formData.countryCode +"-" + formData.contact,
         email: formData.email,
         city: formData.city,
         state: formData.state,
@@ -301,6 +320,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
     setAttemptedNext(false);
     setFormData({
       name: '',
+      countryCode : '+91',
       contact: '',
       email: '',
       address: '',
@@ -386,15 +406,29 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                     {/* Mobile number */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2"><span className="text-red-500">*</span> Lead's mobile number</label>
-                      <input
-                        type="tel"
-                        value={formData.contact}
-                        onChange={(e) => { const v = e.target.value; if (/^\d*$/.test(v)) handleInputChange('contact', v); }}
-                        placeholder="XXXXXXXXXX"
-                        className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('contact') || (attemptedNext && formData.contact && !isContactValid()) ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('contact')}`}
-                      />
+                      <div className='flex items-center gap-5'>
+                        <select
+                          name='countryCode'
+                          value={formData.countryCode}
+                          onChange={(e) => handleInputChange('countryCode', e.target.value)}
+                          className='w-fit px-4 py-3 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50'
+                        >
+                          {countryCodes.map((c) => (
+                            <option key={c.flag} value={c.code}>
+                              {c.flag} {c.code}
+                            </option>
+                          ))}
+                        </select>
+                        <input
+                          type="tel"
+                          value={formData.contact}
+                          onChange={(e) => { const v = e.target.value; if (/^\d*$/.test(v)) handleInputChange('contact', v); }}
+                          placeholder="XXXXXXXXXX"
+                          className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('contact') || (attemptedNext && formData.contact && !isContactValid()) ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('contact')}`}
+                        />
+                      </div>
                       {attemptedNext && formData.contact && !isContactValid() && (
-                        <p className="mt-1 text-xs text-red-500">Please enter a valid 10-digit mobile number.</p>
+                        <p className="mt-1 text-xs text-red-500">Please enter a valid mobile number.</p>
                       )}
                     </div>
 
@@ -406,7 +440,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                         value={formData.email}
                         onChange={(e) => handleInputChange('email', e.target.value)}
                         placeholder="john.doe@example.com"
-                        className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('email') || (attemptedNext && formData.email && !isEmailValid()) ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('email')}`}
+                        className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${!isEmailValid() ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'}`}
                       />
                       {attemptedNext && formData.email && !isEmailValid() && (
                         <p className="mt-1 text-xs text-red-500">Please enter a valid email address.</p>
@@ -415,26 +449,26 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
 
                     {/* Address */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2"><span className="text-red-500">*</span> Lead's Address</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Lead's Address</label>
                       <input
                         type="text"
                         value={formData.address}
                         onChange={(e) => handleInputChange('address', e.target.value)}
-                        placeholder="Address"
-                        className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('address') ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('address')}`}
+                        placeholder="Address Line 1, Address Line 2"
+                        className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 bg-gray-200 focus:bg-white`}
                       />
                     </div>
 
                     {/* City & State */}
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2"><span className="text-red-500">*</span> City</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
                         <input
                           type="text"
                           value={formData.city}
                           onChange={(e) => handleInputChange('city', e.target.value)}
                           placeholder="Ahmedabad"
-                          className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('city') ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('city')}`}
+                          className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 bg-gray-200 focus:bg-white`}
                         />
                       </div>
                       <div>
@@ -472,13 +506,13 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
 
                     {/* Pincode */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2"><span className="text-red-500">*</span> Lead's pincode</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Lead's pincode</label>
                       <input
                         type="text"
                         value={formData.pincode}
                         onChange={(e) => { const v = e.target.value; if (/^\d*$/.test(v) && v.length <= 6) handleInputChange('pincode', v); }}
                         placeholder="380001"
-                        className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('pincode') || (attemptedNext && formData.pincode && !isPincodeValid()) ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('pincode')}`}
+                        className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${!isPincodeValid() ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'}`}
                       />
                       {attemptedNext && formData.pincode && !isPincodeValid() && (
                         <p className="mt-1 text-xs text-red-500">Please enter a valid 6-digit pincode.</p>
@@ -487,7 +521,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
 
                     {/* GST (optional) */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">GST Number (optional)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">GST Number</label>
                       <input
                         type="text"
                         value={formData.gst}

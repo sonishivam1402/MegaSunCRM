@@ -44,7 +44,7 @@ function convertToPDFFormat(dbData) {
             address2: "RK University, Tramba, Rajkot India 360020",
             mobile: "+919574638619",
             gstn: "24AAMCM2964J1Z4",
-            email: "megakitchensystempvtltd@gmail.com",
+            email: "salesmegakitchensystempvtltd@gmail.com",
             website: "https://megakitchensystem.in/"
         },
         quotation: {
@@ -133,6 +133,7 @@ export const getQuotationPdf = async (req, res, next) => {
     try {
         const quotationId = req.params.id;
         const type = req.query.type;
+        const trigger = req.query.triggerFrom;
         const pool = await poolPromise;
         const result = await pool
             .request()
@@ -216,7 +217,7 @@ export const getQuotationPdf = async (req, res, next) => {
         // Black header for "SALES QUOTATION"
         doc.rect(leftMargin, yPos, pageWidth, 20).fillAndStroke('#000000', '#000000');
         doc.fontSize(12).font('Helvetica-Bold').fillColor('#ffffff')
-            .text(type === 'quotation' ? 'SALES QUOTATION' : 'PERFORMA INVOICE', leftMargin, yPos + 5, {
+            .text(type === 'quotation' ? (trigger === 'quotation' ? 'SALES QUOTATION' : 'PERFORMA INVOICE') : 'PERFORMA INVOICE' , leftMargin, yPos + 5, {
                 width: pageWidth,
                 align: 'center'
             });
@@ -439,7 +440,7 @@ export const getQuotationPdf = async (req, res, next) => {
         doc.fontSize(7).font('Helvetica')
             .text(`Name: ${quotationData.salesRep.name}`, salesRepStart + 3, yPos + 13)
             .text(`Mobile Number: ${quotationData.salesRep.mobile}`, salesRepStart + 3, yPos + 21)
-            .text(`Email Address: ${quotationData.salesRep.email}`, salesRepStart + 3, yPos + 29);
+            // .text(`Email Address: ${quotationData.salesRep.email}`, salesRepStart + 3, yPos + 29);
 
         // Section 3 - Tax Info (2 rows)
         const taxInfoStart = leftMargin + (sectionWidth * 2);
@@ -504,19 +505,19 @@ export const getQuotationPdf = async (req, res, next) => {
         });
 
         // Logo in terms section
-        if (type === 'quotation') {
-            try {
-                const imageBuffer = await getLogoBuffer();
-                doc.image(imageBuffer, leftMargin + pageWidth * 0.7, yPos + 60, { width: 80, height: 40 });
-            } catch (error) {
-                // Fallback to text if image not found
-                doc.rect(leftMargin + pageWidth * 0.7, yPos + 60, 80, 40).stroke();
-                doc.fontSize(10).font('Helvetica-Bold').text('MEGASUN', leftMargin + pageWidth * 0.7 + 20, yPos + 75);
-            }
-        } else {
-            doc.rect(leftMargin + pageWidth * 0.7, yPos + 60, 80, 40).stroke();
-            doc.fontSize(10).font('Helvetica-Bold').text('MEGASUN', leftMargin + pageWidth * 0.7 + 20, yPos + 75);
-        }
+        // if (type === 'quotation') {
+        //     try {
+        //         const imageBuffer = await getLogoBuffer();
+        //         doc.image(imageBuffer, leftMargin + pageWidth * 0.7, yPos + 60, { width: 80, height: 40 });
+        //     } catch (error) {
+        //         // Fallback to text if image not found
+        //         doc.rect(leftMargin + pageWidth * 0.7, yPos + 60, 80, 40).stroke();
+        //         doc.fontSize(10).font('Helvetica-Bold').text('MEGASUN', leftMargin + pageWidth * 0.7 + 20, yPos + 75);
+        //     }
+        // } else {
+        //     doc.rect(leftMargin + pageWidth * 0.7, yPos + 60, 80, 40).stroke();
+        //     doc.fontSize(10).font('Helvetica-Bold').text('MEGASUN', leftMargin + pageWidth * 0.7 + 20, yPos + 75);
+        // }
 
         // Authorized Signatory
         doc.fontSize(8).font('Helvetica')

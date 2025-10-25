@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getAllUserTypeNames, updateUserById } from '../../api/userApi';
 import { toast } from 'react-toastify';
+import { countryCodes } from '../../utils/Country_Codes';
 
 const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
   const [userTypeOptions, setUserTypeOptions] = useState([]);
@@ -8,6 +9,7 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
   const [formData, setFormData] = useState({
     id: '',
     name: '',
+    countryCode: '+91',
     contact: '',
     email: '',
     userTypeId: '',
@@ -31,13 +33,29 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
     getUserTypeNames();
   }, []);
 
+  const parsePhone = (phone) => {
+    console.log(phone);
+    if (!phone) return { countryCode: "", contact: "" };
+
+    const match = phone.match(/^(\+\d{1,4})[-\s]?(\d{6,15})$/);
+    if (match) {
+      return {
+        countryCode: match[1],
+        newContact: match[2],
+      };
+    }
+    return { countryCode: "", newContact: phone }; // fallback
+  };
+
   // Prefill form data when userData prop changes
   useEffect(() => {
     if (userData) {
+      const { countryCode, newContact } = parsePhone(userData.Contact);
       setFormData({
         id: userData.UserId || '',
         name: userData.Name || '',
-        contact: userData.Contact || '',
+        countryCode: countryCode,
+        contact: newContact || '',
         email: userData.Email || '',
         userTypeId: userData.UserTypeId || '',
         designation: userData.Designation || '',
@@ -55,6 +73,17 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
+    // Allow only numbers for 'contact' field
+    if (name === "contact") {
+      const numericValue = value.replace(/\D/g, ""); // remove all non-digits
+      setFormData((prev) => ({
+        ...prev,
+        [name]: numericValue
+      }));
+      return;
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -170,19 +199,35 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
               {/* Mobile Number */}
               <div className='w-full'>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <span className="text-red-500">*</span>Mobile Number</label>
-                <input
-                  type="tel"
-                  name="contact"
-                  value={formData.contact}
-                  onChange={handleInputChange}
-                  placeholder="XXXXXXXXXX"
-                  className={`w-full px-3 py-2 border rounded-md text-sm placeholder-gray-400   bg-gray-50
+                  <span className="text-red-500">*</span>Mobile Number
+                </label>
+
+                <div className='flex items-center gap-5'>
+                  <select
+                    name='countryCode'
+                    value={formData.countryCode}
+                    onChange={(e) => handleInputChange(e)}
+                    className='w-fit px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50'
+                  >
+                    {countryCodes.map((c) => (
+                      <option key={c.flag} value={c.code}>
+                        {c.flag} {c.code}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="tel"
+                    name="contact"
+                    value={formData.contact}
+                    onChange={handleInputChange}
+                    placeholder="XXXXXXXXXX"
+                    className={`w-full px-3 py-2 border rounded-md text-sm placeholder-gray-400   bg-gray-50
                       ${submitted && !formData.contact ? "!border-red-500" : "border-gray-300"}`}
-                />
-                {submitted && !/^[0-9]{10}$/.test(formData.contact) && (
+                  />
+                </div>
+                {submitted && !/^[0-9]+$/.test(formData.contact) && (
                   <p className="mt-1 text-xs text-red-500">
-                    Please enter a valid 10-digit mobile number.
+                    Please enter a valid mobile number (only numbers).
                   </p>
                 )}
               </div>
@@ -283,6 +328,7 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
                       <div className="flex gap-3">
                         <input
                           type="file"
+                          name="avatar"
                           id="imageFile"
                           accept="image/png, image/jpeg"
                           onChange={handleFileChange}
@@ -312,6 +358,7 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
 
                       <input
                         type="file"
+                        name="avatar"
                         id="imageFile"
                         accept="image/png, image/jpeg"
                         onChange={handleFileChange}

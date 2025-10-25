@@ -14,7 +14,10 @@ const AddNewFollowUp = ({ isOpen, onClose, onSuccess, followUp }) => {
     const [selectedLead, setSelectedLead] = useState('');
     const [selectedStatus, setSelectedStatus] = useState('');
     const [comments, setComments] = useState('');
-    const [nextFollowUpDate, setNextFollowUpDate] = useState('');
+
+    const today = new Date().toISOString().split('T')[0];
+    const [nextFollowUpDate, setNextFollowUpDate] = useState(today);
+
 
     // Fetch leads for dropdown only when followUp is not passed
     const fetchLeads = async () => {
@@ -221,13 +224,14 @@ const AddNewFollowUp = ({ isOpen, onClose, onSuccess, followUp }) => {
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Next follow-up date
                                 </label>
-                                <div className="relative">
+                                <div className="relative" onClick={() => document.getElementById('nextFollowUpDate').showPicker()}>
                                     <input
+                                        id='nextFollowUpDate'
                                         type="date"
                                         value={nextFollowUpDate}
                                         onChange={(e) => setNextFollowUpDate(e.target.value)}
                                         className="w-full bg-white rounded-sm px-4 py-2.5 text-sm border border-gray-300"
-                                        min={new Date().toISOString().split('T')[0]}
+                                        min={today}
                                     />
                                 </div>
                             </div>
