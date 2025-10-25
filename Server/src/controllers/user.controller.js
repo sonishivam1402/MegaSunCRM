@@ -18,11 +18,14 @@ export const createNewUser = async (req, res, next) => {
 
     const isEmailValid = validator.isEmail(data.email);
 
-    const isContactValid = validator.isMobilePhone(data.contact, 'any');
+    //const isContactValid = validator.isMobilePhone(data.contact, 'any');
 
-    if (!isEmailValid && !isContactValid) {
-      return res.json({ message: "Please check email and contact details." });
+    if (!isEmailValid) {
+      return res.json({ message: "Please check email details." });
     }
+
+    const newContact = data.countryCode+"-" + data.contact;
+    //console.log(newContact);
 
     const hashPassword = await bcrypt.hash(data.password, 10);
     const pool = await poolPromise;
@@ -33,7 +36,7 @@ export const createNewUser = async (req, res, next) => {
       .input("Password", sql.NVarChar(100), data.password)
       .input("UserTypeId", sql.NVarChar(100), data.userTypeId)
       .input("HashPassword", sql.NVarChar(sql.MAX), hashPassword)
-      .input("Contact", sql.NVarChar(20), data.contact.toString())
+      .input("Contact", sql.NVarChar(20), newContact.toString())
       .input("ProfileImagePath", sql.NVarChar(sql.MAX), fileUrl)
       .input("Designation", sql.NVarChar(sql.MAX), data.designation)
       .input("GSTId", sql.NVarChar(100), data.gst)
@@ -162,6 +165,8 @@ export const updateUserbyId = async (req, res, next) => {
       //console.log("New File Uploaded to S3 : ", fileUrl);
     }
 
+    const newContact = data.countryCode+"-" + data.contact;
+
     const pool = await poolPromise;
     const result = await pool
       .request()
@@ -169,7 +174,7 @@ export const updateUserbyId = async (req, res, next) => {
       .input("UserId", sql.UniqueIdentifier, data.id)
       .input("Email", sql.NVarChar(100), data.email)
       .input("UserTypeId", sql.NVarChar(100), data.userTypeId)
-      .input("Contact", sql.NVarChar(20), data.contact.toString())
+      .input("Contact", sql.NVarChar(20), newContact.toString())
       .input("ProfileImagePath", sql.NVarChar(sql.MAX), fileUrl) // updated path
       .input("Designation", sql.NVarChar(sql.MAX), data.designation)
       .input("IsActive", sql.Bit, data.isActive === true || data.isActive === "true")

@@ -7,14 +7,6 @@ export const createLead = async (req, res, next) => {
   try {
     const { lead } = req.body;
 
-    const isEmailValid = validator.isEmail(lead.email);
-
-    const isContactValid = validator.isMobilePhone(lead.contact, 'any');
-
-    if (!isEmailValid && !isContactValid) {
-      return res.json({ message: "Please check email and contact details." });
-    }
-
     const pool = await poolPromise;
     const result = await pool
       .request()
@@ -56,14 +48,6 @@ export const updateLeadById = async (req, res, next) => {
   try {
     const { lead } = req.body;
     const leadId = req.params.id;
-
-    const isEmailValid = validator.isEmail(lead.email);
-
-    const isContactValid = validator.isMobilePhone(lead.contact, 'any');
-
-    if (!isEmailValid && !isContactValid) {
-      return res.json({ message: "Please check email and contact details." });
-    }
 
     const pool = await poolPromise;
     const result = await pool

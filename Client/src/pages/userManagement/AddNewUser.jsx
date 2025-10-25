@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { createNewUser, getAllUserTypeNames } from '../../api/userApi';
 import { toast } from 'react-toastify';
 import CloseIcon from "../../assets/icons/CloseIcon";
+import { countryCodes } from '../../utils/Country_Codes';
 
 const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
 
@@ -9,6 +10,7 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
   const [previewImage, setPreviewImage] = useState(null);
   const initialFormData = {
     name: '',
+    countryCode: '+91',
     contact: '',
     email: '',
     password: '',
@@ -24,6 +26,17 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
+    // Allow only numbers for 'contact' field
+    if (name === "contact") {
+      const numericValue = value.replace(/\D/g, ""); // remove all non-digits
+      setFormData((prev) => ({
+        ...prev,
+        [name]: numericValue
+      }));
+      return;
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -63,7 +76,7 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
     }
 
     // Validate contact number format (10 digits)
-    if (!/^[0-9]{10}$/.test(formData.contact)) {
+    if (!/^[0-9]+$/.test(formData.contact)) {
       toast.error("Please enter a valid 10-digit mobile number.");
       return;
     }
@@ -170,19 +183,35 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <span className="text-red-500">*</span> Mobile Number
                   </label>
-                  <input
-                    type="tel"
-                    name="contact"
-                    value={formData.contact}
-                    onChange={handleInputChange}
-                    placeholder="XXXXXXXXXX"
-                    className={`w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50
+
+                  <div className='flex items-center gap-5'>
+                    <select
+                      name='countryCode'
+                      value={formData.countryCode}
+                      onChange={(e) => handleInputChange(e)}
+                      className='w-fit px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50'
+                    >
+                      {countryCodes.map((c) => (
+                        <option key={c.flag} value={c.code}>
+                          {c.flag} {c.code}
+                        </option>
+                      ))}
+                    </select>
+
+                    <input
+                      type="tel"
+                      name="contact"
+                      value={formData.contact}
+                      onChange={handleInputChange}
+                      placeholder="XXXXXXXXXX"
+                      className={`w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50
                      ${submitted && (!formData.contact || !/^[0-9]{10}$/.test(formData.contact)) ? "!border-red-500" : "border-gray-300"} `}
-                  />
+                    />
+                  </div>
                   {/* Error message */}
-                  {submitted && formData.contact && !/^[0-9]{10}$/.test(formData.contact) && (
+                  {submitted && formData.contact && !/^[0-9]+$/.test(formData.contact) && (
                     <p className="mt-1 text-xs text-red-500">
-                      Please enter a valid 10-digit mobile number.
+                      Please enter a valid contact number (numbers only).
                     </p>
                   )}
                 </div>

@@ -324,14 +324,14 @@ const Quotation = ({ refreshKey }) => {
         setActiveDropdown(null);
     }
 
-    const handleDownloadQuotation = async (id, type) => {
+    const handleDownloadQuotation = async (id, type, triggerFrom) => {
         try {
             setLoading(true);
-            const response = await getQuotationPdf(id, type);
+            const response = await getQuotationPdf(id, type, triggerFrom);
 
             const blob = await response.data;
 
-            let filename = `${type}.pdf`; // default
+            let filename = `${triggerFrom}.pdf`; // default
             const disposition = response.headers.get("Content-Disposition");
             if (disposition && disposition.includes("filename=")) {
                 filename = disposition
@@ -543,8 +543,12 @@ const Quotation = ({ refreshKey }) => {
                                                 {activeDropdown === quotation.QuotationId && (
                                                     <div className="absolute right-2 mt-1 w-50 bg-white rounded-md shadow-lg border border-gray-200 z-50">
                                                         <div className="py-1">
-                                                            <button onClick={() => handleDownloadQuotation(quotation.QuotationId, "quotation")} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
+                                                            <button onClick={() => handleDownloadQuotation(quotation.QuotationId, "quotation", "quotation")} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
                                                                 Download Quotation
+                                                            </button>
+
+                                                            <button onClick={() => handleDownloadQuotation(quotation.QuotationId, "quotation", "performaInvoice")} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
+                                                                Download Performa Invoice
                                                             </button>
 
                                                             {ordersMenus?.CreateAccess && (

@@ -18,7 +18,8 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
     // Step 1: Lead Details
     const [selectedLead, setSelectedLead] = useState('');
     const [salesRepresentative, setSalesRepresentative] = useState('');
-    const [orderDate, setOrderDate] = useState('');
+    const today = new Date().toISOString().split('T')[0];
+    const [orderDate, setOrderDate] = useState(today);
     const [orderBy, setOrderBy] = useState(null);
     const [leadOptions, setLeadOptions] = useState([]);
     const [leadData, setLeadData] = useState({});
@@ -139,25 +140,12 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
             isValid = false;
         }
 
-        if (!shippingDetails.address.trim()) {
-            errors.address = 'Address is required';
-            isValid = false;
-        }
-
-        if (!shippingDetails.city.trim()) {
-            errors.city = 'City is required';
-            isValid = false;
-        }
-
         if (!shippingDetails.state) {
             errors.state = 'State is required';
             isValid = false;
         }
 
-        if (!shippingDetails.pincode.trim()) {
-            errors.pincode = 'Pincode is required';
-            isValid = false;
-        } else if (!validatePincode(shippingDetails.pincode)) {
+        if (shippingDetails.pincode && !validatePincode(shippingDetails.pincode)) {
             errors.pincode = 'Pincode must be 6 digits';
             isValid = false;
         }
@@ -798,22 +786,25 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
 
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Order date *</label>
-                <input
-                    type="date"
-                    value={orderDate}
-                    onChange={(e) => {
-                        setOrderDate(e.target.value);
-                        clearFieldError('orderDate');
-                    }}
-                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.orderDate ? 'border-2 border-red-500' : ''
-                        }`}
-                    disabled={loadingData}
-                />
+                <div className="relative" onClick={() => document.getElementById('orderDate').showPicker()}>
+                    <input
+                        id='orderDate'
+                        type="date"
+                        value={orderDate}
+                        onChange={(e) => {
+                            setOrderDate(e.target.value);
+                            clearFieldError('orderDate');
+                        }}
+                        className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.orderDate ? 'border-2 border-red-500' : ''
+                            }`}
+                        disabled={loadingData}
+                    />
+                </div>
                 {validationErrors.orderDate && (
                     <p className="text-red-500 text-sm mt-1">{validationErrors.orderDate}</p>
                 )}
             </div>
-        </div>
+        </div >
     );
 
     const renderStep2 = () => (
@@ -948,7 +939,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
             </div>
 
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Address *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
                 <textarea
                     value={shippingDetails.address}
                     onChange={(e) => {
@@ -957,18 +948,14 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
                     }}
                     placeholder="Flat no., Street name, area"
                     rows={4}
-                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm resize-none ${validationErrors.address ? 'border-2 border-red-500' : ''
-                        }`}
+                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm resize-none`}
                     disabled={loadingData}
                 />
-                {validationErrors.address && (
-                    <p className="text-red-500 text-sm mt-1">{validationErrors.address}</p>
-                )}
             </div>
 
             <div className="grid grid-cols-3 gap-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
                     <input
                         type='text'
                         placeholder='City'
@@ -977,28 +964,24 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
                             setShippingDetails({ ...shippingDetails, city: e.target.value });
                             clearFieldError('city');
                         }}
-                        className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.city ? 'border-2 border-red-500' : ''
-                            }`}
+                        className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm`}
                         disabled={loadingData}
                     />
-                    {validationErrors.city && (
-                        <p className="text-red-500 text-sm mt-1">{validationErrors.city}</p>
-                    )}
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                         State *
+                        State *
                     </label>
                     <select
                         value={shippingDetails.state || ""}
-                        onChange={(e) => {setShippingDetails({...shippingDetails, state: e.target.value})}}
+                        onChange={(e) => { setShippingDetails({ ...shippingDetails, state: e.target.value }); clearFieldError('state'); }}
                         className={`w-full max-w-sm px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${validationErrors.state ? 'border-2 border-red-500' : ''
                             }`}
                     >
                         <option value="" disabled>
                             Select a state
                         </option>
-                        {INDIAN_STATES.map((state) => ( 
+                        {INDIAN_STATES.map((state) => (
                             <option key={state} value={state}>
                                 {state}
                             </option>
@@ -1009,7 +992,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
                     )}
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Pincode *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Pincode</label>
                     <input
                         type="text"
                         value={shippingDetails.pincode}
