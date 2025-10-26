@@ -24,6 +24,7 @@
     "multer": "^2.0.2",
     "node-cache": "^5.1.2",
     "pdfkit": "^0.17.2",
+    "puppeteer": "^24.26.1",
     "validator": "^13.15.15"
   },
   "devDependencies": {
