@@ -45,7 +45,16 @@ const EditOrderModal = ({ isOpen, onClose, onSuccess, orderId }) => {
   // Step 4: Payment & Tax Details
   const [orderType, setOrderType] = useState('domestic');
   const [currency, setCurrency] = useState('rupees');
+  const [currencySymbol, setCurrencySymbol] = useState('₹');
   const [productOptions, setProductOptions] = useState([]);
+
+  // Currency symbol mapping
+  const currencySymbols = {
+    rupees: '₹',
+    dollar: '$',
+    pound: '£',
+    euro: '€'
+  };
 
   // Items table
   const [itemRows, setItemRows] = useState([{
@@ -166,6 +175,7 @@ const EditOrderModal = ({ isOpen, onClose, onSuccess, orderId }) => {
       setOrderType(order.IsDomestic ? 'domestic' : 'international');
       const currencyMapBack = { INR: 'rupees', USD: 'dollar', GBP: 'pound', EUR: 'euro' };
       setCurrency(currencyMapBack[order.Currency] || 'rupees');
+      setCurrencySymbol(currencySymbols[currencyMapBack[order.Currency] || 'rupees'])
       setExpectedDispatchDays(order.ExpectedDispatchDays?.toString?.() || '');
       setPaymentTerms(order.PaymentTerms || '');
       setNotes(order.Notes || '');
@@ -436,6 +446,30 @@ const EditOrderModal = ({ isOpen, onClose, onSuccess, orderId }) => {
     }
   };
 
+  // Update currency when quotation type changes
+  const handleQuotationTypeChange = (e) => {
+    const newType = e.target.value;
+    setOrderType(newType);
+
+    // If switching to international and currency is rupees, change to dollar
+    if (newType === 'international' && currency === 'rupees') {
+      setCurrency('dollar');
+      setCurrencySymbol('$');
+    }
+    // If switching to domestic and currency is not rupees, change to rupees
+    if (newType === 'domestic' && currency !== 'rupees') {
+      setCurrency('rupees');
+      setCurrencySymbol('₹');
+    }
+  };
+
+  // Update currency and symbol
+  const handleCurrencyChange = (e) => {
+    const newCurrency = e.target.value;
+    setCurrency(newCurrency);
+    setCurrencySymbol(currencySymbols[newCurrency]);
+  };
+
   if (!isOpen) return null;
 
   const renderStepIndicator = () => (
@@ -669,11 +703,11 @@ const EditOrderModal = ({ isOpen, onClose, onSuccess, orderId }) => {
         <label className="block text-sm font-medium text-gray-700 mb-3">Select Order Type *</label>
         <div className="flex items-center gap-6">
           <label className="flex items-center gap-2 cursor-pointer">
-            <input type="radio" value="domestic" checked={orderType === 'domestic'} onChange={(e) => setOrderType(e.target.value)} className="w-4 h-4 text-[#0d4715]" />
+            <input type="radio" value="domestic" checked={orderType === 'domestic'} onChange={handleQuotationTypeChange} className="w-4 h-4 text-[#0d4715]" />
             <span className="text-sm">Domestic-India</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
-            <input type="radio" value="international" checked={orderType === 'international'} onChange={(e) => setOrderType(e.target.value)} className="w-4 h-4 text-[#0d4715]" />
+            <input type="radio" value="international" checked={orderType === 'international'} onChange={handleQuotationTypeChange} className="w-4 h-4 text-[#0d4715]" />
             <span className="text-sm">International</span>
           </label>
         </div>
@@ -682,12 +716,29 @@ const EditOrderModal = ({ isOpen, onClose, onSuccess, orderId }) => {
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-3">Select Currency *</label>
         <div className="flex items-center gap-6">
-          {['Rupees', 'Dollar', 'Pound', 'Euro'].map(curr => (
-            <label key={curr} className="flex items-center gap-2 cursor-pointer">
-              <input type="radio" value={curr.toLowerCase()} checked={currency === curr.toLowerCase()} onChange={(e) => setCurrency(e.target.value)} className="w-4 h-4 text-[#0d4715]" />
-              <span className="text-sm">{curr}</span>
-            </label>
-          ))}
+          {['Rupees', 'Dollar', 'Pound', 'Euro'].map(curr => {
+            const currValue = curr.toLowerCase();
+            const isDomestic = orderType === 'domestic';
+            const isDisabled = (isDomestic && currValue !== 'rupees') ||
+              (!isDomestic && currValue === 'rupees');
+
+            return (
+              <label
+                key={curr}
+                className={`flex items-center gap-2 ${isDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+              >
+                <input
+                  type="radio"
+                  value={currValue}
+                  checked={currency === currValue}
+                  onChange={handleCurrencyChange}
+                  disabled={isDisabled}
+                  className="w-4 h-4 text-[#0d4715] disabled:cursor-not-allowed"
+                />
+                <span className="text-sm">{curr}</span>
+              </label>
+            );
+          })}
         </div>
       </div>
 
@@ -818,15 +869,15 @@ const EditOrderModal = ({ isOpen, onClose, onSuccess, orderId }) => {
 
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span className="text-gray-600">Basic Amount (₹)</span>
+            <span className="text-gray-600">Basic Amount ({currencySymbol})</span>
             <input type="text" value={totals.basicAmount} readOnly className="w-40 px-3 py-1 bg-gray-100 rounded text-right" />
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-600">(-) Discount (₹)</span>
+            <span className="text-gray-600">(-) Discount ({currencySymbol})</span>
             <input type="text" value={totals.discount} readOnly className="w-40 px-3 py-1 bg-gray-100 rounded text-right" />
           </div>
           <div className="flex justify-between font-medium">
-            <span>Total (₹)</span>
+            <span>Total ({currencySymbol})</span>
             <input type="text" value={totals.total} readOnly className="w-40 px-3 py-1 bg-gray-100 rounded text-right" />
           </div>
 
@@ -835,33 +886,33 @@ const EditOrderModal = ({ isOpen, onClose, onSuccess, orderId }) => {
               {taxFormat === 'SGST - CGST' ? (
                 <>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Add SGST (₹)</span>
+                    <span className="text-gray-600">Add SGST ({currencySymbol})</span>
                     <input type="text" value={totals.sgst} readOnly className="w-40 px-3 py-1 bg-gray-100 rounded text-right" />
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Add CGST (₹)</span>
+                    <span className="text-gray-600">Add CGST ({currencySymbol})</span>
                     <input type="text" value={totals.cgst} readOnly className="w-40 px-3 py-1 bg-gray-100 rounded text-right" />
                   </div>
                 </>
               ) : (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Add IGST (₹)</span>
+                  <span className="text-gray-600">Add IGST ({currencySymbol})</span>
                   <input type="text" value={totals.igst} readOnly className="w-40 px-3 py-1 bg-gray-100 rounded text-right" />
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-gray-600">Tax Amount (₹)</span>
+                <span className="text-gray-600">Tax Amount ({currencySymbol})</span>
                 <input type="text" value={totals.taxAmount} readOnly className="w-40 px-3 py-1 bg-gray-100 rounded text-right" />
               </div>
             </>
           )}
 
           <div className="flex justify-between">
-            <span className="text-gray-600">Round Off (₹)</span>
+            <span className="text-gray-600">Round Off ({currencySymbol})</span>
             <input type="number" step="0.01" value={roundOff} onChange={(e) => setRoundOff(e.target.value)} className="w-40 px-3 py-1 bg-white border rounded text-right" />
           </div>
           <div className="flex justify-between font-bold text-base pt-2 border-t">
-            <span>Grand Total (₹)</span>
+            <span>Grand Total ({currencySymbol})</span>
             <input type="text" value={totals.grandTotal} readOnly className="w-40 px-3 py-1 bg-gray-200 rounded text-right font-bold" />
           </div>
         </div>
