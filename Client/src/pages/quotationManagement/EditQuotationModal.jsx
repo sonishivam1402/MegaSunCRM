@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getQuotationById, updateQuotationById } from '../../api/quotation';
 import { getAllProducts } from '../../api/productApi';
 import { toast } from 'react-toastify';
-import { INDIAN_STATES } from '../../utils/Indian_States';
+import countryStatesData from '../../utils/Country_States.json';
 
 const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -49,12 +49,12 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
   const [productOptions, setProductOptions] = useState([]);
 
   // Currency symbol mapping
-    const currencySymbols = {
-        rupees: '₹',
-        dollar: '$',
-        pound: '£',
-        euro: '€'
-    };
+  const currencySymbols = {
+    rupees: '₹',
+    dollar: '$',
+    pound: '£',
+    euro: '€'
+  };
 
   // Items table
   const [itemRows, setItemRows] = useState([{
@@ -77,6 +77,25 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
   const [terms, setTerms] = useState('');
   const [taxFormat, setTaxFormat] = useState('SGST - CGST');
   const [roundOff, setRoundOff] = useState('0.00');
+
+  const [availableStates, setAvailableStates] = useState([]);
+
+  // Update available states when shipping country changes
+  useEffect(() => {
+    if (shippingDetails.country) {
+      const selectedCountry = countryStatesData.find(c => c.name === shippingDetails.country);
+      if (selectedCountry && selectedCountry.states) {
+        setAvailableStates(selectedCountry.states);
+        // Reset state if it's not in the new country's states
+        if (shippingDetails.state && !selectedCountry.states.includes(shippingDetails.state)) {
+          setShippingDetails(prev => ({ ...prev, state: '' }));
+        }
+      } else {
+        setAvailableStates([]);
+        setShippingDetails(prev => ({ ...prev, state: '' }));
+      }
+    }
+  }, [shippingDetails.country]);
 
   // Helpers
   const validateEmail = (email) => {
@@ -118,7 +137,6 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
     if (shippingDetails.pincode && !validatePincode(shippingDetails.pincode)) { errors.pincode = 'Pincode must be 6 digits'; ok = false; }
     if (!shippingDetails.country.trim()) { errors.country = 'Country is required'; ok = false; }
 
-    // merge field-specific
     setValidationErrors(prev => ({ ...prev, ...errors }));
     return ok;
   };
@@ -161,6 +179,7 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
       });
 
       // Step 3
+      const shippingCountry = quotation.ShippingCountry || '';
       setShippingDetails({
         companyName: quotation.ShippingCompanyName || '',
         email: quotation.ShippingEmailAddress || '',
@@ -168,8 +187,16 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
         city: quotation.ShippingCity || '',
         state: quotation.ShippingState || '',
         pincode: (quotation.ShippingPincode || '').toString(),
-        country: quotation.ShippingCountry || ''
+        country: shippingCountry
       });
+
+      // Set available states based on loaded country
+      if (shippingCountry) {
+        const selectedCountry = countryStatesData.find(c => c.name === shippingCountry);
+        if (selectedCountry && selectedCountry.states) {
+          setAvailableStates(selectedCountry.states);
+        }
+      }
 
       // Step 4
       setQuotationType(quotation.IsDomestic ? 'domestic' : 'international');
@@ -243,8 +270,6 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
   };
 
   const handleItemRowChange = (id, field, value) => {
-
-    // Validate quantity must be greater than 0
     if (field === 'qty') {
       const numValue = parseFloat(value);
       if (numValue <= 0) {
@@ -253,7 +278,6 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
       }
     }
 
-    // Validate negative values for qty, rate, and discount
     if (['qty', 'rate', 'discount'].includes(field)) {
       const numValue = parseFloat(value);
       if (numValue < 0) {
@@ -446,24 +470,20 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
     }
   };
 
-  // Update currency when quotation type changes
   const handleQuotationTypeChange = (e) => {
     const newType = e.target.value;
     setQuotationType(newType);
 
-    // If switching to international and currency is rupees, change to dollar
     if (newType === 'international' && currency === 'rupees') {
       setCurrency('dollar');
       setCurrencySymbol('$');
     }
-    // If switching to domestic and currency is not rupees, change to rupees
     if (newType === 'domestic' && currency !== 'rupees') {
       setCurrency('rupees');
       setCurrencySymbol('₹');
     }
   };
 
-  // Update currency and symbol
   const handleCurrencyChange = (e) => {
     const newCurrency = e.target.value;
     setCurrency(newCurrency);
@@ -569,18 +589,24 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">City, state</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
               <input type="text" value={billingDetails.city} readOnly className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed" />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
+              <input type="text" value={billingDetails.state} readOnly className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Pincode</label>
               <input type="text" value={billingDetails.pincode} readOnly className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed" />
             </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
-            <input type="text" value={billingDetails.country} readOnly className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed" />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
+              <input type="text" value={billingDetails.country} readOnly className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed" />
+            </div>
           </div>
         </>
       )}
@@ -628,7 +654,7 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
           <input
@@ -639,56 +665,89 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
             className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm `}
           />
         </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             State *
           </label>
-          <select
-            value={shippingDetails.state || ""}
-            onChange={(e) => { setShippingDetails({ ...shippingDetails, state: e.target.value }); clearFieldError('state'); }}
-            className={`w-full max-w-sm px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${validationErrors.state ? 'border-2 border-red-500' : ''
-              }`}
-          >
-            <option value="" disabled>
-              Select a state
-            </option>
-            {INDIAN_STATES.map((state) => (
-              <option key={state} value={state}>
-                {state}
+          <div className="relative">
+            <select
+              value={shippingDetails.state || ""}
+              onChange={(e) => {
+                setShippingDetails({ ...shippingDetails, state: e.target.value });
+                clearFieldError('state');
+              }}
+              disabled={!shippingDetails.country || availableStates.length === 0}
+              className={`w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 appearance-none outline-none focus:ring-0 ${validationErrors.state ? 'border-2 border-red-500' : ''} ${(!shippingDetails.country || availableStates.length === 0) ? 'cursor-not-allowed opacity-60' : ''}`}
+            >
+              <option value="" disabled>
+                {!shippingDetails.country ? 'Select country first' : availableStates.length === 0 ? 'No states available' : 'Select a state'}
               </option>
-            ))}
-          </select>
+              {availableStates.map((state) => (
+                <option key={state} value={state}>
+                  {state}
+                </option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
           {validationErrors.state && (
             <p className="text-red-500 text-sm mt-1">{validationErrors.state}</p>
           )}
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Pincode</label>
-          <input
-            type="text"
-            value={shippingDetails.pincode}
-            onChange={(e) => {
-              const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-              setShippingDetails({ ...shippingDetails, pincode: value });
-              clearFieldError('pincode');
-            }}
-            placeholder="123456"
-            className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.pincode ? 'border-2 border-red-500' : ''}`}
-          />
-          {validationErrors.pincode && (<p className="text-red-500 text-sm mt-1">{validationErrors.pincode}</p>)}
-        </div>
+
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Country *</label>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Country *
+          </label>
+          <div className="relative">
+            <select
+              value={shippingDetails.country}
+              onChange={(e) => {
+                setShippingDetails({ ...shippingDetails, country: e.target.value });
+                clearFieldError('country');
+              }}
+              className={`w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 appearance-none outline-none focus:ring-0 ${validationErrors.country ? 'border-2 border-red-500' : ''}`}
+            >
+              <option value="">Select country</option>
+              {countryStatesData.map(country => (
+                <option key={country.name} value={country.name}>{country.name}</option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+          {validationErrors.country && (
+            <p className="text-red-500 text-sm mt-1">{validationErrors.country}</p>
+          )}
+        </div>
+
+        <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Pincode</label>
         <input
-          type='text'
-          placeholder='Country'
-          value={shippingDetails.country}
-          onChange={(e) => { setShippingDetails({ ...shippingDetails, country: e.target.value }); clearFieldError('country'); }}
-          className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.country ? 'border-2 border-red-500' : ''}`}
+          type="text"
+          value={shippingDetails.pincode}
+          onChange={(e) => {
+            const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+            setShippingDetails({ ...shippingDetails, pincode: value });
+            clearFieldError('pincode');
+          }}
+          placeholder="123456"
+          className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.pincode ? 'border-2 border-red-500' : ''}`}
         />
-        {validationErrors.country && (<p className="text-red-500 text-sm mt-1">{validationErrors.country}</p>)}
+        {validationErrors.pincode && (<p className="text-red-500 text-sm mt-1">{validationErrors.pincode}</p>)}
+      </div>
+
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getOrderById, updateOrderById } from '../../api/orderApi';
 import { getAllProducts } from '../../api/productApi';
 import { toast } from 'react-toastify';
-import { INDIAN_STATES } from '../../utils/Indian_States';
+import countryStatesData from '../../utils/Country_States.json';
 
 const EditOrderModal = ({ isOpen, onClose, onSuccess, orderId }) => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -77,6 +77,25 @@ const EditOrderModal = ({ isOpen, onClose, onSuccess, orderId }) => {
   const [terms, setTerms] = useState('');
   const [taxFormat, setTaxFormat] = useState('SGST - CGST');
   const [roundOff, setRoundOff] = useState('0.00');
+
+  const [availableStates, setAvailableStates] = useState([]);
+
+  // Update available states when shipping country changes
+  useEffect(() => {
+    if (shippingDetails.country) {
+      const selectedCountry = countryStatesData.find(c => c.name === shippingDetails.country);
+      if (selectedCountry && selectedCountry.states) {
+        setAvailableStates(selectedCountry.states);
+        // Reset state if it's not in the new country's states
+        if (shippingDetails.state && !selectedCountry.states.includes(shippingDetails.state)) {
+          setShippingDetails(prev => ({ ...prev, state: '' }));
+        }
+      } else {
+        setAvailableStates([]);
+        setShippingDetails(prev => ({ ...prev, state: '' }));
+      }
+    }
+  }, [shippingDetails.country]);
 
   // Helpers
   const validateEmail = (email) => {
@@ -161,6 +180,7 @@ const EditOrderModal = ({ isOpen, onClose, onSuccess, orderId }) => {
       });
 
       // Step 3
+      const shippingCountry = order.ShippingCountry || '';
       setShippingDetails({
         companyName: order.ShippingCompanyName || '',
         email: order.ShippingEmailAddress || '',
@@ -168,8 +188,16 @@ const EditOrderModal = ({ isOpen, onClose, onSuccess, orderId }) => {
         city: order.ShippingCity || '',
         state: order.ShippingState || '',
         pincode: (order.ShippingPincode || '').toString(),
-        country: order.ShippingCountry || ''
+        country: shippingCountry
       });
+
+      // Set available states based on loaded country
+      if (shippingCountry) {
+        const selectedCountry = countryStatesData.find(c => c.name === shippingCountry);
+        if (selectedCountry && selectedCountry.states) {
+          setAvailableStates(selectedCountry.states);
+        }
+      }
 
       // Step 4
       setOrderType(order.IsDomestic ? 'domestic' : 'international');
@@ -569,19 +597,48 @@ const EditOrderModal = ({ isOpen, onClose, onSuccess, orderId }) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">City, state</label>
-              <input type="text" value={billingDetails.city} readOnly className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed" />
+              <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
+              <input
+                type="text"
+                value={billingDetails.city}
+                readOnly
+                className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed"
+              />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Pincode</label>
-              <input type="text" value={billingDetails.pincode} readOnly className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed" />
+              <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
+              <input
+                type="text"
+                value={billingDetails.state}
+                readOnly
+                className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed"
+              />
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
-            <input type="text" value={billingDetails.country} readOnly className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed" />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
+              <input
+                type="text"
+                value={billingDetails.country}
+                readOnly
+                className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Pincode</label>
+              <input
+                type="text"
+                value={billingDetails.pincode}
+                readOnly
+                className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed"
+              />
+            </div>
           </div>
+
+
         </>
       )}
     </div>
@@ -628,7 +685,7 @@ const EditOrderModal = ({ isOpen, onClose, onSuccess, orderId }) => {
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
           <input
@@ -639,29 +696,72 @@ const EditOrderModal = ({ isOpen, onClose, onSuccess, orderId }) => {
             className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm`}
           />
         </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             State *
           </label>
-          <select
-            value={shippingDetails.state || ""}
-            onChange={(e) => { setShippingDetails({ ...shippingDetails, state: e.target.value }); clearFieldError('state'); }}
-            className={`w-full max-w-sm px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${validationErrors.state ? 'border-2 border-red-500' : ''
-              }`}
-          >
-            <option value="" disabled>
-              Select a state
-            </option>
-            {INDIAN_STATES.map((state) => (
-              <option key={state} value={state}>
-                {state}
+          <div className="relative">
+            <select
+              value={shippingDetails.state || ""}
+              onChange={(e) => {
+                setShippingDetails({ ...shippingDetails, state: e.target.value });
+                clearFieldError('state');
+              }}
+              disabled={!shippingDetails.country || availableStates.length === 0}
+              className={`w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 appearance-none outline-none focus:ring-0 ${validationErrors.state ? 'border-2 border-red-500' : ''} ${(!shippingDetails.country || availableStates.length === 0) ? 'cursor-not-allowed opacity-60' : ''}`}
+            >
+              <option value="" disabled>
+                {!shippingDetails.country ? 'Select country first' : availableStates.length === 0 ? 'No states available' : 'Select a state'}
               </option>
-            ))}
-          </select>
+              {availableStates.map((state) => (
+                <option key={state} value={state}>
+                  {state}
+                </option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
           {validationErrors.state && (
             <p className="text-red-500 text-sm mt-1">{validationErrors.state}</p>
           )}
         </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Country *
+          </label>
+          <div className="relative">
+            <select
+              value={shippingDetails.country}
+              onChange={(e) => {
+                setShippingDetails({ ...shippingDetails, country: e.target.value });
+                clearFieldError('country');
+              }}
+              className={`w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 appearance-none outline-none focus:ring-0 ${validationErrors.country ? 'border-2 border-red-500' : ''}`}
+            >
+              <option value="">Select country</option>
+              {countryStatesData.map(country => (
+                <option key={country.name} value={country.name}>{country.name}</option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+          {validationErrors.country && (
+            <p className="text-red-500 text-sm mt-1">{validationErrors.country}</p>
+          )}
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Pincode</label>
           <input
@@ -677,19 +777,9 @@ const EditOrderModal = ({ isOpen, onClose, onSuccess, orderId }) => {
           />
           {validationErrors.pincode && (<p className="text-red-500 text-sm mt-1">{validationErrors.pincode}</p>)}
         </div>
+
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Country *</label>
-        <input
-          type='text'
-          placeholder='Country'
-          value={shippingDetails.country}
-          onChange={(e) => { setShippingDetails({ ...shippingDetails, country: e.target.value }); clearFieldError('country'); }}
-          className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.country ? 'border-2 border-red-500' : ''}`}
-        />
-        {validationErrors.country && (<p className="text-red-500 text-sm mt-1">{validationErrors.country}</p>)}
-      </div>
     </div>
   );
 

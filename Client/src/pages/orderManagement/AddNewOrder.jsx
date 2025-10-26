@@ -4,7 +4,7 @@ import { getAllProducts } from '../../api/productApi';
 import { createNewOrder } from '../../api/orderApi';
 import { toast } from 'react-toastify';
 import { getQuotationById } from '../../api/quotation';
-import { INDIAN_STATES } from '../../utils/Indian_States';
+import countryStatesData from '../../utils/Country_States.json';
 
 const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
     const [currentStep, setCurrentStep] = useState(1);
@@ -46,7 +46,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
         city: '',
         state: '',
         pincode: '',
-        country: ''
+        country: 'India'
     });
 
     // Step 4: Payment & Tax Details
@@ -84,6 +84,25 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
     const [terms, setTerms] = useState('');
     const [taxFormat, setTaxFormat] = useState('SGST - CGST');
     const [roundOff, setRoundOff] = useState('0.00');
+
+    const [availableStates, setAvailableStates] = useState([]);
+
+    // Update available states when shipping country changes
+    useEffect(() => {
+        if (shippingDetails.country) {
+            const selectedCountry = countryStatesData.find(c => c.name === shippingDetails.country);
+            if (selectedCountry && selectedCountry.states) {
+                setAvailableStates(selectedCountry.states);
+                // Reset state if it's not in the new country's states
+                if (shippingDetails.state && !selectedCountry.states.includes(shippingDetails.state)) {
+                    setShippingDetails(prev => ({ ...prev, state: '' }));
+                }
+            } else {
+                setAvailableStates([]);
+                setShippingDetails(prev => ({ ...prev, state: '' }));
+            }
+        }
+    }, [shippingDetails.country]);
 
     // Validation helper functions
     const validateEmail = (email) => {
@@ -358,6 +377,10 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
                 fetchLeads();
                 getProducts();
             }
+            const indiaData = countryStatesData.find(c => c.name === 'India');
+            if (indiaData && indiaData.states) {
+                setAvailableStates(indiaData.states);
+            }
         } else {
             // Reset form when modal closes
             resetForm();
@@ -380,13 +403,13 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
             const addressParts = lead.LeadAddress ? lead.LeadAddress.split(", ") : [];
 
             setShippingDetails({
-                companyName: '',
-                email: '',
+                companyName: lead.LeadName || '',
+                email: lead.Email || '',
                 address: lead.Address || '',
                 city: addressParts[0] || '',
                 state: addressParts[1] || '',
                 pincode: lead.Pincode || '',
-                country: lead.Country || '',
+                country: lead.Country || 'India',
             });
 
             // Auto-populate item rows with products from lead
@@ -911,14 +934,36 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">City, state</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
                             <input
                                 type="text"
-                                value={quotationId ? `${billingDetails.city}, ${billingDetails.state}` : (leadData.LeadAddress || '')}
+                                value={quotationId ? billingDetails.city : (leadData.LeadAddress.split(", ")[0] || '')}
                                 readOnly
                                 className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed"
                             />
                         </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
+                            <input
+                                type="text"
+                                value={quotationId ? billingDetails.state : (leadData.LeadAddress.split(", ")[1] || '')}
+                                readOnly
+                                className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
+                            <input
+                                type="text"
+                                value={quotationId ? billingDetails.country : (leadData.Country || '')}
+                                readOnly
+                                className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed"
+                            />
+                        </div>
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Pincode</label>
                             <input
@@ -930,15 +975,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
                         </div>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
-                        <input
-                            type="text"
-                            value={quotationId ? billingDetails.country : (leadData.Country || '')}
-                            readOnly
-                            className="w-full px-4 py-3 bg-gray-200 rounded-md text-sm text-gray-600 cursor-not-allowed"
-                        />
-                    </div>
+
                 </>
             )}
         </div>
@@ -1003,7 +1040,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
                 />
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
                     <input
@@ -1022,25 +1059,68 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                         State *
                     </label>
-                    <select
-                        value={shippingDetails.state || ""}
-                        onChange={(e) => { setShippingDetails({ ...shippingDetails, state: e.target.value }); clearFieldError('state'); }}
-                        className={`w-full max-w-sm px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${validationErrors.state ? 'border-2 border-red-500' : ''
-                            }`}
-                    >
-                        <option value="" disabled>
-                            Select a state
-                        </option>
-                        {INDIAN_STATES.map((state) => (
-                            <option key={state} value={state}>
-                                {state}
+                    <div className="relative">
+                        <select
+                            value={shippingDetails.state || ""}
+                            onChange={(e) => {
+                                setShippingDetails({ ...shippingDetails, state: e.target.value });
+                                clearFieldError('state');
+                            }}
+                            disabled={!shippingDetails.country || availableStates.length === 0}
+                            className={`w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 appearance-none outline-none focus:ring-0 ${validationErrors.state ? 'border-2 border-red-500' : ''} ${(!shippingDetails.country || availableStates.length === 0) ? 'cursor-not-allowed opacity-60' : ''}`}
+                        >
+                            <option value="" disabled>
+                                {!shippingDetails.country ? 'Select country first' : availableStates.length === 0 ? 'No states available' : 'Select a state'}
                             </option>
-                        ))}
-                    </select>
+                            {availableStates.map((state) => (
+                                <option key={state} value={state}>
+                                    {state}
+                                </option>
+                            ))}
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                    </div>
                     {validationErrors.state && (
                         <p className="text-red-500 text-sm mt-1">{validationErrors.state}</p>
                     )}
                 </div>
+
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Country *
+                    </label>
+                    <div className="relative">
+                        <select
+                            value={shippingDetails.country}
+                            onChange={(e) => {
+                                setShippingDetails({ ...shippingDetails, country: e.target.value });
+                                clearFieldError('country');
+                            }}
+                            className={`w-full px-4 py-3 bg-gray-200 border-0 rounded text-gray-700 appearance-none outline-none focus:ring-0 ${validationErrors.country ? 'border-2 border-red-500' : ''}`}
+                        >
+                            <option value="">Select country</option>
+                            {countryStatesData.map(country => (
+                                <option key={country.name} value={country.name}>{country.name}</option>
+                            ))}
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                    </div>
+                    {validationErrors.country && (
+                        <p className="text-red-500 text-sm mt-1">{validationErrors.country}</p>
+                    )}
+                </div>
+
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Pincode</label>
                     <input
@@ -1061,25 +1141,6 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
                         <p className="text-red-500 text-sm mt-1">{validationErrors.pincode}</p>
                     )}
                 </div>
-            </div>
-
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Country *</label>
-                <input
-                    type='text'
-                    placeholder='Country'
-                    value={shippingDetails.country}
-                    onChange={(e) => {
-                        setShippingDetails({ ...shippingDetails, country: e.target.value });
-                        clearFieldError('country');
-                    }}
-                    className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.country ? 'border-2 border-red-500' : ''
-                        }`}
-                    disabled={loadingData}
-                />
-                {validationErrors.country && (
-                    <p className="text-red-500 text-sm mt-1">{validationErrors.country}</p>
-                )}
             </div>
         </div>
     );
