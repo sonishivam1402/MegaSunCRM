@@ -7,12 +7,12 @@ import { getAllUsersDD } from '../../api/userApi';
 import { getProductOptions } from '../../api/productApi';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
-import { INDIAN_STATES } from '../../utils/Indian_States';
 import { countryCodes } from '../../utils/Country_Codes';
+import countryStatesData from '../../utils/Country_States.json';
 
 const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [attemptedNext, setAttemptedNext] = useState(false); // Track if user clicked Next button
+  const [attemptedNext, setAttemptedNext] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     countryCode: '+91',
@@ -21,10 +21,9 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
     address: '',
     city: '',
     state: '',
-    country: '',
+    country: 'India',
     pincode: '',
     gst: '',
-    // leadStatusId: '',
     leadTypeId: '',
     leadSourceId: '',
     userId: '',
@@ -37,6 +36,34 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
   const [statusOptions, setStatusOptions] = useState([]);
   const [usersOptions, setUsersOptions] = useState([]);
   const [productOptions, setProductOptions] = useState([]);
+  const [availableStates, setAvailableStates] = useState([]);
+
+  // Update available states when country changes
+  useEffect(() => {
+    if (formData.country) {
+      const selectedCountry = countryStatesData.find(c => c.name === formData.country);
+      if (selectedCountry && selectedCountry.states) {
+        setAvailableStates(selectedCountry.states);
+        // Reset state if it's not in the new country's states
+        if (formData.state && !selectedCountry.states.includes(formData.state)) {
+          setFormData(prev => ({ ...prev, state: '' }));
+        }
+      } else {
+        setAvailableStates([]);
+        setFormData(prev => ({ ...prev, state: '' }));
+      }
+    }
+  }, [formData.country]);
+
+  // Set initial states for India on mount
+  useEffect(() => {
+    if (isOpen) {
+      const indiaData = countryStatesData.find(c => c.name === 'India');
+      if (indiaData && indiaData.states) {
+        setAvailableStates(indiaData.states);
+      }
+    }
+  }, [isOpen]);
 
   // Fetch filter options
   const getLeadTypes = async () => {
@@ -69,7 +96,6 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
   const getUsers = async () => {
     try {
       const res = await getAllUsersDD();
-      //console.log(res);
       setUsersOptions(res.data[0]);
     } catch (err) {
       console.error('Error fetching users:', err);
@@ -90,7 +116,6 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
     if (isOpen) {
       getLeadTypes();
       getSources();
-      //getStatuses();
       getUsers();
       getProducts();
     }
@@ -182,17 +207,14 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
       formData.productMappings.every(p => p.ProductId && p.Quantity > 0);
   };
 
-  // Check if individual field is invalid (only after Next is clicked)
   const isFieldInvalid = (fieldName) => attemptedNext && (!formData[fieldName] || formData[fieldName].toString().trim() === '');
 
-  // Validate formats
   const isContactValid = () => /^[0-9]+$/.test(formData.contact);
   const isEmailValid = () => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
 
   const handleNext = () => {
     setAttemptedNext(true);
 
-    // Input format validation first (only if user typed something)
     if (formData.contact && !isContactValid()) {
       toast.error('Please enter a valid mobile number.');
       return;
@@ -210,7 +232,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
     }
 
     setCurrentStep(2);
-    setAttemptedNext(false); // Reset for step 2
+    setAttemptedNext(false);
   };
 
   const handleStepClick = (step) => {
@@ -240,7 +262,6 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
           address: formData.address,
           pincode: formData.pincode,
           gst: formData.gst,
-          // leadStatusId: formData.leadStatusId,
           leadTypeId: formData.leadTypeId,
           leadSourceId: formData.leadSourceId,
           userId: user.IsAdmin ? formData.userId : user.UserId,
@@ -278,10 +299,9 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
       address: '',
       city: '',
       state: '',
-      country: '',
+      country: 'India',
       pincode: '',
       gst: '',
-      // leadStatusId: '',
       leadTypeId: '',
       leadSourceId: '',
       userId: '',
@@ -292,7 +312,6 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
 
   if (!isOpen) return null;
 
-  // Helper to conditionally add red outline ONLY when invalid after Next
   const invalidRing = (field) => (isFieldInvalid(field) ? 'ring-2 ring-red-500' : '');
 
   return (
@@ -431,40 +450,18 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                   />
                 </div>
 
-                {/* City & State (side by side) */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      City
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.city}
-                      onChange={(e) => handleInputChange('city', e.target.value)}
-                      placeholder="Vadodara"
-                      className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 bg-gray-200 focus:bg-white`}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      <span className="text-red-500">*</span> State
-                    </label>
-                    <select
-                      value={formData.state || ""}
-                      onChange={(e) => handleInputChange('state', e.target.value)}
-                      className={`w-full max-w-sm px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('state') ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('state')}`}
-                    >
-                      <option value="" disabled>
-                        Select a state
-                      </option>
-                      {INDIAN_STATES.map((state) => (
-                        <option key={state} value={state}>
-                          {state}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                {/* City */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.city}
+                    onChange={(e) => handleInputChange('city', e.target.value)}
+                    placeholder="Enter City"
+                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 bg-gray-200 focus:bg-white`}
+                  />
                 </div>
 
                 {/* Lead Country */}
@@ -472,13 +469,52 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <span className="text-red-500">*</span> Lead's Country
                   </label>
-                  <input
-                    type="text"
-                    value={formData.country}
-                    onChange={(e) => handleInputChange('country', e.target.value)}
-                    placeholder="India"
-                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('country') ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('country')}`}
-                  />
+                  <div className="relative">
+                    <select
+                      value={formData.country}
+                      onChange={(e) => handleInputChange('country', e.target.value)}
+                      className={`w-full px-4 py-3 border-0 rounded text-gray-700 appearance-none outline-none focus:ring-0 ${isFieldInvalid('country') ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('country')}`}
+                    >
+                      <option value="">Select country</option>
+                      {countryStatesData.map(country => (
+                        <option key={country.name} value={country.name}>{country.name}</option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* State */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <span className="text-red-500">*</span> State
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={formData.state || ""}
+                      onChange={(e) => handleInputChange('state', e.target.value)}
+                      disabled={!formData.country || availableStates.length === 0}
+                      className={`w-full px-4 py-3 border-0 rounded text-gray-700 appearance-none outline-none focus:ring-0 ${isFieldInvalid('state') ? 'bg-red-100' : (!formData.country || availableStates.length === 0) ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-200 focus:bg-white'} ${invalidRing('state')}`}
+                    >
+                      <option value="" disabled>
+                        {!formData.country ? 'Select country first' : availableStates.length === 0 ? 'No states available' : 'Select a state'}
+                      </option>
+                      {availableStates.map((state) => (
+                        <option key={state} value={state}>
+                          {state}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Lead Pincode */}
