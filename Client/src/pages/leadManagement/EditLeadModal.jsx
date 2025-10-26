@@ -9,6 +9,8 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
 import { INDIAN_STATES } from '../../utils/Indian_States';
 import { countryCodes } from '../../utils/Country_Codes';
+import countryStateData from '../../utils/Country_State.json';
+
 
 const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -38,6 +40,9 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
   const [statusOptions, setStatusOptions] = useState([]);
   const [usersOptions, setUsersOptions] = useState([]);
   const [productOptions, setProductOptions] = useState([]);
+
+  const [countries, setCountries] = useState([]);
+  const [states, setStates] = useState([]);
 
   const parsePhone = (phone) => {
     console.log(phone);
@@ -130,6 +135,19 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
     try { const res = await getProductOptions(); setProductOptions(res.data); }
     catch (err) { console.error('Error fetching products:', err); }
   };
+
+  // Load countries and set initial states based on existing country
+  useEffect(() => {
+    setCountries(countryStateData);
+    
+    // For edit page: if country already exists in formData, load its states
+    if (formData.country) {
+      const selectedCountry = countryStateData.find(
+        (country) => country.name === formData.country
+      );
+      if (selectedCountry) setStates(selectedCountry.states);
+    }
+  }, [formData.country]);
 
   // Load dropdown options and lead details
   useEffect(() => {
@@ -458,8 +476,8 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                         className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 bg-gray-200 focus:bg-white`}
                       />
                     </div>
-
-                    {/* City & State */}
+                    
+                    {/* City & State (side by side) */}
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
@@ -471,6 +489,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                           className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 bg-gray-200 focus:bg-white`}
                         />
                       </div>
+
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           <span className="text-red-500">*</span> State
@@ -478,12 +497,15 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                         <select
                           value={formData.state || ""}
                           onChange={(e) => handleInputChange('state', e.target.value)}
-                          className={`w-full max-w-sm px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('state') ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('state')}`}
+                          disabled={!formData.country}
+                          className={`w-full max-w-sm px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${
+                            isFieldInvalid('state') ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'
+                          } ${invalidRing('state')} ${!formData.country ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                           <option value="" disabled>
-                            Select a state
+                            {formData.country ? 'Select a state' : 'Select country first'}
                           </option>
-                          {INDIAN_STATES.map((state) => (
+                          {states.map((state) => (
                             <option key={state} value={state}>
                               {state}
                             </option>
@@ -494,14 +516,25 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
 
                     {/* Country */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2"><span className="text-red-500">*</span> Lead's country</label>
-                      <input
-                        type="text"
-                        value={formData.country}
-                        onChange={(e) => handleInputChange('country', e.target.value)}
-                        placeholder="India"
-                        className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('country') ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('country')}`}
-                      />
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <span className="text-red-500">*</span> Lead's country
+                      </label>
+                      <select
+                        value={formData.country || ""}
+                        onChange={(e) => handleCountryChange(e.target.value)}
+                        className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${
+                          isFieldInvalid('country') ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'
+                        } ${invalidRing('country')}`}
+                      >
+                        <option value="" disabled>
+                          Select a country
+                        </option>
+                        {countries.map((country) => (
+                          <option key={country.name} value={country.name}>
+                            {country.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
                     {/* Pincode */}
