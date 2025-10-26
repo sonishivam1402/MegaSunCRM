@@ -273,8 +273,8 @@ export const getQuotationPdf = async (req, res, next) => {
             .text(quotationData.billTo.name, leftMargin + 3, yPos + 3);
         doc.font('Helvetica')
             .text(quotationData.billTo.location, leftMargin + 3, yPos + 13)
-            .text(`Contact Person: ${quotationData.billTo.contactPerson}`, leftMargin + 3, yPos + 23)
-            .text(`Mobile: ${quotationData.billTo.mobile}`, leftMargin + 3, yPos + 33);
+            // .text(`Contact Person: ${quotationData.billTo.contactPerson}`, leftMargin + 3, yPos + 23)
+            .text(`Mobile: ${quotationData.billTo.mobile}`, leftMargin + 3, yPos + 23);
 
         doc.font('Helvetica-Bold')
             .text(quotationData.shipTo.name, leftMargin + pageWidth / 2 + 3, yPos + 3);
