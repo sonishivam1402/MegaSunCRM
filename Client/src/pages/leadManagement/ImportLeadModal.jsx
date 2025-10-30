@@ -137,7 +137,7 @@ export default function ImportLeadModal({ isOpen, onClose, onSuccess }) {
 
     try {
       const response = await importLeads({ data, selectedUser });
-      console.log(response)
+      // console.log(response)
       setResult(response.data);
     } catch (error) {
       setResult({

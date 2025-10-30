@@ -9,6 +9,7 @@ import ThreeDotIcon from '../../assets/icons/ThreeDotIcon';
 import { toast } from 'react-toastify';
 import EditLeadModal from './EditLeadModal';
 import { useAuth } from '../../context/AuthContext';
+import getLabelColor from '../../utils/GetLabelColor';
 
 const NewLeadsTab = ({ refreshKey }) => {
 
@@ -306,34 +307,6 @@ const NewLeadsTab = ({ refreshKey }) => {
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Interested':
-        return 'bg-green-100 text-green-800';
-      case 'Not interested':
-        return 'bg-red-100 text-red-800';
-      case 'Fresh lead':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getLeadTypeColor = (leadType) => {
-    switch (leadType) {
-      case 'Retail':
-        return 'bg-orange-100 text-orange-800';
-      case 'User':
-        return 'bg-purple-100 text-purple-800';
-      case 'Dealer':
-        return 'bg-blue-100 text-blue-800';
-      case 'NPD':
-        return 'bg-pink-100 text-pink-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   const formatProducts = (products) => {
     if (!products || products.length === 0) return 'N/A';
     const productList = products.split(",").map(p => p.trim());
@@ -450,7 +423,7 @@ const NewLeadsTab = ({ refreshKey }) => {
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-gray-900">{lead.Name || 'N/A'}</span>
-                        <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${getLeadTypeColor(lead.LeadType)}`}>
+                        <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${getLabelColor(lead.LeadType)}`}>
                           {lead.LeadType || 'N/A'}
                         </span>
                       </div>
@@ -497,7 +470,7 @@ const NewLeadsTab = ({ refreshKey }) => {
 
                   {/* Status */}
                   <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(lead.Status)}`}>
+                    <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${getLabelColor(lead.Status)}`}>
                       {lead.Status || 'N/A'}
                     </span>
                   </td>

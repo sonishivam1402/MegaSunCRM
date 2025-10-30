@@ -96,15 +96,15 @@ export default function TopNavbar() {
     const handleSignOut = () => {
         setIsDropdownOpen(false);
         logout();
-        console.log('Sign Out clicked');
+        // console.log('Sign Out clicked');
     };
 
     // Handle API call
     const handlePasswordSubmit = async (newPassword) => {
         try {
-            console.log(newPassword);
+            // console.log(newPassword);
             const res = await updateUserPassword(newPassword)
-            console.log("res: ", res)
+            // console.log("res: ", res)
             if (res?.status === 201) {
                 toast.success("Password updated successfully");
                 setIsChangePasswordOpen(false);

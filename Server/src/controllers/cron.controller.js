@@ -246,7 +246,7 @@ function fetchData() {
 ============================================================ */
 function startCron() {
     if (cronInterval) {
-        console.log(`[${getTimestamp()}] ⚠️  Cron already running`);
+        // console.log(`[${getTimestamp()}] ⚠️  Cron already running`);
         return false;
     }
     fetchData();
@@ -265,7 +265,7 @@ function startCron() {
 
 function stopCron() {
     if (!cronInterval) {
-        console.log(`[${getTimestamp()}] ⚠️  Cron not running`);
+        // console.log(`[${getTimestamp()}] ⚠️  Cron not running`);
         return false;
     }
     clearInterval(cronInterval);

@@ -360,7 +360,7 @@ export const createLeadType = async (req, res, next) => {
 export const updateLeadType = async (req, res, next) => {
   try {
     const { data } = req.body;
-    console.log(data);
+    // console.log(data);
     const leadId = req.params.id;
     const pool = await poolPromise;
     const result = await pool

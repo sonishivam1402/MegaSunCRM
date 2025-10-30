@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import CloseIcon from '../../assets/icons/CloseIcon';
 import { getFollowUpById } from '../../api/followUpApi';
 import dayjs from 'dayjs';
+import getLabelColor from '../../utils/GetLabelColor';
 
 const DetailFollowUpModal = ({ isOpen, onClose, followUp }) => {
   const [followupData, setFollowUpData] = useState([]);
@@ -28,19 +29,6 @@ const DetailFollowUpModal = ({ isOpen, onClose, followUp }) => {
       getData(followUp);
     }
   }, [isOpen, followUp]);
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Interested':
-        return 'text-green-600';
-      case 'Fresh Lead':
-        return 'text-blue-600';
-      case 'Not Interested':
-        return 'text-red-600';
-      default:
-        return 'text-gray-600';
-    }
-  };
 
   if (!isOpen) return null;
 
@@ -106,7 +94,7 @@ const DetailFollowUpModal = ({ isOpen, onClose, followUp }) => {
                   <div className="flex items-center">
                     <span className="text-sm text-gray-700 w-32 flex-shrink-0">Status</span>
                     <span className="text-sm text-gray-500 mx-3">:</span>
-                    <span className={`text-sm font-semibold ${getStatusColor(followupData.FollowupStatus)}`}>
+                    <span className={`text-sm font-semibold ${getLabelColor(followupData.FollowupStatus)}`}>
                       {followupData.FollowupStatus || 'N/A'}
                     </span>
                   </div>

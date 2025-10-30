@@ -81,7 +81,7 @@ export const LeadStatusTab = ({refreshKey}) => {
         setSaving(true);
         try {
             const response = await updateLeadStatus(selectedLeadStatus.LeadStatusId, editingData);
-            console.log(response)
+            // console.log(response)
             if (response.status === 201) {
                 toast.success(response.data?.[0]?.Message || 'Updated Successfully.');
                 setSelectedLeadStatus(null);

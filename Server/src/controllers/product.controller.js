@@ -20,7 +20,7 @@ export const getProducts = async (req, res, next) => {
     // Check cache first
     const cachedData = cache.get(cacheKey);
     if (cachedData) {
-      console.log('Returning cached data for:', cacheKey);
+      // console.log('Returning cached data for:', cacheKey);
       
       // Set cache headers for browser caching
       res.setHeader('Cache-Control', 'public, max-age=300'); // 5 minutes
@@ -31,7 +31,7 @@ export const getProducts = async (req, res, next) => {
     
     // Check if request is already pending
     if (pendingRequests.has(cacheKey)) {
-      console.log('Waiting for pending request:', cacheKey);
+      // console.log('Waiting for pending request:', cacheKey);
       
       try {
         const result = await pendingRequests.get(cacheKey);
@@ -42,7 +42,7 @@ export const getProducts = async (req, res, next) => {
       }
     }
     
-    console.log('Making new external API call for:', cacheKey);
+    // console.log('Making new external API call for:', cacheKey);
     
     // Create pending request promise
     const requestPromise = axios.get("https://api.megakitchensystem.in/Product/GetProducts", {

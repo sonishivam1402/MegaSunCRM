@@ -38,15 +38,15 @@ const AllUsersTab = ({ refreshKey }) => {
 
     // Fetch users with pagination, search, and filters
     const fetchUsers = useCallback(async (search = '', page = 1, limit = 10, status = '', userTypeId = '') => {
-        console.log('API CALL TRIGGERED:', {
-            search: search,
-            page: page,
-            limit: limit,
-            offset: (page - 1) * limit,
-            status: status,
-            userTypeId: userTypeId,
-            timestamp: new Date().toISOString()
-        });
+        // console.log('API CALL TRIGGERED:', {
+        //     search: search,
+        //     page: page,
+        //     limit: limit,
+        //     offset: (page - 1) * limit,
+        //     status: status,
+        //     userTypeId: userTypeId,
+        //     timestamp: new Date().toISOString()
+        // });
 
         try {
             setLoading(true);
@@ -111,14 +111,14 @@ const AllUsersTab = ({ refreshKey }) => {
 
         // If search term is less than 3 characters, don't make any API call
         if (searchValue.length < 3) {
-            console.log('NO API CALL - Less than 3 characters');
+            // console.log('NO API CALL - Less than 3 characters');
             return; // No API call for 1-2 characters
         }
 
         // Only set timeout and make API call if 3+ characters
-        console.log('SETTING 1-SECOND TIMEOUT FOR SEARCH');
+        // console.log('SETTING 1-SECOND TIMEOUT FOR SEARCH');
         searchTimeoutRef.current = setTimeout(() => {
-            console.log('TIMEOUT COMPLETED - Making API call');
+            // console.log('TIMEOUT COMPLETED - Making API call');
             fetchUsers(searchValue, page, limit, statusFilter, userTypeFilter);
         }, 1000);
     }, [pageSize, fetchUsers, statusFilter, userTypeFilter]);
@@ -131,7 +131,7 @@ const AllUsersTab = ({ refreshKey }) => {
 
         // If search is cleared (empty), fetch all users immediately
         if (value === '') {
-            console.log('SEARCH CLEARED - Immediate API call for all users');
+            // console.log('SEARCH CLEARED - Immediate API call for all users');
             fetchUsers('', 1, pageSize, statusFilter, userTypeFilter);
             return;
         }
@@ -177,7 +177,7 @@ const AllUsersTab = ({ refreshKey }) => {
 
     // Initial data fetch
     useEffect(() => {
-        console.log('INITIAL LOAD - Component mounted or refreshKey changed');
+        // console.log('INITIAL LOAD - Component mounted or refreshKey changed');
         fetchUsers('', 1, pageSize, statusFilter, userTypeFilter);
         getUserTypeNames();
     }, [refreshKey, fetchUsers, pageSize]);
