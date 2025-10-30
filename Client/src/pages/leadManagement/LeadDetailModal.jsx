@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import CloseIcon from '../../assets/icons/CloseIcon';
 import { getLeadById } from '../../api/leadApi';
+import getLabelColor from '../../utils/GetLabelColor';
 
 const LeadDetailModal = ({ isOpen, onClose, leadId }) => {
   const [leadData, setLeadData] = useState([]);
@@ -12,7 +13,7 @@ const LeadDetailModal = ({ isOpen, onClose, leadId }) => {
     setLoading(true);
     try {
       const response = await getLeadById(id);
-      console.log("Response", response)
+      // console.log("Response", response)
       setLeadData(response[0][0]);
       setProductData(response[1] || []);
     } catch (error) {
@@ -27,33 +28,6 @@ const LeadDetailModal = ({ isOpen, onClose, leadId }) => {
       getData(leadId);
     }
   }, [isOpen, leadId]);
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Interested':
-        return 'text-green-600';
-      case 'Fresh Lead':
-        return 'text-blue-600';
-      case 'Not Interested':
-        return 'text-red-600';
-      default:
-        return 'text-gray-600';
-    }
-  };
-
-  const getLeadTypeColor = (type) => {
-    // You can customize colors based on lead types
-    switch (type?.toLowerCase()) {
-      case 'retail':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'wholesale':
-        return 'bg-blue-100 text-blue-800';
-      case 'corporate':
-        return 'bg-purple-100 text-purple-800';
-      default:
-        return 'bg-orange-100 text-orange-800';
-    }
-  };
 
   if (!isOpen) return null;
 
@@ -163,7 +137,7 @@ const LeadDetailModal = ({ isOpen, onClose, leadId }) => {
                   <div className="flex items-center">
                     <span className="text-sm text-gray-700 w-32 flex-shrink-0">Lead type</span>
                     <span className="text-sm text-gray-500 mx-3">:</span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getLeadTypeColor(leadData.LeadType)}`}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getLabelColor(leadData.LeadType)}`}>
                       {leadData.LeadType || 'N/A'}
                     </span>
                   </div>
@@ -191,7 +165,7 @@ const LeadDetailModal = ({ isOpen, onClose, leadId }) => {
                   <div className="flex items-center">
                     <span className="text-sm text-gray-700 w-32 flex-shrink-0">Status</span>
                     <span className="text-sm text-gray-500 mx-3">:</span>
-                    <span className={`text-sm font-semibold ${getStatusColor(leadData.Status)}`}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getLabelColor(leadData.Status)}`}>
                       {leadData.Status || 'N/A'}
                     </span>
                   </div>

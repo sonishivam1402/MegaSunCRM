@@ -44,7 +44,7 @@ const Dashboard = () => {
     ? Object.entries(leadStateChart).map(([name, value]) => ({ name, value }))
     : [];
 
-  const COLORS = ['#7cb342', '#9ccc65', '#c5e1a5', '#aed581', '#558b2f'];
+  const COLORS = ['#f48fb1', '#ce93d8', '#90caf9', '#a5d6a7', '#ffe082'];
 
   const getStatusLabel = (name) => {
     if (name === 'followups') return 'Follow ups';

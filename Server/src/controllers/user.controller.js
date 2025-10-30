@@ -231,7 +231,7 @@ export const updateImageByUserId = async (req, res, next) => {
 export const updatePassword = async (req, res, next) => {
   try {
     const { newPassword } = req.body;
-    console.log(newPassword)
+    // console.log(newPassword)
     const hashPassword = await bcrypt.hash(newPassword, 10);
     const pool = await poolPromise;
     const result = await pool

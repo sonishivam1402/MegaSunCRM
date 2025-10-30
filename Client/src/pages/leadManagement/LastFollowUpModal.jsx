@@ -11,7 +11,7 @@ const LastFollowUpModal = ({ isOpen, onClose, leadId }) => {
     setLoading(true);
     try {
       const response = await getLastFollowUpByLeadId(id);
-      console.log("Response", response)
+      // console.log("Response", response)
       setFollowUpData(response[0][0]);
     } catch (error) {
       console.error('Error fetching follow-up:', error);

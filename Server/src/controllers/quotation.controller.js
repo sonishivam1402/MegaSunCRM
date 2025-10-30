@@ -156,7 +156,7 @@ export const createNewQuotation = async (req, res, next) => {
       .execute("sp_CreateQuotation");
 
     const response = result.recordset[0];
-    console.log(response);
+    // console.log(response);
     if (response.Success) {
       res.status(201).json(response);
     } else {
@@ -209,7 +209,7 @@ export const updateQuotationById = async (req, res, next) => {
       .execute("sp_UpdateQuotationByQuotationId");
 
     const response = result.recordset[0];
-    console.log(response);
+    // console.log(response);
     if (response.Success) {
       res.status(201).json(response);
     } else {

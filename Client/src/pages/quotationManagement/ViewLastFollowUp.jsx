@@ -3,6 +3,7 @@ import CloseIcon from '../../assets/icons/CloseIcon';
 import { getFollowUpById } from '../../api/followUpApi';
 import dayjs from 'dayjs';
 import { getLastFollowupByQuotationId } from '../../api/quotation';
+import getLabelColor from '../../utils/GetLabelColor';
 
 const ViewLastFollowUp = ({ isOpen, onClose, followUp }) => {
     const [followUps, setFollowUps] = useState([]);
@@ -30,35 +31,6 @@ const ViewLastFollowUp = ({ isOpen, onClose, followUp }) => {
     }, [isOpen, followUp]);
 
     if (!isOpen) return null;
-
-    const getStatusColor = (status) => {
-        switch (status.toLowerCase()) {
-            case 'interested':
-                return 'text-green-600';
-            case 'fresh lead':
-                return 'text-blue-600';
-            case 'not interested':
-                return 'text-red-600';
-            default:
-                return 'text-gray-600';
-        }
-    };
-
-    const getLeadTypeColor = (leadType) => {
-        switch (leadType) {
-            case 'Retail':
-                return 'bg-orange-100 text-orange-800';
-            case 'User':
-                return 'bg-purple-100 text-purple-800';
-            case 'Dealer':
-                return 'bg-blue-100 text-blue-800';
-            case 'NPD':
-                return 'bg-pink-100 text-pink-800';
-            default:
-                return 'bg-gray-100 text-gray-800';
-        }
-    };
-
 
     return (
         <div className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-end z-50">
@@ -127,7 +99,7 @@ const ViewLastFollowUp = ({ isOpen, onClose, followUp }) => {
                                                             {followUp.LeadName || 'N/A'}
                                                         </span>
                                                         {followUp.LeadType && (
-                                                            <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${getLeadTypeColor(followUp.LeadType)}`}>
+                                                            <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${getLabelColor(followUp.LeadType)}`}>
                                                                 {followUp.LeadType}
                                                             </span>
                                                         )}
@@ -160,7 +132,7 @@ const ViewLastFollowUp = ({ isOpen, onClose, followUp }) => {
 
                                             {/* Status */}
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
-                                                <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(followUp.LeadStatus)}`}>
+                                                <span className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${getLabelColor(followUp.LeadStatus)}`}>
                                                     {followUp.LeadStatus || 'N/A'}
                                                 </span>
                                             </td>

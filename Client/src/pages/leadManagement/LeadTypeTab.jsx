@@ -81,7 +81,7 @@ const LeadTypeTab = ({ refreshKey }) => {
         setSaving(true);
         try {
             const response = await updateLeadType(selectedLeadType.LeadTypeId, editingData);
-            console.log(response)
+            // console.log(response)
             if (response.status === 201) {
                 toast.success(response.data?.[0]?.Message || 'Updated Successfully.');
                 setSelectedLeadType(null);
