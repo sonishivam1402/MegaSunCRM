@@ -1,6 +1,6 @@
 import { sql, poolPromise } from "../database/db.js";
 import https from "https";
-import { CRON_API_KEY, INTERVAL, LEAD_SOURCE_NAME, CREATED_BY_USER_ID } from "../config/env.js";
+import { CRON_API_KEY, INTERVAL, LEAD_SOURCE_NAME, CREATED_BY_USER_ID, IS_CRON_ON } from "../config/env.js";
 
 /* ============================================================
    ✅ GLOBAL VARIABLES
@@ -349,6 +349,9 @@ export const getIndiaMartCronStatus = async (req, res) => {
 /* ============================================================
    🚀 AUTO START ON SERVER LAUNCH
 ============================================================ */
-export const startCronOnServerStart = () => {
-    startCron();
+export const startCronOnServerStart = () => { 
+    const CRON_ON = IS_CRON_ON === "true";
+    if(CRON_ON){
+        startCron();
+    }
 };
