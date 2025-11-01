@@ -115,6 +115,31 @@ export const deleteOrderById = async (req, res, next) => {
   }
 };
 
+// Dispatch Order by Id
+export const dispatchOrderById = async (req, res, next) => {
+  try {
+    const orderId = req.params.id;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("DispatchStatus", sql.Bit, 1)
+      .input("OrderId", sql.UniqueIdentifier, orderId)
+      .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
+      .execute("sp_UpdateOrderDispatchStatus");
+
+    const response = result.recordset[0];
+    if (response.Success) {
+      res.status(201).json(response);
+    } else {
+      res.status(200).json(response);
+    }
+  } catch (err) {
+    console.error("Error in dispatching order by Id :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 // Create Order
 export const createNewOrder = async (req, res, next) => {
     try {

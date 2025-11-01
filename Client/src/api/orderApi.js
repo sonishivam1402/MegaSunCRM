@@ -54,6 +54,19 @@ export const deleteOrderById = async (id) => {
   }
 };
 
+// Dispatch Order by id
+export const dispatchOrderById = async (id) => {
+  try {
+    const res = await API.put(`/order/dispatch/${id}`);
+    return res;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in dispatching order by Id", err);
+    }
+    throw err;
+  }
+};
+
 // Create Order
 export const createNewOrder = async (data) => {
   try {
