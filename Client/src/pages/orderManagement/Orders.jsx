@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import AddIcon from '../../assets/icons/AddIcon';
 import ThreeDotIcon from '../../assets/icons/ThreeDotIcon';
 import AddNewOrderModal from './AddNewOrder';
-import { deleteOrderById, exportOrders, getOrders } from "../../api/orderApi";
+import { deleteOrderById, dispatchOrderById, exportOrders, getOrders } from "../../api/orderApi";
 import { getAllUsersDD } from '../../api/userApi';
 import { toast } from 'react-toastify';
 import ViewLastFollowUp from './ViewLastFollowUp';
@@ -33,7 +33,9 @@ const Order = ({ refreshKey }) => {
     const [addModalOpen, setAddModalOpen] = useState(false);
     const [lastFollowUpModalOpen, setLastFollowUpModalOpen] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+    const [dispatchModalOpen, setDispatchModalOpen] = useState(false)
     const [deleting, setDeleting] = useState(false);
+    const [dispatching, setDispatching] = useState(false);
     const [activeDropdown, setActiveDropdown] = useState(null);
     const dropdownRefs = useRef({});
     const [editModalOpen, setEditModalOpen] = useState(false);
@@ -81,7 +83,7 @@ const Order = ({ refreshKey }) => {
             //console.log('API Request Params:', params);
 
             const response = await getOrders(params);
-            //console.log('API Response:', response.data);
+            // console.log('API Response:', response.data);
 
             if (response && response.data) {
                 setOrders(response.data[0] || []);
@@ -277,6 +279,34 @@ const Order = ({ refreshKey }) => {
         setActiveDropdown(null);
     };
 
+    const handleDispatch = (Id) => {
+        setDispatchModalOpen(true);
+        setSelectedOrder(Id);
+        setActiveDropdown(null);
+    };
+
+    const confirmDispatch = async () => {
+        if (!selectedOrder) return;
+        setDispatching(true);
+        try {
+            const response = await dispatchOrderById(selectedOrder);
+            if (response.status == 201) {
+                setSelectedOrder(null)
+                setDispatchModalOpen(false);
+                toast.success(response.data.Message);
+                handleModalSuccess();
+            }
+            else {
+                toast.error(response.data?.[0]?.Message || response.data?.Message || "Something went wrong");
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error('Failed to dispatch order');
+        } finally {
+            setDispatching(false);
+        }
+    };
+
     const confirmDelete = async () => {
         if (!selectedOrder) return;
         setDeleting(true);
@@ -293,7 +323,7 @@ const Order = ({ refreshKey }) => {
             }
         } catch (err) {
             console.error(err);
-            toast.error('Failed to delete lead status.');
+            toast.error('Failed to delete order.');
         } finally {
             setDeleting(false);
         }
@@ -443,6 +473,7 @@ const Order = ({ refreshKey }) => {
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ITEM</th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">AMOUNT</th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">TYPE</th>
+                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">DISPATCH</th>
                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">ACTIONS</th>
                         </tr>
                     </thead>
@@ -516,6 +547,13 @@ const Order = ({ refreshKey }) => {
                                         </span>
                                     </td>
 
+                                    {/* Dispatch */}
+                                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                                        <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${order.OrderDispatched ? "bg-green-200 text-green-800" : "bg-red-200 text-red-800"} `}>
+                                            {order.OrderDispatched ? "Yes" : "No"}
+                                        </span>
+                                    </td>
+
                                     {/* Actions */}
                                     <td className="px-6 py-4 whitespace-nowrap text-right">
                                         <div className="flex justify-end items-center">
@@ -558,6 +596,12 @@ const Order = ({ refreshKey }) => {
                                                             {orderMenus?.UpdateAccess && (
                                                                 <button onClick={() => handleEdit(order.OrderId)} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors">
                                                                     Edit
+                                                                </button>
+                                                            )}
+
+                                                            {orderMenus?.UpdateAccess && (
+                                                                <button onClick={() => handleDispatch(order.OrderId)} disabled={order.OrderDispatched} className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors disabled:!opacity-50 disabled:!cursor-not-allowed">
+                                                                    Dispatch Order
                                                                 </button>
                                                             )}
 
@@ -660,6 +704,38 @@ const Order = ({ refreshKey }) => {
                                 disabled={deleting}
                             >
                                 {deleting ? 'Deleting...' : 'Delete'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {dispatchModalOpen && (
+                <div className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50">
+                    <div className="bg-[#f1f0e9] border rounded-lg shadow-lg p-6 w-full max-w-sm">
+                        <h2 className="text-lg font-semibold text-gray-800 mb-4">
+                            Confirm Order Dispatch
+                        </h2>
+                        <p className="text-sm text-gray-600 mb-6">
+                            Are you sure you want to dispatch Order ?
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                className="px-4 py-2 text-sm rounded bg-gray-300 hover:bg-gray-400"
+                                onClick={() => {
+                                    setSelectedOrder(null);
+                                    setDispatchModalOpen(false);
+                                }}
+                                disabled={dispatching}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="px-4 py-2 text-sm rounded bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
+                                onClick={confirmDispatch}
+                                disabled={dispatching}
+                            >
+                                {dispatching ? 'Dispatching...' : 'Dispatch'} 
                             </button>
                         </div>
                     </div>
