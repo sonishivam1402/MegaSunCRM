@@ -497,6 +497,7 @@ export const exportLeads = async (req, res, next) => {
   }
 };
 
+// Import Leads
 export const importLeads = async (req, res, next) => {
   const { leads, assignedTo } = req.body;
   
@@ -559,5 +560,24 @@ export const importLeads = async (req, res, next) => {
     return res.status(500).json({
       message: error.message || 'Failed to import leads'
     });
+  }
+};
+
+// Transfer Leads
+export const transferLeads = async (req, res, next) => {
+  try {
+    const {data} = req.body;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("AssignedTo", sql.UniqueIdentifier, data.selectedUser)
+      .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
+      .input("LeadIdList", sql.NVarChar(sql.MAX), JSON.stringify(data.leadIds))
+      .execute("sp_TransferAssignedLeads");
+
+    res.json(result.recordsets[0]);
+  } catch (err) {
+    console.error("Error in transfering lead :", err);
+    res.status(500).json({ message: "Server error" });
   }
 };
