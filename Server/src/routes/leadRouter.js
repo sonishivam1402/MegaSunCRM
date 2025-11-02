@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authenticate } from "../middlewares/authMiddleware.js";
 import { checkPermission } from "../middlewares/checkPermission.js";
-import { createLead, createLeadSource, createLeadStatus, createLeadType, deleteLead, deleteLeadSource, deleteLeadStatus, deleteLeadType, exportLeads, getAllLeads, getAllUnassignedLeads, getLeadById, getLeadsForDropdown, getLeadSources, getLeadSourcesForDropdown, getLeadStatus, getLeadStatusForDropdown, getLeadTypes, getLeadTypesForDropdown, importLeads, updateLeadById, updateLeadSource, updateLeadStatus, updateLeadType } from "../controllers/lead.controller.js";
+import { createLead, createLeadSource, createLeadStatus, createLeadType, deleteLead, deleteLeadSource, deleteLeadStatus, deleteLeadType, exportLeads, getAllLeads, getAllUnassignedLeads, getLeadById, getLeadsForDropdown, getLeadSources, getLeadSourcesForDropdown, getLeadStatus, getLeadStatusForDropdown, getLeadTypes, getLeadTypesForDropdown, importLeads, transferLeads, updateLeadById, updateLeadSource, updateLeadStatus, updateLeadType } from "../controllers/lead.controller.js";
 
 const leadRouter = Router();
 
@@ -27,6 +27,7 @@ leadRouter.get("/newLeads", authenticate, checkPermission("ReadAccess", "My Lead
 leadRouter.get("/export-csv", authenticate, checkPermission("ReadAccess", "My Leads"), exportLeads);
 leadRouter.post("/bulk-import", authenticate, checkPermission("CreateAccess", "My Leads"), importLeads);
 
+leadRouter.put("/transferLeads", authenticate, checkPermission("UpdateAccess", "My Leads"), transferLeads);
 leadRouter.get("/dropdown", authenticate, checkPermission("ReadAccess", "My Leads"), getLeadsForDropdown);
 leadRouter.get("/", authenticate, checkPermission("ReadAccess", "My Leads"), getAllLeads);
 leadRouter.post("/", authenticate, checkPermission("CreateAccess", "My Leads"), createLead);

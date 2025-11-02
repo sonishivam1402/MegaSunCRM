@@ -329,3 +329,16 @@ export const importLeads = async ({ data, selectedUser }) => {
     throw err;
   }
 };
+
+// Transfer Leads
+export const transferLeads = async (data) => {
+  try {
+    const res = await API.put("/lead/transferLeads", { data });
+    return res;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in transfering leads", err);
+    }
+    throw err;
+  }
+};

@@ -13,6 +13,7 @@ import AddNewFollowUp from '../followUpManagement/AddNewFollowUp';
 import { useAuth } from '../../context/AuthContext';
 import HistoryModal from '../followUpManagement/HistoryModal';
 import getLabelColor from '../../utils/GetLabelColor';
+import TransferLeadsModal from './TransferLeadsModal';
 
 const LeadsTab = ({ refreshKey }) => {
   // State management
@@ -39,7 +40,9 @@ const LeadsTab = ({ refreshKey }) => {
   const [deleting, setDeleting] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [transferLeadModalOpen, setTransferLeadModalOpen] = useState(false);
   const [selectedLeadId, setSelectedLeadId] = useState(null);
+  const [checkedLeadIds, setCheckedLeadIds] = useState([]);
   const dropdownRefs = useRef({});
   const { user, menus } = useAuth();
 
@@ -331,6 +334,23 @@ const LeadsTab = ({ refreshKey }) => {
     }
   };
 
+  // Function to handle checkbox change
+  const handleCheckboxChange = (lead) => {
+    setCheckedLeadIds((prevSelected) => {
+      const isAlreadySelected = prevSelected.some(
+        (item) => item.LeadId === lead.LeadId
+      );
+
+      if (isAlreadySelected) {
+        // Remove if already selected
+        return prevSelected.filter((item) => item.LeadId !== lead.LeadId);
+      } else {
+        // Add the whole lead object (Id, Name, Mobile)
+        return [...prevSelected, lead];
+      }
+    });
+  };
+
   const formatProducts = (products) => {
     if (!products || products.length === 0) return 'N/A';
     const productList = products.split(",").map(p => p.trim());
@@ -344,68 +364,81 @@ const LeadsTab = ({ refreshKey }) => {
     <div className="flex flex-col h-full">
       {/* Filter Controls */}
       <div className="px-6 py-4 flex-shrink-0">
-        <div className="flex items-center gap-4">
-          {/* Search */}
-          <div className="relative flex-1 max-w-2xs">
-            <img src="/icons/Search.png" alt="Search" className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 opacity-50" />
-            <input
-              type="text"
-              placeholder="Search lead name (min 3 chars)"
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="w-full pl-10 pr-4 py-2 bg-btn-gray rounded-s-xs text-sm"
-            />
-            {loading && (
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-              </div>
-            )}
-          </div>
+        <div className="flex justify-between items-center gap-4">
+          <div className="flex items-center gap-4">
+            {/* Search */}
+            <div className="relative flex-1 max-w-2xs">
+              <img src="/icons/Search.png" alt="Search" className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 opacity-50" />
+              <input
+                type="text"
+                placeholder="Search lead name (min 3 chars)"
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="w-full pl-10 pr-4 py-2 bg-btn-gray rounded-s-xs text-sm"
+              />
+              {loading && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                </div>
+              )}
+            </div>
 
-          {/* Lead Type Filter */}
-          <div className="relative">
-            <select
-              value={leadTypeFilter}
-              onChange={handleLeadTypeFilterChange}
-              className="appearance-none bg-btn-gray rounded-s-xs px-4 py-2 pr-8 text-sm hover:cursor-pointer"
-            >
-              <option value="">Lead type</option>
-              {leadTypeOptions.map((option, index) => (
-                <option key={index} value={option.LeadTypeId}>{option.Name}</option>
-              ))}
-            </select>
-            <img src="/icons/Dropdown.png" alt="Dropdown" className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-2 pointer-events-none opacity-50" />
-          </div>
+            {/* Lead Type Filter */}
+            <div className="relative">
+              <select
+                value={leadTypeFilter}
+                onChange={handleLeadTypeFilterChange}
+                className="appearance-none bg-btn-gray rounded-s-xs px-4 py-2 pr-8 text-sm hover:cursor-pointer"
+              >
+                <option value="">Lead type</option>
+                {leadTypeOptions.map((option, index) => (
+                  <option key={index} value={option.LeadTypeId}>{option.Name}</option>
+                ))}
+              </select>
+              <img src="/icons/Dropdown.png" alt="Dropdown" className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-2 pointer-events-none opacity-50" />
+            </div>
 
-          {/* Source Filter */}
-          <div className="relative">
-            <select
-              className="appearance-none bg-btn-gray rounded-s-xs px-4 py-2 pr-8 text-sm hover:cursor-pointer"
-              value={sourceFilter}
-              onChange={handleSourceFilterChange}
-            >
-              <option value="">Source</option>
-              {sourceOptions.map((option, index) => (
-                <option key={index} value={option.LeadSourceId}>{option.Name}</option>
-              ))}
-            </select>
-            <img src="/icons/Dropdown.png" alt="Dropdown" className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-2 pointer-events-none opacity-50" />
-          </div>
+            {/* Source Filter */}
+            <div className="relative">
+              <select
+                className="appearance-none bg-btn-gray rounded-s-xs px-4 py-2 pr-8 text-sm hover:cursor-pointer"
+                value={sourceFilter}
+                onChange={handleSourceFilterChange}
+              >
+                <option value="">Source</option>
+                {sourceOptions.map((option, index) => (
+                  <option key={index} value={option.LeadSourceId}>{option.Name}</option>
+                ))}
+              </select>
+              <img src="/icons/Dropdown.png" alt="Dropdown" className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-2 pointer-events-none opacity-50" />
+            </div>
 
-          {/* Status Filter */}
-          <div className="relative">
-            <select
-              value={statusFilter}
-              onChange={handleStatusFilterChange}
-              className="appearance-none bg-btn-gray rounded-s-xs px-4 py-2 pr-8 text-sm hover:cursor-pointer"
-            >
-              <option value="">Status</option>
-              {statusOptions.map((option, index) => (
-                <option key={index} value={option.LeadStatusId}>{option.Name}</option>
-              ))}
-            </select>
-            <img src="/icons/Dropdown.png" alt="Dropdown" className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-2 pointer-events-none opacity-50" />
+            {/* Status Filter */}
+            <div className="relative">
+              <select
+                value={statusFilter}
+                onChange={handleStatusFilterChange}
+                className="appearance-none bg-btn-gray rounded-s-xs px-4 py-2 pr-8 text-sm hover:cursor-pointer"
+              >
+                <option value="">Status</option>
+                {statusOptions.map((option, index) => (
+                  <option key={index} value={option.LeadStatusId}>{option.Name}</option>
+                ))}
+              </select>
+              <img src="/icons/Dropdown.png" alt="Dropdown" className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-2 pointer-events-none opacity-50" />
+            </div>
           </div>
+          <button
+            onClick={() => {
+              if (checkedLeadIds.length === 0) {
+                toast.error("Please select at least one lead to transfer!");
+              } else {
+                setTransferLeadModalOpen(true);
+              }
+            }}
+            className="flex items-center gap-2 px-4 py-2 text-green-900 text-sm font-medium border">
+            Transfer Leads
+          </button>
         </div>
       </div>
 
@@ -414,6 +447,7 @@ const LeadsTab = ({ refreshKey }) => {
         <table className="w-full">
           <thead className="border-b border-b-color">
             <tr>
+              <th className="px-1 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">LEAD DETAILS</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">LAST FOLLOWUP DATE</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-fit">ITEM</th>
@@ -442,6 +476,19 @@ const LeadsTab = ({ refreshKey }) => {
             ) : (
               leads.map((lead) => (
                 <tr key={lead.LeadId} className="hover:bg-gray-50">
+
+                  {/* Checkbox column */}
+                  <td className="px-1 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                    <input
+                      type="checkbox"
+                      value={lead.LeadId}
+                      checked={checkedLeadIds.some(
+                        (item) => item.LeadId === lead.LeadId
+                      )}
+                      onChange={() => handleCheckboxChange(lead)}
+                    />
+                  </td>
+
                   {/* Lead Details */}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex flex-col gap-1">
@@ -679,6 +726,18 @@ const LeadsTab = ({ refreshKey }) => {
           onClose={() => setEditModalOpen(false)}
           leadId={selectedLeadId}
           onSuccess={fetchLeads}
+        />
+      )}
+
+      {transferLeadModalOpen && (
+        <TransferLeadsModal
+          isOpen={transferLeadModalOpen}
+          onClose={() => {
+            setTransferLeadModalOpen(false);
+            setCheckedLeadIds([]);
+          }}
+          onSuccess={fetchLeads}
+          leadsData={checkedLeadIds} // Array of lead objects
         />
       )}
 
