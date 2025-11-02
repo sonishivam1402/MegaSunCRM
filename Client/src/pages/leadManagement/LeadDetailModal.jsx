@@ -50,8 +50,8 @@ const LeadDetailModal = ({ isOpen, onClose, leadId }) => {
           <button
             onClick={() => setActiveTab('Details')}
             className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'Details'
-                ? 'border-green-800 text-green-900'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+              ? 'border-green-800 text-green-900'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
           >
             Details
@@ -59,8 +59,8 @@ const LeadDetailModal = ({ isOpen, onClose, leadId }) => {
           <button
             onClick={() => setActiveTab('Items')}
             className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'Items'
-                ? 'border-green-800 text-green-900'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+              ? 'border-green-800 text-green-900'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
               }`}
           >
             Items
@@ -88,7 +88,7 @@ const LeadDetailModal = ({ isOpen, onClose, leadId }) => {
                   <div className="flex items-center">
                     <span className="text-sm text-gray-700 w-32 flex-shrink-0">Lead phone number</span>
                     <span className="text-sm text-gray-500 mx-3">:</span>
-                    <span className="text-sm font-medium text-gray-900">{leadData.LeadPhoneNumber || 'N/A'}</span>
+                    <span className="text-sm font-medium text-gray-900">{leadData.LeadPhoneNumber || 'N/A'} {leadData["Alternate Number"] ? ", "+ leadData["Alternate Number"] :""}</span>
                   </div>
 
                   {/* Lead Email */}
@@ -97,7 +97,7 @@ const LeadDetailModal = ({ isOpen, onClose, leadId }) => {
                     <span className="text-sm text-gray-500 mx-3">:</span>
                     <span className="text-sm font-medium text-gray-900">{leadData.Email || 'N/A'}</span>
                   </div>
-                  
+
                   {/* Lead address */}
                   <div className="flex items-center">
                     <span className="text-sm text-gray-700 w-32 flex-shrink-0">LandMark Address</span>
@@ -109,7 +109,13 @@ const LeadDetailModal = ({ isOpen, onClose, leadId }) => {
                   <div className="flex items-center">
                     <span className="text-sm text-gray-700 w-32 flex-shrink-0">Lead address</span>
                     <span className="text-sm text-gray-500 mx-3">:</span>
-                    <span className="text-sm font-medium text-gray-900">{leadData.LeadAddress || 'N/A'}</span>
+                    <span className="text-sm font-medium text-gray-900">
+                      {leadData.LeadAddress ? leadData.LeadAddress
+                        .split(',')
+                        .map(part => part.trim())
+                        .filter(Boolean) // removes empty parts
+                        .join(', ')
+                      : 'N/A'}</span>
                   </div>
 
                   {/* Lead address */}
@@ -118,14 +124,14 @@ const LeadDetailModal = ({ isOpen, onClose, leadId }) => {
                     <span className="text-sm text-gray-500 mx-3">:</span>
                     <span className="text-sm font-medium text-gray-900">{leadData.Country || 'N/A'}</span>
                   </div>
-                  
+
                   {/* Lead pincode */}
                   <div className="flex items-center">
                     <span className="text-sm text-gray-700 w-32 flex-shrink-0">Pincode</span>
                     <span className="text-sm text-gray-500 mx-3">:</span>
                     <span className="text-sm font-medium text-gray-900">{leadData.Pincode || 'N/A'}</span>
                   </div>
-                  
+
                   {/* Lead GST */}
                   <div className="flex items-center">
                     <span className="text-sm text-gray-700 w-32 flex-shrink-0">GST Number</span>

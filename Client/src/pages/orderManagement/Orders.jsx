@@ -514,20 +514,20 @@ const Order = ({ refreshKey }) => {
                                     </td>
 
                                     {/* Lead Details */}
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    <td className="px-6 py-4">
                                         <div className="flex items-center gap-2">
                                             <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-300 flex-shrink-0">
                                                 <div className="w-full h-full flex items-center justify-center text-white text-xs font-medium bg-[#cd8b65]">
                                                     {order.LeadName?.charAt(0).toUpperCase() || 'U'}
                                                 </div>
                                             </div>
-                                            <span className="text-sm text-gray-900">{order.LeadName || 'Unknown'}</span>
+                                            <span className="text-sm text-gray-900 break-words">{order.LeadName || 'Unknown'}</span>
                                         </div>
                                     </td>
 
                                     {/* Item */}
                                     <td className="px-6 py-4 text-sm text-gray-900 text-left">
-                                        <div className="max-w-xs mx-auto">
+                                        <div className="max-w-sm mx-auto">
                                             {formatProducts(order.Products || order.Item)}
                                         </div>
                                     </td>

@@ -35,7 +35,15 @@ const Products = () => {
       });
 
       if (response?.data?.items) {
-        setProducts(response.data.items);
+        const transformedProducts = response.data.items.map(item => ({
+          productId: item.productId,
+          productName: item.productName,
+          productCategoryName: item.productCategoryName,
+          productImage: item.productImages?.[0], // Get only first image
+          price: item.price
+        }));
+
+        setProducts(transformedProducts);
         setTotalRecords(response.data.totalCount || 0);
       } else {
         setProducts([]);
@@ -246,7 +254,7 @@ const ProductCard = React.memo(({ product, index }) => {
     setImageError(true);
   }, []);
 
-  const imageUrl = product.productImages?.[0]?.imagePath;
+  const imageUrl = product.productImage.imagePath;
   const shouldShowImage = isVisible && imageUrl && !imageError;
 
   // Create optimized image URL (if your backend supports it)
@@ -300,7 +308,7 @@ const ProductCard = React.memo(({ product, index }) => {
       {/* Product Info */}
       <div className="p-4">
         <h3 className="font-semibold text-gray-900 text-sm leading-5 mb-2 line-clamp-2">
-          {product.productName || 'Unnamed Product'}
+          {product.productName?.toUpperCase() || 'Unnamed Product'}
         </h3>
 
         <p className="text-xs text-gray-500 mb-3 truncate">
