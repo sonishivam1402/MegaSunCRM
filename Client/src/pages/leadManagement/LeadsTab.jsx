@@ -450,7 +450,7 @@ const LeadsTab = ({ refreshKey }) => {
               <th className="px-1 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">LEAD DETAILS</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">LAST FOLLOWUP DATE</th>
-              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-fit">ITEM</th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ITEM</th>
               {user.IsAdmin && <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ASSIGNED TO</th>}
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">LEAD SOURCE</th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS</th>
@@ -490,15 +490,19 @@ const LeadsTab = ({ refreshKey }) => {
                   </td>
 
                   {/* Lead Details */}
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4">
                     <div className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-gray-900">{lead.Name || 'N/A'}</span>
-                        <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${getLabelColor(lead.LeadType)}`}>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-medium text-gray-900 break-words">
+                          {lead.Name || 'N/A'}
+                        </span>
+                        <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${getLabelColor(lead.LeadType)}`}>
                           {lead.LeadType || 'N/A'}
                         </span>
                       </div>
-                      <div className="text-xs text-gray-500">{lead.Contact || 'N/A'} • {lead.State || 'N/A'}</div>
+                      <div className="text-xs text-gray-500 break-words">
+                        {lead.Contact || 'N/A'} • {lead.State || 'N/A'}
+                      </div>
                     </div>
                   </td>
 

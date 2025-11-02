@@ -16,7 +16,9 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     name: '',
     countryCode: '+91',
+    altCountryCode: '+91',
     contact: '',
+    alternateContact: '',
     email: '',
     address: '',
     city: '',
@@ -176,7 +178,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
   };
 
   const requiredFields = () => {
-    const fields = ['name', 'contact', 'state', 'country', 'leadTypeId', 'leadSourceId'];
+    const fields = ['contact', 'state', 'country', 'leadTypeId', 'leadSourceId'];
     if (user.IsAdmin) fields.push('userId');
     return fields;
   };
@@ -184,6 +186,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
   const prettyFieldName = {
     name: 'Name',
     contact: 'Mobile number',
+    alternateContact: 'Alternate Mobile number',
     email: 'Email',
     address: 'Address',
     city: 'City',
@@ -241,6 +244,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
       setAttemptedNext(false);
     } else if (step === 2) {
       if (formData.contact && !isContactValid()) return;
+      if (formData.alternateContact && !isContactValid()) return;
       if (formData.email && !isEmailValid()) return;
       if (validateStep1()) {
         setCurrentStep(2);
@@ -255,6 +259,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
         lead: {
           name: formData.name,
           contact: formData.countryCode + "-" + formData.contact,
+          alternateContact: formData.altCountryCode + "-" + formData.alternateContact,
           email: formData.email,
           city: formData.city,
           state: formData.state,
@@ -294,7 +299,9 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
     setFormData({
       name: '',
       countryCode : '+91',
+      altCountryCode : '+91',
       contact: '',
+      alternateContact: '',
       email: '',
       address: '',
       city: '',
@@ -371,14 +378,14 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                 {/* Lead's full name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <span className="text-red-500">*</span> Lead's full name
+                    Lead's full name
                   </label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
                     placeholder="John Doe"
-                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('name') ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('name')}`}
+                    className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0`}
                   />
                 </div>
 
@@ -415,6 +422,43 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                     />
                   </div>
                   {attemptedNext && formData.contact && !isContactValid() && (
+                    <p className="mt-1 text-xs text-red-500">Please enter a valid mobile number.</p>
+                  )}
+                </div>
+
+                {/* Lead's Alternate mobile number */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Alternate mobile number
+                  </label>
+                  <div className='flex items-center gap-5'>
+                    <select
+                      name='countryCode'
+                      value={formData.altCountryCode}
+                      onChange={(e) => handleInputChange('altCountryCode', e.target.value)}
+                      className='w-fit px-4 py-3 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50'
+                    >
+                      {countryCodes.map((c) => (
+                        <option key={c.flag} value={c.code}>
+                          {c.flag} {c.code}
+                        </option>
+                      ))}
+                    </select>
+
+                    <input
+                      type="tel"
+                      value={formData.alternateContact}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d*$/.test(value)) {
+                          handleInputChange('alternateContact', value);
+                        }
+                      }}
+                      placeholder="XXXXXXXXXX"
+                      className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${!isContactValid() ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'}`}
+                    />
+                  </div>
+                  {attemptedNext && formData.alternateContact && !isContactValid() && (
                     <p className="mt-1 text-xs text-red-500">Please enter a valid mobile number.</p>
                   )}
                 </div>
