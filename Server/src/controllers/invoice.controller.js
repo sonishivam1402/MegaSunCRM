@@ -343,6 +343,7 @@ function generateQuotationHTML(type, trigger, data) {
             width: 100%;
             border-collapse: collapse;
             font-size: 8px;
+            height : auto;
         }
 
         .items-table th {
@@ -355,18 +356,19 @@ function generateQuotationHTML(type, trigger, data) {
         }
 
         .items-table td {
-            border: 1px solid #000;
+            border-left: 1px solid #000;
+            border-right: 1px solid #000;
             padding: 5px 3px;
             vertical-align: top;
         }
 
         .items-table .item-row {
-            height: 200px;
+            height: 20px;
+            //height: auto;
         }
 
-        .items-table .total-row {
-            font-weight: bold;
-            background-color: #ffffffff;
+        .items-table .total-row td {
+          border: 1px solid #000; /* Keep all borders for total row */
         }
 
         .text-center {
@@ -552,7 +554,7 @@ function generateQuotationHTML(type, trigger, data) {
             </div>
         </div>
 
-        <div class="items-section">
+          <div class="items-section">
             <table class="items-table">
                 <thead>
                     <tr>

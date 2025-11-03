@@ -31,7 +31,7 @@ export const createNewFollowUp = async (req, res, next) => {
       .request()
       .input("LeadId", sql.UniqueIdentifier, leadId)
       .input("FollowupStatus", sql.UniqueIdentifier, leadStatusId)
-      .input("Comments", sql.NVarChar(50), comment)
+      .input("Comments", sql.NVarChar(sql.MAX), comment)
       .input("NextFollowUpDate", sql.Date, nextFollowUpDate)
       .input("CreatedBy", sql.UniqueIdentifier, req.user.id)
       .execute("sp_CreateNewFollowup");
@@ -91,7 +91,7 @@ export const updateFollowUpComment = async (req, res, next) => {
     const result = await pool
       .request()
       .input("FollowUpId", sql.NVarChar(50), followUpId)
-      .input("Comments", sql.NVarChar(), comment)
+      .input("Comments", sql.NVarChar(sql.MAX), comment)
       .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
       .execute("sp_EditFollowupComments");
 

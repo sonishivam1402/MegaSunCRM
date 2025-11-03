@@ -4,10 +4,10 @@ import { sql, poolPromise } from "../database/db.js";
 async function callStoredProcedure() {
   try {
     const pool = await poolPromise;
-    console.log(`[${new Date().toLocaleString()}] Connected to DB`);
+    // console.log(`[${new Date().toLocaleString()}] Connected to DB`);
 
     const result = await pool.request().execute('sp_CreateNotificationForFollowUps');
-    console.log('Stored procedure executed successfully:', result.recordset);
+    // console.log('Stored procedure executed successfully:', result.recordset);
   } catch (err) {
     console.error('Error executing stored procedure:', err);
   } finally {
@@ -20,7 +20,7 @@ function getMsUntilNext9AM() {
   const now = new Date();
   const next9am = new Date();
 
-  next9am.setHours(9, 0, 0, 0);
+  next9am.setHours(8, 0, 0, 0);  // set to 8 am
 
   // If it's already past 9 AM today, schedule for tomorrow
   if (now > next9am) {
@@ -33,7 +33,7 @@ function getMsUntilNext9AM() {
 // Function to schedule daily job
 export const scheduleDailyJob = () => {
   const msUntilNext9AM = getMsUntilNext9AM();
-  console.log(`Next job scheduled in ${(msUntilNext9AM / 1000 / 60).toFixed(2)} minutes`);
+  // console.log(`Next job scheduled in ${(msUntilNext9AM / 1000 / 60).toFixed(2)} minutes`);
 
   // Run once at next 9 AM
   setTimeout(() => {
