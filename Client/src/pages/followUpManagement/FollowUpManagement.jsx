@@ -50,7 +50,7 @@ const FollowUpManagement = () => {
     ];
 
     // Fetch follow-ups
-    const fetchFollowUps = useCallback(async (search = '', filter = 'All', page = 1, limit = 10) => {
+    const fetchFollowUps = useCallback(async (search = '', filter = activeFilter, page = 1, limit = 10) => {
         try {
             setLoading(true);
             const offset = (page - 1) * limit;
@@ -142,7 +142,7 @@ const FollowUpManagement = () => {
 
     // Initial data fetch
     useEffect(() => {
-        fetchFollowUps('', 'All', 1, pageSize);
+        fetchFollowUps('', activeFilter, 1, pageSize);
     }, [fetchFollowUps, pageSize]);
 
     // Cleanup timeout on unmount

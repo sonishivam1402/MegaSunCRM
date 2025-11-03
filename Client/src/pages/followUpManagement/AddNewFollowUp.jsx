@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getLeadsDD, getAllLeadStatusDD } from '../../api/leadApi';
 import { toast } from 'react-toastify';
 import CloseIcon from "../../assets/icons/CloseIcon";
 import { createFollowUp } from '../../api/followUpApi';
+import { Search } from 'lucide-react';
 
 const AddNewFollowUp = ({ isOpen, onClose, onSuccess, followUp }) => {
     const [leads, setLeads] = useState([]);
@@ -15,9 +16,33 @@ const AddNewFollowUp = ({ isOpen, onClose, onSuccess, followUp }) => {
     const [selectedStatus, setSelectedStatus] = useState('');
     const [comments, setComments] = useState('');
 
+    // Search states
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
     const today = new Date().toISOString().split('T')[0];
     const [nextFollowUpDate, setNextFollowUpDate] = useState(today);
 
+    // Filter leads based on search query
+    const filteredLeads = leads.filter(lead =>
+        lead.Name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Get selected lead name
+    const selectedLeadName = leads.find(lead => lead.LeadId === selectedLead)?.Name || '';
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     // Fetch leads for dropdown only when followUp is not passed
     const fetchLeads = async () => {
@@ -50,7 +75,7 @@ const AddNewFollowUp = ({ isOpen, onClose, onSuccess, followUp }) => {
             if (followUp?.LeadId && (followUp?.LeadName || followUp?.Name)) {
                 // Pre-fill from followUp
                 setSelectedLead(followUp.LeadId);
-                setLeads([{ LeadId: followUp.LeadId, Name: followUp.LeadName || followUp.Name }]); 
+                setLeads([{ LeadId: followUp.LeadId, Name: followUp.LeadName || followUp.Name }]);
                 // no need to fetch leads
                 fetchStatuses().finally(() => setLoading(false));
             } else {
@@ -110,7 +135,15 @@ const AddNewFollowUp = ({ isOpen, onClose, onSuccess, followUp }) => {
         setSelectedStatus('');
         setComments('');
         setNextFollowUpDate('');
+        setSearchQuery('');
         onClose();
+    };
+
+    // Handle lead selection
+    const handleLeadSelect = (leadId) => {
+        setSelectedLead(leadId);
+        setIsDropdownOpen(false);
+        setSearchQuery('');
     };
 
     if (!isOpen) return null;
@@ -164,31 +197,70 @@ const AddNewFollowUp = ({ isOpen, onClose, onSuccess, followUp }) => {
                         </div>
                     ) : (
                         <div className="space-y-5">
-                            {/* Select Lead */}
+                            {/* Select Lead with Search */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Select lead
                                 </label>
-                                <div className="relative">
-                                    <select
-                                        value={selectedLead}
-                                        onChange={(e) => setSelectedLead(e.target.value)}
-                                        disabled={!!followUp?.LeadId} // disable if coming from followUp
-                                        className="w-full appearance-none bg-white rounded-sm px-4 py-2.5 pr-10 text-sm border border-gray-300 disabled:bg-gray-100"
+                                <div className="relative" ref={dropdownRef}>
+                                    {/* Display Field */}
+                                    <div
+                                        onClick={() => !followUp?.LeadId && setIsDropdownOpen(!isDropdownOpen)}
+                                        className={`w-full appearance-none rounded-sm px-4 py-2.5 pr-10 text-sm border border-gray-300 
+                                    ${followUp?.LeadId ? 'bg-[#00000012] cursor-not-allowed text-gray-600' : 'bg-[#00000012] cursor-pointer hover:border-gray-400 focus:border-gray-400'}
+                                `}
                                     >
-                                        <option value="">Select lead</option>
-                                        {leads.map((lead) => (
-                                            <option key={lead.LeadId} value={lead.LeadId}>
-                                                {lead.Name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        {selectedLeadName || 'Select lead'}
+                                    </div>
+
+                                    {/* Dropdown Arrow */}
                                     {!followUp?.LeadId && (
                                         <img
                                             src="/icons/Dropdown.png"
                                             alt="Dropdown"
                                             className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-2 pointer-events-none opacity-50"
                                         />
+                                    )}
+
+                                    {/* Dropdown Panel */}
+                                    {isDropdownOpen && !followUp?.LeadId && (
+                                        <div className="absolute z-10 w-full mt-1 bg-[#f1f0e9] border border-gray-300 rounded-sm shadow-lg">
+                                            {/* Search Input */}
+                                            <div className="p-2 border-b border-gray-200">
+                                                <div className="relative">
+                                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                                    <input
+                                                        type="text"
+                                                        value={searchQuery}
+                                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                                        placeholder="Search leads..."
+                                                        className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        autoFocus
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* Options List */}
+                                            <div className="max-h-48 overflow-y-auto">
+                                                {filteredLeads.length > 0 ? (
+                                                    filteredLeads.map((lead) => (
+                                                        <div
+                                                            key={lead.LeadId}
+                                                            onClick={() => handleLeadSelect(lead.LeadId)}
+                                                            className={`px-4 py-2.5 text-sm cursor-pointer hover:bg-gray-50 ${selectedLead === lead.LeadId ? 'bg-gray-50' : 'bg-[#f1f0e9]'
+                                                                }`}
+                                                        >
+                                                            {lead.Name}
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                                                        No leads found
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -202,7 +274,7 @@ const AddNewFollowUp = ({ isOpen, onClose, onSuccess, followUp }) => {
                                     <select
                                         value={selectedStatus}
                                         onChange={(e) => setSelectedStatus(e.target.value)}
-                                        className="w-full appearance-none bg-white rounded-sm px-4 py-2.5 pr-10 text-sm border border-gray-300 "
+                                        className="w-full appearance-none bg-white rounded-sm px-4 py-2.5 pr-10 text-sm border border-gray-300 hover:border-gray-400 focus:border-gray-400"
                                     >
                                         <option value="">Select status</option>
                                         {statusOptions.map((status) => (
@@ -218,6 +290,7 @@ const AddNewFollowUp = ({ isOpen, onClose, onSuccess, followUp }) => {
                                     />
                                 </div>
                             </div>
+
 
                             {/* Next Follow-up Date */}
                             <div>
