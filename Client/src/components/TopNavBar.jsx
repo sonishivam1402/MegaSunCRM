@@ -4,10 +4,13 @@ import { useAuth } from "../context/AuthContext";
 import ChangePasswordModal from "./ChangePasswordModal";
 import { updateUserPassword } from '../api/userApi';
 import { toast } from 'react-toastify';
+import NotificationModal from './NotificationModal';
 
 export default function TopNavbar() {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+    const [isNotificationOpen, setIsNotificationOpen] = useState(false); 
+    const [unreadCount, setUnreadCount] = useState(0); 
 
     const [userProfile, setUserProfile] = useState({
         name: '',
@@ -15,6 +18,7 @@ export default function TopNavbar() {
         profileImage: ''
     });
     const dropdownRef = useRef(null);
+     const notificationRef = useRef(null);
 
     const { logout } = useAuth();
 
@@ -76,6 +80,11 @@ export default function TopNavbar() {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setIsDropdownOpen(false);
             }
+
+            // Close notification modal
+            if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+                setIsNotificationOpen(false);
+            }
         };
 
         document.addEventListener('mousedown', handleClickOutside);
@@ -132,13 +141,24 @@ export default function TopNavbar() {
                 <div className="flex items-center space-x-4">
 
                     {/* Notification Icon */}
-                    <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0 cursor-pointer">
+                    <div ref={notificationRef}>
+                    <button 
+                        onClick={() => setIsNotificationOpen(true)} // Update this
+                        className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0 cursor-pointer"
+                    >
                         <img
                             src="/icons/Notifications.png"
                             alt="Notifications"
                             className="w-[15px] h-[19px]"
                         />
+                        {/* Add badge */}
+                        {unreadCount > 0 && (
+                            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                                {unreadCount}
+                            </span>
+                        )}
                     </button>
+                    </div>
 
                     {/* Profile Dropdown */}
                     <div className="relative flex-shrink-0" ref={dropdownRef}>
@@ -225,6 +245,13 @@ export default function TopNavbar() {
                 isOpen={isChangePasswordOpen}
                 onClose={() => setIsChangePasswordOpen(false)}
                 onSubmit={handlePasswordSubmit}
+            />
+
+            {/* Notification Modal*/}
+            <NotificationModal
+                isOpen={isNotificationOpen}
+                onClose={() => setIsNotificationOpen(false)}
+                onUnreadCountChange={setUnreadCount}
             />
         </div>
     );
