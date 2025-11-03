@@ -18,7 +18,6 @@ export default function TopNavbar() {
         profileImage: ''
     });
     const dropdownRef = useRef(null);
-     const notificationRef = useRef(null);
 
     const { logout } = useAuth();
 
@@ -80,11 +79,6 @@ export default function TopNavbar() {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setIsDropdownOpen(false);
             }
-
-            // Close notification modal
-            if (notificationRef.current && !notificationRef.current.contains(event.target)) {
-                setIsNotificationOpen(false);
-            }
         };
 
         document.addEventListener('mousedown', handleClickOutside);
@@ -141,7 +135,6 @@ export default function TopNavbar() {
                 <div className="flex items-center space-x-4">
 
                     {/* Notification Icon */}
-                    <div ref={notificationRef}>
                     <button 
                         onClick={() => setIsNotificationOpen(true)} // Update this
                         className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0 cursor-pointer"
@@ -158,7 +151,6 @@ export default function TopNavbar() {
                             </span>
                         )}
                     </button>
-                    </div>
 
                     {/* Profile Dropdown */}
                     <div className="relative flex-shrink-0" ref={dropdownRef}>
