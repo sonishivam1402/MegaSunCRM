@@ -15,7 +15,7 @@ const HistoryModal = ({ isOpen, onClose, followUp }) => {
             const response = await getFollowUpByLeadId(id);
             const data = Array.isArray(response[0]) ? response[0] : [];
             setFollowUps(data);
-        
+
         } catch (error) {
             console.error('Error fetching follow-up:', error);
             setFollowUps([]);
@@ -121,9 +121,10 @@ const HistoryModal = ({ isOpen, onClose, followUp }) => {
                                             </td>
 
                                             {/* Comments */}
-                                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                                            <td className="px-6 py-4 text-center text-sm text-gray-900 whitespace-normal break-words max-w-[250px]">
                                                 {followUp.Comments}
                                             </td>
+
 
                                             {/* Lead Source */}
                                             <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">

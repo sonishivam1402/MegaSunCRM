@@ -316,7 +316,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
         id: leadId,
         name: formData.name,
         contact: formData.countryCode + "-" + formData.contact,
-        alternateContact: formData.altCountryCode + "-" + formData.alternateContact,
+        alternateContact: formData.alternateContact ? formData.altCountryCode + "-" + formData.alternateContact : '',
         email: formData.email,
         city: formData.city,
         state: formData.state,

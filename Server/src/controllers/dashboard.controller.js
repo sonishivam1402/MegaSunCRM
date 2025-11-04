@@ -6,7 +6,7 @@ export const getDashboardDetails = async (req, res, next) => {
         const result = await pool
             .request()
             .input("UserId", sql.UniqueIdentifier, req.user.id)
-            .execute("sp_GetDashboardData_v4");
+            .execute("sp_GetDashboardData_v5");
 
         // Assuming the SP returns [{ DashboardData: '...json string...' }]
         let data = result.recordset[0];
