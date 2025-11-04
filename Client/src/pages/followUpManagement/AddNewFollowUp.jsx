@@ -72,10 +72,17 @@ const AddNewFollowUp = ({ isOpen, onClose, onSuccess, followUp }) => {
     useEffect(() => {
         if (isOpen) {
             setLoading(true);
-            if (followUp?.LeadId && (followUp?.LeadName || followUp?.Name)) {
+            if (followUp?.LeadId) {
                 // Pre-fill from followUp
                 setSelectedLead(followUp.LeadId);
-                setLeads([{ LeadId: followUp.LeadId, Name: followUp.LeadName || followUp.Name }]);
+                setLeads([
+                    {
+                        LeadId: followUp.LeadId,
+                        Name: followUp?.Name && followUp?.Name.trim() !== ""
+                            ? `${followUp.Name} - ${followUp.Contact}`
+                            : followUp?.Contact || ""
+                    }
+                ]);
                 // no need to fetch leads
                 fetchStatuses().finally(() => setLoading(false));
             } else {
