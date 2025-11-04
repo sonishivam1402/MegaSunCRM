@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from "../context/AuthContext";
 import { getDashboardData } from '../api/dashboardApi'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
@@ -9,13 +10,14 @@ const Dashboard = () => {
   const [analyticsTab, setAnalyticsTab] = useState('targets');
   const [leadStateTab, setLeadStateTab] = useState('chart');
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         const response = await getDashboardData();
         setDashboardData(response.DashboardData);
-        //console.log(response.DashboardData)
+        // console.log(response.DashboardData)
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
@@ -131,7 +133,7 @@ const Dashboard = () => {
                 {Object.entries(cards || {})
                   .filter(([key]) => permissions[key] === 1)
                   .map(([key, data]) => (
-                    <div key={key} className="p-4 border border-gray-200 rounded flex flex-col justify-center w-full">
+                    <div key={key} onClick={()=>navigate(data.navigationPath)} className="p-4 border border-gray-200 rounded flex flex-col justify-center w-full hover:cursor-pointer">
                       <div className="mb-3 flex justify-between items-center">
                         <span className="font-semibold text-gray-800">{getStatusLabel(key)}</span>
                         <div

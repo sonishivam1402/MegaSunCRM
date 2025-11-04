@@ -7,6 +7,22 @@ export const createLead = async (req, res, next) => {
   try {
     const { lead } = req.body;
 
+    const phone = lead.contact.replace(/\D/g, "");
+    const isContactValid = validator.isMobilePhone(phone, "en-IN");
+
+    if (!isContactValid) {
+      return res.json({ Message: "Please check contact details." });
+    }
+
+    if (lead.alternateContact) {
+      const altPhone = lead.alternateContact.replace(/\D/g, "");
+      const isAltContactValid = validator.isMobilePhone(altPhone, "en-IN");
+
+      if (!isAltContactValid) {
+        return res.json({ Message: "Please check alternate contact details." });
+      }
+    }
+
     const pool = await poolPromise;
     const result = await pool
       .request()
@@ -49,6 +65,22 @@ export const updateLeadById = async (req, res, next) => {
   try {
     const { lead } = req.body;
     const leadId = req.params.id;
+
+    const phone = lead.contact.replace(/\D/g, "");
+    const isContactValid = validator.isMobilePhone(phone, "en-IN");
+
+    if (!isContactValid) {
+      return res.json({ Message: "Please check contact details." });
+    }
+
+    if (lead.alternateContact) {
+      const altPhone = lead.alternateContact.replace(/\D/g, "");
+      const isAltContactValid = validator.isMobilePhone(altPhone, "en-IN");
+
+      if (!isAltContactValid) {
+        return res.json({ Message: "Please check alternate contact details." });
+      }
+    }
 
     const pool = await poolPromise;
     const result = await pool
@@ -97,7 +129,7 @@ export const getAllLeads = async (req, res, next) => {
       status,
       leadTypeId,
       sourceId,
-      userId
+      userId,
     } = req.query;
     const pool = await poolPromise;
     const result = await pool
@@ -127,7 +159,7 @@ export const getAllUnassignedLeads = async (req, res, next) => {
       offset = 0,
       status,
       leadTypeId,
-      sourceId
+      sourceId,
     } = req.query;
     const pool = await poolPromise;
     const result = await pool
@@ -463,7 +495,8 @@ export const deleteLead = async (req, res, next) => {
 export const getLeadsForDropdown = async (req, res, next) => {
   try {
     const pool = await poolPromise;
-    const result = await pool.request()
+    const result = await pool
+      .request()
       .input("UserId", sql.UniqueIdentifier, req.user.id)
       .execute("sp_GetLeadsForDDN");
 
@@ -502,16 +535,16 @@ export const exportLeads = async (req, res, next) => {
 // Import Leads
 export const importLeads = async (req, res, next) => {
   const { leads, assignedTo } = req.body;
-  
+
   if (!leads || !Array.isArray(leads) || leads.length === 0) {
     return res.status(400).json({
-      message: 'Invalid data format. Expected array of lead objects.'
+      message: "Invalid data format. Expected array of lead objects.",
     });
   }
 
   if (!assignedTo) {
     return res.status(400).json({
-      message: 'Assign leads to someone.'
+      message: "Assign leads to someone.",
     });
   }
 
@@ -523,23 +556,23 @@ export const importLeads = async (req, res, next) => {
 
     const result = await pool
       .request()
-      .input('LeadsJSON', sql.NVarChar(sql.MAX), leadsJson)
-      .input('AssignedTo', sql.UniqueIdentifier, assignedTo)
-      .input('CreatedBy', sql.UniqueIdentifier, req.user.id)
-      .execute('sp_CreateBulkImportedLeads');
+      .input("LeadsJSON", sql.NVarChar(sql.MAX), leadsJson)
+      .input("AssignedTo", sql.UniqueIdentifier, assignedTo)
+      .input("CreatedBy", sql.UniqueIdentifier, req.user.id)
+      .execute("sp_CreateBulkImportedLeads");
 
     // Process the recordsets returned by SP
     const recordsets = result.recordsets;
-    
+
     if (!recordsets || recordsets.length === 0) {
       return res.status(500).json({
-        message: 'No response from database'
+        message: "No response from database",
       });
     }
 
     // First recordset typically contains summary info
     const summary = recordsets[0][0] || {};
-    
+
     // Second recordset (if exists) contains failed leads
     const failedLeads = recordsets[1] || [];
 
@@ -547,20 +580,19 @@ export const importLeads = async (req, res, next) => {
       successCount: summary.SuccessCount || 0,
       failedCount: summary.FailedCount || 0,
       totalCount: summary.TotalLeads || leads.length,
-      failedLeads: failedLeads.map(lead => ({
+      failedLeads: failedLeads.map((lead) => ({
         rowNumber: lead.RowNumber,
         CompanyName: lead.CompanyName,
         Contact: lead.Contact,
-        errorMessage: lead.ErrorMessage
-      }))
+        errorMessage: lead.ErrorMessage,
+      })),
     };
 
     return res.json(response);
-
   } catch (error) {
-    console.error('Import error:', error);
+    console.error("Import error:", error);
     return res.status(500).json({
-      message: error.message || 'Failed to import leads'
+      message: error.message || "Failed to import leads",
     });
   }
 };
@@ -568,7 +600,7 @@ export const importLeads = async (req, res, next) => {
 // Transfer Leads
 export const transferLeads = async (req, res, next) => {
   try {
-    const {data} = req.body;
+    const { data } = req.body;
     const pool = await poolPromise;
     const result = await pool
       .request()

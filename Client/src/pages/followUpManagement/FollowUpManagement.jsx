@@ -44,7 +44,7 @@ const FollowUpManagement = () => {
     const filterTabs = [
         { label: 'All', value: 'All' },
         { label: 'Upcoming', value: 'Upcoming' },
-        { label: 'Deal Closed', value: 'Deal Closed' },
+        { label: 'Deal Done', value: 'Deal Done' },
         { label: 'Expired', value: 'Expired' },
         { label: 'Not Interested', value: 'Not Interested' }
     ];
@@ -277,13 +277,11 @@ const FollowUpManagement = () => {
         }
     };
 
-    // Format products
-    const formatProducts = (products) => {
-        if (!products || products.length === 0) return 'N/A';
-        const productList = products.split(",").map(p => p.trim());
-        const displayed = productList.slice(0, 2).join(", ");
-        const extra = productList.length > 2 ? `, ${productList.length - 2} more..` : "";
-        return displayed + extra;
+    // Format comments
+    const formatComment = (comment) => {
+        if (!comment) return 'N/A';
+        const str = String(comment);
+        return str.length > 60 ? str.slice(0, 60).trimEnd() + "..." : str;
     };
 
     return (
@@ -309,7 +307,7 @@ const FollowUpManagement = () => {
                                 className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#0d4715]"
                             />
                         </div>
-                        
+
                         {filterTabs.map((tab) => (
                             <button
                                 key={tab.value}
@@ -365,9 +363,6 @@ const FollowUpManagement = () => {
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 NEXT FOLLOWUP DATE
                             </th>
-                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                ITEM
-                            </th>
                             {user.IsAdmin &&
                                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     ASSIGNED TO
@@ -378,6 +373,9 @@ const FollowUpManagement = () => {
                             </th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 STATUS
+                            </th>
+                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                COMMENTS
                             </th>
                             <th className="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 ACTIONS
@@ -407,9 +405,11 @@ const FollowUpManagement = () => {
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex flex-col gap-1">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm font-medium text-gray-900 cursor-pointer hover:text-[#0d4715]">
+                                                <div className='flex flex-wrap'>
+                                                <span className="text-sm font-medium text-gray-900 cursor-pointer hover:text-[#0d4715] break-words">
                                                     {followUp.LeadName || 'N/A'}
                                                 </span>
+                                                </div>
                                                 <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${getLabelColor(followUp.LeadType)}`}>
                                                     {followUp.LeadType || 'N/A'}
                                                 </span>
@@ -427,13 +427,6 @@ const FollowUpManagement = () => {
 
                                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
                                         {dayjs(followUp.NextFollowUpDate).format("DD-MM-YYYY") || 'N/A'}
-                                    </td>
-
-                                    {/* Item */}
-                                    <td className="px-6 py-4 text-left text-sm text-gray-900">
-                                        <div className="max-w-xs mx-auto">
-                                            {formatProducts(followUp.Products || followUp.Item)}
-                                        </div>
                                     </td>
 
                                     {/* Assigned To */}
@@ -468,6 +461,13 @@ const FollowUpManagement = () => {
                                         <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${getLabelColor(followUp.FollowupStatus)}`}>
                                             {followUp.FollowupStatus || 'N/A'}
                                         </span>
+                                    </td>
+
+                                    {/* Comments */}
+                                    <td className="px-6 py-4 text-left text-sm text-gray-900 flex-wrap">
+                                        <div className="max-w-[200px] mx-auto break-words">
+                                            {formatComment(followUp.Comments)}
+                                        </div>
                                     </td>
 
                                     {/* Actions */}

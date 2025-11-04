@@ -103,7 +103,7 @@ const DetailFollowUpModal = ({ isOpen, onClose, followUp }) => {
                   <div className="flex items-center">
                     <span className="text-sm text-gray-700 w-32 flex-shrink-0">Comment</span>
                     <span className="text-sm text-gray-500 mx-3">:</span>
-                    <span className="text-sm font-medium text-gray-900">{followupData.Comments || 'N/A'}</span>
+                    <span className="text-sm font-medium text-gray-900 whitespace-normal break-words max-w-[400px]">{followupData.Comments || 'N/A'}</span>
                   </div>
 
                   {/* Last Follow-Up Date */}
