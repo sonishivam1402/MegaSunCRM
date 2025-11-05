@@ -78,6 +78,9 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
   const [terms, setTerms] = useState('');
   const [taxFormat, setTaxFormat] = useState('SGST - CGST');
   const [roundOff, setRoundOff] = useState('0.00');
+  const [packingCharge, setPackingCharge] = useState('0.00');
+  const [courierCharge, setCourierCharge] = useState('0.00');
+  const [freightCharge, setFreightCharge] = useState('0.00');
 
   const [availableStates, setAvailableStates] = useState([]);
 
@@ -214,6 +217,9 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
       setTerms(quotation.Terms || '');
       setTaxFormat(quotation.TaxFormat || 'SGST - CGST');
       setRoundOff((quotation.RoundOff != null ? Number(quotation.RoundOff) : 0).toFixed(2));
+      setPackingCharge((quotation.PackingCharge != null ? Number(quotation.PackingCharge) : 0).toFixed(2));
+      setCourierCharge((quotation.CourierCharge != null ? Number(quotation.CourierCharge) : 0).toFixed(2));
+      setFreightCharge((quotation.FreightCharge != null ? Number(quotation.FreightCharge) : 0).toFixed(2));
 
       // Items
       if (Array.isArray(products) && products.length) {
@@ -454,6 +460,9 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
         igst: parseFloat(totals.igst),
         tax: parseFloat(totals.taxAmount),
         roundOff: parseFloat(roundOff) || 0,
+        packingCharge: parseFloat(packingCharge) || 0,
+        courierCharge: parseFloat(courierCharge) || 0,
+        freightCharge: parseFloat(freightCharge) || 0,
         grandTotal: parseFloat(totals.grandTotal),
         finalAmount: parseFloat(totals.grandTotal),
         productMappings: productMappings
@@ -988,6 +997,18 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
           <div className="flex justify-between">
             <span className="text-gray-600">Round Off ({currencySymbol})</span>
             <input type="number" step="0.01" value={roundOff} onChange={(e) => setRoundOff(e.target.value)} className="w-40 px-3 py-1 bg-white border rounded text-right" />
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Packing Charge ({currencySymbol})</span>
+            <input type="number" value={packingCharge} onChange={(e) => setPackingCharge(e.target.value)} className="w-40 px-3 py-1 bg-gray-100 rounded text-right" />
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Courier Charge ({currencySymbol})</span>
+            <input type="number" value={courierCharge} onChange={(e) => setCourierCharge(e.target.value)} className="w-40 px-3 py-1 bg-gray-100 rounded text-right" />
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Freight Charge ({currencySymbol})</span>
+            <input type="number" value={freightCharge} onChange={(e) => setFreightCharge(e.target.value)} className="w-40 px-3 py-1 bg-gray-100 rounded text-right" />
           </div>
           <div className="flex justify-between font-bold text-base pt-2 border-t">
             <span>Grand Total ({currencySymbol})</span>
