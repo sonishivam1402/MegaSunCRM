@@ -70,7 +70,8 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
     tax: '0%',
     totalAmount: '100.00',
     description: '',
-    isExternalProduct: false
+    isExternalProduct: false,
+    manuallyEntered: false
   }]);
   const [expectedDispatchDays, setExpectedDispatchDays] = useState('');
   const [paymentTerms, setPaymentTerms] = useState('');
@@ -244,7 +245,8 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
             tax: `${taxPercent}%`,
             totalAmount: total.toFixed(2),
             description: p.ItemDescription || '',
-            isExternalProduct: !p.ProductId && p.ProductName
+            isExternalProduct: !p.ProductId && p.ProductName,
+            manuallyEntered: false
           };
         });
         setItemRows(mapped);
@@ -303,10 +305,24 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
       if (field === 'itemName' && value) {
         const selectedProduct = productOptions.find(p => p.productName === value);
         if (selectedProduct) {
+          // Product found in list
           updated.productId = selectedProduct.productId;
           updated.rate = selectedProduct.price?.toString() || '0';
           updated.tax = `${selectedProduct.gstTax || 0}%`;
           updated.isExternalProduct = false;
+          updated.manuallyEntered = false;
+        } else {
+          // Custom product name entered by user
+          updated.productId = null;
+          updated.isExternalProduct = true;
+          updated.manuallyEntered = true;  // User typed this
+          // Keep existing rate and tax or set defaults
+          if (!row.rate || row.rate === '0') {
+            updated.rate = '100';
+          }
+          if (!row.tax || row.tax === '0%') {
+            updated.tax = '18%';
+          }
         }
       }
       if (['qty', 'rate', 'discount', 'tax', 'itemName'].includes(field)) {
@@ -339,7 +355,8 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
       tax: '0%',
       totalAmount: '0.00',
       description: '',
-      isExternalProduct: false
+      isExternalProduct: false,
+      manuallyEntered: false
     }]);
   };
 
@@ -848,7 +865,8 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
             {itemRows.map(row => (
               <tr key={row.id} className="border-b">
                 <td className="px-3 py-2">
-                  {row.isExternalProduct ? (
+                  {row.isExternalProduct && !row.manuallyEntered ? (
+                    // External product from lead - locked with replace dropdown below
                     <div className="space-y-1">
                       <input
                         type="text"
@@ -856,7 +874,7 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
                         disabled
                         className="w-full px-2 py-1 bg-yellow-50 border border-yellow-300 rounded text-sm cursor-not-allowed"
                       />
-                      <p className="text-xs text-yellow-700">⚠️ External product</p>
+                      <p className="text-xs text-yellow-700">⚠️ Product from lead (not in catalog)</p>
                       <select
                         value=""
                         onChange={(e) => {
@@ -866,24 +884,28 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
                         }}
                         className="w-full px-2 py-1 bg-gray-100 rounded text-xs"
                       >
-                        <option value="">Replace with product from list...</option>
+                        <option value="">Replace with product from catalog...</option>
                         {productOptions.map(product => (
                           <option key={product.productId} value={product.productName}>{product.productName}</option>
                         ))}
                       </select>
                     </div>
                   ) : (
-                    <select
+                    // Normal + Custom product selection - input with datalist
+                    <input
+                      type="text"
+                      list={`products-${row.id}`}
                       value={row.itemName}
                       onChange={(e) => handleItemRowChange(row.id, 'itemName', e.target.value)}
+                      placeholder="Type or select product"
                       className="w-full px-2 py-1 bg-gray-100 rounded text-sm"
-                    >
-                      <option value="">Select item</option>
-                      {productOptions.map(product => (
-                        <option key={product.productId} value={product.productName}>{product.productName}</option>
-                      ))}
-                    </select>
+                    />
                   )}
+                  <datalist id={`products-${row.id}`}>
+                    {productOptions.map(product => (
+                      <option key={product.productId} value={product.productName} />
+                    ))}
+                  </datalist>
                 </td>
                 <td className="px-3 py-2">
                   <input type="text" placeholder="HSN Code" value={row.hsnCode} onChange={(e) => handleItemRowChange(row.id, 'hsnCode', e.target.value)} className="w-20 px-2 py-1 bg-gray-100 rounded text-sm" />
