@@ -5,6 +5,7 @@ import { Upload, AlertCircle, CheckCircle, Loader, Download, ChevronDown } from 
 import CloseIcon from "../../assets/icons/CloseIcon";
 import { importLeads } from '../../api/leadApi';
 import { getAllUsersDD } from '../../api/userApi';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 //import CloseIcon from "../../assets/icons/CloseIcon";
 
 export default function ImportLeadModal({ isOpen, onClose, onSuccess }) {
@@ -16,6 +17,10 @@ export default function ImportLeadModal({ isOpen, onClose, onSuccess }) {
   const [usersLoading, setUsersLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  useEscapeKey(() => {
+    if (isOpen) onClose();
+  });
 
   useEffect(() => {
     if (isOpen && users.length === 0) {
@@ -217,7 +222,7 @@ export default function ImportLeadModal({ isOpen, onClose, onSuccess }) {
               {/* Download Template */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                <a onClick={downloadTemplate} className='text-green-900 underline font-bold hover:cursor-pointer'>Click Here</a> to  Download Template
+                  <a onClick={downloadTemplate} className='text-green-900 underline font-bold hover:cursor-pointer'>Click Here</a> to  Download Template
                 </label>
                 {/* <button
                   onClick={downloadTemplate}

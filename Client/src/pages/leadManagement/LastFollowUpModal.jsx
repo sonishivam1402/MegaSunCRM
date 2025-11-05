@@ -2,10 +2,15 @@ import React, { useState, useEffect } from 'react';
 import CloseIcon from '../../assets/icons/CloseIcon';
 import { getFollowUpById, getLastFollowUpByLeadId } from '../../api/followUpApi';
 import dayjs from 'dayjs';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
 const LastFollowUpModal = ({ isOpen, onClose, leadId }) => {
   const [followupData, setFollowUpData] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  useEscapeKey(() => {
+    if (isOpen) onClose();
+  });
 
   const getData = async (id) => {
     setLoading(true);

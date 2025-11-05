@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, X, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { getNotify, markAllNotifyAsRead, markNotifyAsRead } from '../api/notificationApi';
+import { useEscapeKey } from '../utils/useEscapeKey';
 
 const NotificationModal = ({ isOpen, onClose, onUnreadCountChange }) => {
-    
+
     const [notifications, setNotifications] = useState([]);
+
+    useEscapeKey(() => {
+        if (isOpen) onClose();
+    });
 
     const getNotifications = async () => {
         try {
@@ -38,17 +43,17 @@ const NotificationModal = ({ isOpen, onClose, onUnreadCountChange }) => {
     };
 
     const markAllAsRead = async () => {
-        const notifyIds = notifications.map(n => n.LogID); 
-        const res = await markAllNotifyAsRead({notifyIds});
-        if (res.status === 200) { 
-            getNotifications(); 
+        const notifyIds = notifications.map(n => n.LogID);
+        const res = await markAllNotifyAsRead({ notifyIds });
+        if (res.status === 200) {
+            getNotifications();
             onClose();
         } else {
             console.error("Error marking notifications as read");
         }
     };
 
-    const unreadCount = notifications.filter(n => !n.IsRead).length; 
+    const unreadCount = notifications.filter(n => !n.IsRead).length;
 
     if (!isOpen) return null;
 

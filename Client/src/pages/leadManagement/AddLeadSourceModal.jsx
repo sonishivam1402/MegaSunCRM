@@ -2,14 +2,19 @@ import React, { useState } from 'react';
 import { createLeadSource } from '../../api/leadApi';
 import { toast } from 'react-toastify';
 import CloseIcon from '../../assets/icons/CloseIcon';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
 const AddLeadSourceModal = ({ isOpen, onClose, onSuccess }) => {
-    const [formData, setFormData] = useState({ 
-        Name: '', 
-        Status: 1 
+    const [formData, setFormData] = useState({
+        Name: '',
+        Status: 1
     });
     const [saving, setSaving] = useState(false);
     const [errors, setErrors] = useState({});
+
+    useEscapeKey(() => {
+        if (isOpen) onClose();
+    });
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -17,7 +22,7 @@ const AddLeadSourceModal = ({ isOpen, onClose, onSuccess }) => {
             ...prev,
             [name]: name === 'Status' ? parseInt(value) : value
         }));
-        
+
         // Clear error when user starts typing
         if (errors[name]) {
             setErrors(prev => ({
@@ -29,11 +34,11 @@ const AddLeadSourceModal = ({ isOpen, onClose, onSuccess }) => {
 
     const validateForm = () => {
         const newErrors = {};
-        
+
         if (!formData.Name.trim()) {
             newErrors.Name = 'Name is required';
         }
-        
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -46,13 +51,13 @@ const AddLeadSourceModal = ({ isOpen, onClose, onSuccess }) => {
         setSaving(true);
         try {
             const response = await createLeadSource(formData);
-            
+
             if (response.status === 201) {
                 toast.success(response.data?.[0]?.Message || 'Lead Source created successfully.');
-                setFormData({ Name: '', Status: 1 }); 
+                setFormData({ Name: '', Status: 1 });
                 setErrors({});
-                onSuccess && onSuccess(); 
-                onClose && onClose(); 
+                onSuccess && onSuccess();
+                onClose && onClose();
             } else if (response.status === 200) {
                 toast.error(response.data?.[0]?.Message || 'Failed to create lead source.');
             } else {
@@ -95,7 +100,7 @@ const AddLeadSourceModal = ({ isOpen, onClose, onSuccess }) => {
                         <CloseIcon />
                     </button>
                 </div>
-                
+
                 <div className="space-y-4 flex-1 border-t pt-5">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -107,16 +112,15 @@ const AddLeadSourceModal = ({ isOpen, onClose, onSuccess }) => {
                             value={formData.Name}
                             onChange={handleInputChange}
                             placeholder="Enter lead type name"
-                            className={`w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 ${
-                                errors.Name ? 'border-red-300' : 'border-gray-300'
-                            }`}
+                            className={`w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 ${errors.Name ? 'border-red-300' : 'border-gray-300'
+                                }`}
                             disabled={saving}
                         />
                         {errors.Name && (
                             <p className="text-red-500 text-xs mt-1">{errors.Name}</p>
                         )}
                     </div>
-                    
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Status
@@ -133,7 +137,7 @@ const AddLeadSourceModal = ({ isOpen, onClose, onSuccess }) => {
                         </select>
                     </div>
                 </div>
-                
+
                 <div className="mt-6 shrink-0 space-y-2">
                     <button
                         className="px-4 py-2 w-full text-sm rounded bg-green-800 text-white hover:bg-green-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -142,7 +146,7 @@ const AddLeadSourceModal = ({ isOpen, onClose, onSuccess }) => {
                     >
                         {saving ? 'Creating...' : 'Create Lead Source'}
                     </button>
-                    
+
                     <button
                         className="px-4 py-2 w-full text-sm rounded bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50 transition-colors"
                         onClick={handleClose}

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { getOrderByUserIdAndMonth } from '../../api/targetApi';
 import CloseIcon from '../../assets/icons/CloseIcon';
 import dayjs from 'dayjs';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
 const OrderTargetModal = ({ isOpen, onClose, data }) => {
     const [orders, setOrders] = useState([]);
@@ -11,6 +12,10 @@ const OrderTargetModal = ({ isOpen, onClose, data }) => {
     const [loading, setLoading] = useState(false);
 
     const totalPages = Math.ceil(totalRecords / pageSize);
+
+    useEscapeKey(() => {
+        if (isOpen) onClose();
+    });
 
     // Fetch order data
     const fetchOrderData = useCallback(async (page = 1, limit = 50) => {
@@ -26,8 +31,8 @@ const OrderTargetModal = ({ isOpen, onClose, data }) => {
                 year: data.Year,
                 offset,
                 limit
-              });
-              
+            });
+
 
             //console.log(response);
 

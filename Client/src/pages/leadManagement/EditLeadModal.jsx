@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
 import { countryCodes } from '../../utils/Country_Codes';
 import countryStatesData from '../../utils/Country_States.json';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
 const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -58,6 +59,10 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
       }
     }
   }, [formData.country]);
+
+  useEscapeKey(() => {
+    if (isOpen) onClose();
+  });
 
   const parsePhone = (phone) => {
     // console.log(phone);

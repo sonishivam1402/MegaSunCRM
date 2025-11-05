@@ -14,6 +14,7 @@ import { useAuth } from '../../context/AuthContext';
 import HistoryModal from '../followUpManagement/HistoryModal';
 import getLabelColor from '../../utils/GetLabelColor';
 import TransferLeadsModal from './TransferLeadsModal';
+import AddNewQuotationModal from '../quotationManagement/AddNewQuotation';
 
 const LeadsTab = ({ refreshKey }) => {
   // State management
@@ -37,6 +38,7 @@ const LeadsTab = ({ refreshKey }) => {
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [lastFollowUpModalOpen, setLastFollowUpModalOpen] = useState(false);
   const [addFollowUpModalOpen, setAddFollowUpModalOpen] = useState(false);
+  const [addQuotationModalOpen, setAddQuotationModalOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -284,6 +286,12 @@ const LeadsTab = ({ refreshKey }) => {
 
   const handleDetails = (leadId) => {
     setDetailModalOpen(true);
+    setSelectedLeadId(leadId);
+    setActiveDropdown(null);
+  };
+
+  const handleQuotation = (leadId) => {
+    setAddQuotationModalOpen(true);
     setSelectedLeadId(leadId);
     setActiveDropdown(null);
   };
@@ -605,13 +613,19 @@ const LeadsTab = ({ refreshKey }) => {
 
                         {/* Dropdown Menu */}
                         {activeDropdown === lead.LeadId && (
-                          <div className="absolute right-0 mt-1 w-24 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+                          <div className="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg border border-gray-200 z-50">
                             <div className="py-1">
                               <button
                                 onClick={() => handleDetails(lead.LeadId)}
                                 className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
                               >
                                 Details
+                              </button>
+                              <button
+                                onClick={() => handleQuotation(lead.LeadId)}
+                                className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
+                              >
+                                Create Quotation
                               </button>
                               {leadMenu?.DeleteAccess && (
                                 <button
@@ -721,6 +735,15 @@ const LeadsTab = ({ refreshKey }) => {
           isOpen={detailModalOpen}
           onClose={() => setDetailModalOpen(false)}
           leadId={selectedLeadId}
+        />
+      )}
+
+      {addQuotationModalOpen && (
+        <AddNewQuotationModal
+          isOpen={addQuotationModalOpen}
+          onClose={() => setAddQuotationModalOpen(false)}
+          onSuccess={()=>null}
+          id={selectedLeadId}
         />
       )}
 

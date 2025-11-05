@@ -3,12 +3,17 @@ import { getFollowUpByLeadId } from '../../api/followUpApi';
 import CloseIcon from '../../assets/icons/CloseIcon';
 import dayjs from 'dayjs';
 import getLabelColor from '../../utils/GetLabelColor';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
 
 const HistoryModal = ({ isOpen, onClose, followUp }) => {
     const [followUps, setFollowUps] = useState([]);
     const [loading, setLoading] = useState(false);
 
+    useEscapeKey(() => {
+        if (isOpen) onClose();
+    });
+    
     const getData = async (id) => {
         setLoading(true);
         try {

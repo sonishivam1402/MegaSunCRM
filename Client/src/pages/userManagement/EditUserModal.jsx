@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getAllUserTypeNames, updateUserById } from '../../api/userApi';
 import { toast } from 'react-toastify';
 import { countryCodes } from '../../utils/Country_Codes';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
 const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
   const [userTypeOptions, setUserTypeOptions] = useState([]);
@@ -19,6 +20,10 @@ const EditUserModal = ({ isOpen, onClose, userData, onUserEdited }) => {
     imageFile: null
   });
   const [submitted, setSubmitted] = useState(false);
+
+  useEscapeKey(() => {
+    if (isOpen) onClose();
+  });
 
   const getUserTypeNames = async () => {
     try {

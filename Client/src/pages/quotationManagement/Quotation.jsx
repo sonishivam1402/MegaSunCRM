@@ -502,13 +502,13 @@ const Quotation = ({ refreshKey }) => {
                                                     {quotation.LeadName?.charAt(0).toUpperCase() || 'U'}
                                                 </div>
                                             </div>
-                                            <span className="text-sm text-gray-900 break-words">{quotation.LeadName || 'Unknown'}</span>
+                                            <span className="text-sm text-gray-900 whitespace-break-spaces break-words">{quotation.LeadName || 'Unknown'}</span>
                                         </div>
                                     </td>
 
                                     {/* Item */}
                                     <td className="px-6 py-4 text-sm text-gray-900 text-left">
-                                        <div className="max-w-sm mx-auto">
+                                        <div className="max-w-md mx-auto">
                                             {formatProducts(quotation.Products || quotation.Item)}
                                         </div>
                                     </td>

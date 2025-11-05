@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { getTargetByUserId } from '../../api/targetApi';
 import CloseIcon from '../../assets/icons/CloseIcon';
 import OrderTargetModal from './OrderTargetModal';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
 const TargetDetailModal = ({ isOpen, onClose, userId }) => {
     const [targetData, setTargetData] = useState(null);
@@ -15,6 +16,10 @@ const TargetDetailModal = ({ isOpen, onClose, userId }) => {
     const [selectedData, setSelectedData] = useState(null);
 
     const totalPages = Math.ceil(totalRecords / pageSize);
+
+    useEscapeKey(() => {
+        if (isOpen) onClose();
+    });
 
     // Fetch target data by user ID
     const fetchTargetData = useCallback(async (page = 1, limit = 50) => {
@@ -211,7 +216,7 @@ const TargetDetailModal = ({ isOpen, onClose, userId }) => {
             {isOpenOrderModal && (
                 <OrderTargetModal
                     isOpen={isOpenOrderModal}
-                    onClose={() => {setIsOpenOrderModal(false), setSelectedData(null)}}
+                    onClose={() => { setIsOpenOrderModal(false), setSelectedData(null) }}
                     data={selectedData}
                 />
             )}

@@ -3,6 +3,7 @@ import { getOrderById, updateOrderById } from '../../api/orderApi';
 import { getAllProducts } from '../../api/productApi';
 import { toast } from 'react-toastify';
 import countryStatesData from '../../utils/Country_States.json';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
 const EditOrderModal = ({ isOpen, onClose, onSuccess, orderId }) => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -79,6 +80,10 @@ const EditOrderModal = ({ isOpen, onClose, onSuccess, orderId }) => {
   const [roundOff, setRoundOff] = useState('0.00');
 
   const [availableStates, setAvailableStates] = useState([]);
+
+  useEscapeKey(() => {
+    if (isOpen) onClose();
+  });
 
   // Update available states when shipping country changes
   useEffect(() => {

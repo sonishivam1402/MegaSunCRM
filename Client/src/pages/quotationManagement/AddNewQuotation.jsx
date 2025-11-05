@@ -4,8 +4,9 @@ import { getAllProducts } from '../../api/productApi';
 import { createQuotations } from '../../api/quotation';
 import { toast } from 'react-toastify';
 import countryStatesData from '../../utils/Country_States.json';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
-const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
+const AddNewQuotationModal = ({ isOpen, onClose, onSuccess, id }) => {
     const [currentStep, setCurrentStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [loadingLeadData, setLoadingLeadData] = useState(false);
@@ -14,7 +15,7 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
     const [validationErrors, setValidationErrors] = useState({});
 
     // Step 1: Lead Details
-    const [selectedLead, setSelectedLead] = useState('');
+    const [selectedLead, setSelectedLead] = useState(id || '');
     const [salesRepresentative, setSalesRepresentative] = useState('');
     const today = new Date().toISOString().split('T')[0];
     const [quotationDate, setQuotationDate] = useState(today);
@@ -83,6 +84,10 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess }) => {
     const [roundOff, setRoundOff] = useState('0.00');
 
     const [availableStates, setAvailableStates] = useState([]);
+
+    useEscapeKey(() => {
+        if (isOpen) onClose();
+    });
 
     // Update available states when shipping country changes
     useEffect(() => {

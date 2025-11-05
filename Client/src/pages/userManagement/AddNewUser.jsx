@@ -3,6 +3,7 @@ import { createNewUser, getAllUserTypeNames } from '../../api/userApi';
 import { toast } from 'react-toastify';
 import CloseIcon from "../../assets/icons/CloseIcon";
 import { countryCodes } from '../../utils/Country_Codes';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
 const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
 
@@ -23,6 +24,10 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
 
   const [formData, setFormData] = useState(initialFormData);
   const [submitted, setSubmitted] = useState(false);
+
+  useEscapeKey(() => {
+    if (isOpen) onClose();
+  });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
