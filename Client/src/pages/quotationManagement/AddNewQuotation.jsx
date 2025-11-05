@@ -82,6 +82,9 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess, id }) => {
     const [terms, setTerms] = useState('');
     const [taxFormat, setTaxFormat] = useState('SGST - CGST');
     const [roundOff, setRoundOff] = useState('0.00');
+    const [packingCharge, setPackingCharge] = useState('0.00');
+    const [courierCharge, setCourierCharge] = useState('0.00');
+    const [freightCharge, setFreightCharge] = useState('0.00');
 
     const [availableStates, setAvailableStates] = useState([]);
 
@@ -561,6 +564,9 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess, id }) => {
                 igst: parseFloat(totals.igst),
                 tax: parseFloat(totals.taxAmount),
                 roundOff: parseFloat(roundOff) || 0,
+                packingCharge: parseFloat(packingCharge) || 0,
+                courierCharge: parseFloat(courierCharge) || 0,
+                freightCharge: parseFloat(freightCharge) || 0,
                 grandTotal: parseFloat(totals.grandTotal),
                 finalAmount: parseFloat(totals.grandTotal),
                 productMappings: productMappings
@@ -1260,6 +1266,18 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess, id }) => {
                             onChange={(e) => setRoundOff(e.target.value)}
                             className="w-40 px-3 py-1 bg-white border rounded text-right"
                         />
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-gray-600">Packing Charge ({currencySymbol})</span>
+                        <input type="number" value={packingCharge} onChange={(e) => setPackingCharge(e.target.value)} className="w-40 px-3 py-1 bg-gray-100 rounded text-right" />
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-gray-600">Courier Charge ({currencySymbol})</span>
+                        <input type="number" value={courierCharge} onChange={(e) => setCourierCharge(e.target.value)} className="w-40 px-3 py-1 bg-gray-100 rounded text-right" />
+                    </div>
+                    <div className="flex justify-between">
+                        <span className="text-gray-600">Freight Charge ({currencySymbol})</span>
+                        <input type="number" value={freightCharge} onChange={(e) => setFreightCharge(e.target.value)} className="w-40 px-3 py-1 bg-gray-100 rounded text-right" />
                     </div>
                     <div className="flex justify-between font-bold text-base pt-2 border-t">
                         <span>Grand Total ({currencySymbol})</span>
