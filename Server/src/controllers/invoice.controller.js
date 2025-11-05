@@ -139,8 +139,8 @@ function convertToPDFFormat(dbData) {
     },
     salesRep: {
       name: header.QuotationBy,
-      mobile: "8320029353",
-      email: "dhanvi@gmail.com",
+      mobile: header.UserContact,
+      email: header.UserEmail,
     },
     totals: {
       subtotal: header.Total,
@@ -674,7 +674,7 @@ export const getQuotationPdf = async (req, res, next) => {
       .execute("sp_GetPDFByID");
 
     const recordsets = result.recordsets || [];
-    //console.log(recordsets);
+    // console.log(recordsets);
     const headerRows = recordsets[0] || [];
     const productRows = recordsets[1] || [];
     const header = headerRows[0];

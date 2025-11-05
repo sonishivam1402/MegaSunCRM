@@ -298,8 +298,8 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
     setAttemptedNext(false);
     setFormData({
       name: '',
-      countryCode : '+91',
-      altCountryCode : '+91',
+      countryCode: '+91',
+      altCountryCode: '+91',
       contact: '',
       alternateContact: '',
       email: '',
@@ -394,12 +394,12 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     <span className="text-red-500">*</span> Lead's mobile number
                   </label>
-                  <div className='flex items-center gap-5'>
+                  <div className="flex items-center gap-5">
                     <select
-                      name='countryCode'
+                      name="countryCode"
                       value={formData.countryCode}
                       onChange={(e) => handleInputChange('countryCode', e.target.value)}
-                      className='w-fit px-4 py-3 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50'
+                      className="w-fit px-4 py-3 border border-gray-300 rounded-md text-sm placeholder-gray-400 bg-gray-50"
                     >
                       {countryCodes.map((c) => (
                         <option key={c.flag} value={c.code}>
@@ -413,17 +413,26 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                       value={formData.contact}
                       onChange={(e) => {
                         const value = e.target.value;
+                        // Allow only digits
                         if (/^\d*$/.test(value)) {
+                          // If country code is +91, restrict to 10 digits
+                          if (formData.countryCode === '+91' && value.length > 10) return;
                           handleInputChange('contact', value);
                         }
                       }}
                       placeholder="XXXXXXXXXX"
-                      className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('contact') || (attemptedNext && formData.contact && !isContactValid()) ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('contact')}`}
+                      className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('contact') ||
+                          (attemptedNext && formData.contact && !isContactValid())
+                          ? 'bg-red-100'
+                          : 'bg-gray-200 focus:bg-white'
+                        } ${invalidRing('contact')}`}
                     />
                   </div>
+
                   {attemptedNext && formData.contact && !isContactValid() && (
                     <p className="mt-1 text-xs text-red-500">Please enter a valid mobile number.</p>
                   )}
+
                 </div>
 
                 {/* Lead's Alternate mobile number */}
@@ -451,6 +460,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                       onChange={(e) => {
                         const value = e.target.value;
                         if (/^\d*$/.test(value)) {
+                          if (formData.altCountryCode === '+91' && value.length > 10) return;
                           handleInputChange('alternateContact', value);
                         }
                       }}
@@ -726,10 +736,9 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                       </div>
                       <input
                         type="number"
-                        value={product.Quantity || 1}
+                        value={product.Quantity}
                         onChange={(e) => updateProduct(index, 'Quantity', e.target.value)}
                         placeholder="Qty"
-                        min="1"
                         className="w-20 px-3 py-3 bg-gray-200 border-0 rounded text-gray-700 outline-none focus:ring-0 focus:bg-white"
                       />
                       {formData.productMappings.length > 1 && (

@@ -7,14 +7,15 @@ export const createLead = async (req, res, next) => {
   try {
     const { lead } = req.body;
 
-    const phone = lead.contact.replace(/\D/g, "");
-    const isContactValid = validator.isMobilePhone(phone, "en-IN");
+    if (lead.contact.startsWith("+91")) {
+      const phone = lead.contact.replace(/\D/g, "");
+      const isContactValid = validator.isMobilePhone(phone, "en-IN");
 
-    if (!isContactValid) {
-      return res.json({ Message: "Please check contact details." });
+      if (!isContactValid) {
+        return res.json({ Message: "Please check contact details." });
+      }
     }
-
-    if (lead.alternateContact) {
+    if (lead.alternateContact && lead.alternateContact.startsWith("+91")) {
       const altPhone = lead.alternateContact.replace(/\D/g, "");
       const isAltContactValid = validator.isMobilePhone(altPhone, "en-IN");
 
@@ -66,14 +67,15 @@ export const updateLeadById = async (req, res, next) => {
     const { lead } = req.body;
     const leadId = req.params.id;
 
-    const phone = lead.contact.replace(/\D/g, "");
-    const isContactValid = validator.isMobilePhone(phone, "en-IN");
+    if (lead.contact.startsWith("+91")) {
+      const phone = lead.contact.replace(/\D/g, "");
+      const isContactValid = validator.isMobilePhone(phone, "en-IN");
 
-    if (!isContactValid) {
-      return res.json({ Message: "Please check contact details." });
+      if (!isContactValid) {
+        return res.json({ Message: "Please check contact details." });
+      }
     }
-
-    if (lead.alternateContact) {
+    if (lead.alternateContact && lead.alternateContact.startsWith("+91")) {
       const altPhone = lead.alternateContact.replace(/\D/g, "");
       const isAltContactValid = validator.isMobilePhone(altPhone, "en-IN");
 
