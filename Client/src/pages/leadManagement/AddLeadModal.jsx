@@ -327,7 +327,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-3">
-            <button onClick={handleClose} className="text-gray-600">
+            <button onClick={()=>handleStepClick(1)} className="text-gray-600">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>

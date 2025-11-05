@@ -465,7 +465,7 @@ const FollowUpManagement = () => {
 
                                     {/* Comments */}
                                     <td className="px-6 py-4 text-left text-sm text-gray-900 flex-wrap">
-                                        <div className="max-w-[200px] mx-auto break-words">
+                                        <div className="max-w-[170px] mx-auto break-words">
                                             {formatComment(followUp.Comments)}
                                         </div>
                                     </td>

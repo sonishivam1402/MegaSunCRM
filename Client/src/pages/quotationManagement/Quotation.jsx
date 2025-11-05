@@ -451,7 +451,7 @@ const Quotation = ({ refreshKey }) => {
                         <tr className="border-b border-gray-300">
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">QUOTATION DETAILS</th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">QUOTATION BY</th>
-                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">LEAD DETAILS</th>
+                            <th className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">LEAD DETAILS</th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ITEM</th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">AMOUNT</th>
                             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">TYPE</th>
