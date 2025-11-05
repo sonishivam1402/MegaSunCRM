@@ -74,7 +74,8 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess, id }) => {
         tax: '18%',
         totalAmount: '106.20',
         description: '',
-        isExternalProduct: false
+        isExternalProduct: false,
+        manuallyEntered: false
     }]);
     const [expectedDispatchDays, setExpectedDispatchDays] = useState('');
     const [paymentTerms, setPaymentTerms] = useState('');
@@ -278,7 +279,8 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess, id }) => {
                         tax: `${gstTax}%`,
                         totalAmount: '0.00',
                         description: '',
-                        isExternalProduct: !product.ProductId && product.ProductName
+                        isExternalProduct: !product.ProductId && product.ProductName,
+                        manuallyEntered: false  // Flag to indicate it came from lead   
                     };
                 });
                 setItemRows(populatedItems);
@@ -350,13 +352,28 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess, id }) => {
                 const updatedRow = { ...row, [field]: value };
 
                 // Auto-populate price and GST when product is selected
+                // Auto-populate price and GST when product is selected
                 if (field === 'itemName' && value) {
                     const selectedProduct = productOptions.find(p => p.productName === value);
                     if (selectedProduct) {
+                        // Product found in list
                         updatedRow.productId = selectedProduct.productId;
                         updatedRow.rate = selectedProduct.price?.toString() || '100';
                         updatedRow.tax = `${selectedProduct.gstTax || 18}%`;
                         updatedRow.isExternalProduct = false;
+                        updatedRow.manuallyEntered = false;
+                    } else {
+                        // Custom product name entered by user
+                        updatedRow.productId = null;
+                        updatedRow.isExternalProduct = true;
+                        updatedRow.manuallyEntered = true;  // User typed this
+                        // Keep existing rate and tax or set defaults
+                        if (!row.rate || row.rate === '100') {
+                            updatedRow.rate = '100';
+                        }
+                        if (!row.tax || row.tax === '18%') {
+                            updatedRow.tax = '18%';
+                        }
                     }
                 }
 
@@ -410,7 +427,8 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess, id }) => {
             tax: '18%',
             totalAmount: '106.20',
             description: '',
-            isExternalProduct: false
+            isExternalProduct: false,
+            manuallyEntered: false
         }]);
     };
 
@@ -1040,7 +1058,8 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess, id }) => {
                         {itemRows.map((row) => (
                             <tr key={row.id} className="border-b">
                                 <td className="px-3 py-2">
-                                    {row.isExternalProduct ? (
+                                    {row.isExternalProduct && !row.manuallyEntered ? (
+                                        // External product from lead - locked with replace dropdown below
                                         <div className="space-y-1">
                                             <input
                                                 type="text"
@@ -1048,7 +1067,7 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess, id }) => {
                                                 disabled
                                                 className="w-full px-2 py-1 bg-yellow-50 border border-yellow-300 rounded text-sm cursor-not-allowed"
                                             />
-                                            <p className="text-xs text-yellow-700">⚠️ External product</p>
+                                            <p className="text-xs text-yellow-700">⚠️ Product from lead (not in catalog)</p>
                                             <select
                                                 value=""
                                                 onChange={(e) => {
@@ -1058,26 +1077,28 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess, id }) => {
                                                 }}
                                                 className="w-full px-2 py-1 bg-gray-100 rounded text-xs"
                                             >
-                                                <option value="">Replace with product from list...</option>
+                                                <option value="">Replace with product from catalog...</option>
                                                 {productOptions.map(product => (
                                                     <option key={product.productId} value={product.productName}>{product.productName}</option>
                                                 ))}
                                             </select>
                                         </div>
                                     ) : (
-                                        <select
+                                        // Normal + Custom product selection - input with datalist
+                                        <input
+                                            type="text"
+                                            list={`products-${row.id}`}
                                             value={row.itemName}
                                             onChange={(e) => handleItemRowChange(row.id, 'itemName', e.target.value)}
+                                            placeholder="Type or select product"
                                             className="w-full px-2 py-1 bg-gray-100 rounded text-sm"
-                                        >
-                                            <option value="">Select item</option>
-                                            {productOptions.map(product => (
-                                                <option key={product.productId} value={product.productName}>
-                                                    {product.productName}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        />
                                     )}
+                                    <datalist id={`products-${row.id}`}>
+                                        {productOptions.map(product => (
+                                            <option key={product.productId} value={product.productName} />
+                                        ))}
+                                    </datalist>
                                 </td>
                                 <td className="px-3 py-2">
                                     <input
