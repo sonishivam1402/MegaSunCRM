@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { updateUserType, getUserTypeById } from '../../api/userApi.js';
 import { toast } from 'react-toastify';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
 const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
   const [formData, setFormData] = useState({
@@ -46,6 +47,10 @@ const EditUserTypeModal = ({ isOpen, onClose, onUserTypeEdited, userData }) => {
     { id: 'update', name: 'Update', key: 'update' },
     { id: 'delete', name: 'Delete', key: 'delete' }
   ];
+
+  useEscapeKey(() => {
+    if (isOpen) onClose();
+  });
 
   // Fetch user type data when modal opens and userData (userTypeId) is provided
   useEffect(() => {

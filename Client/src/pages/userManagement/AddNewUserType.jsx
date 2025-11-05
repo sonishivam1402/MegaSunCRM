@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { createUserType } from '../../api/userApi.js';
 import { toast } from 'react-toastify';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
 const AddNewUserTypeModal = ({ isOpen, onClose, onUserCreated }) => {
   const [formData, setFormData] = useState({
@@ -38,6 +39,10 @@ const AddNewUserTypeModal = ({ isOpen, onClose, onUserCreated }) => {
     { id: 'update', name: 'Update', key: 'update' },
     { id: 'delete', name: 'Delete', key: 'delete' }
   ];
+
+  useEscapeKey(() => {
+    if (isOpen) onClose();
+  });
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({

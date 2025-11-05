@@ -2,12 +2,17 @@ import React, { useState, useEffect } from 'react';
 import CloseIcon from '../../assets/icons/CloseIcon';
 import { getTargetUsers, createNewTarget } from '../../api/targetApi';
 import { toast } from 'react-toastify';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
 const CreateTarget = ({ isOpen, onClose, onSuccess }) => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [targets, setTargets] = useState({});
+
+    useEscapeKey(() => {
+        if (isOpen) onClose();
+    });
 
     useEffect(() => {
         if (isOpen) {
@@ -19,13 +24,13 @@ const CreateTarget = ({ isOpen, onClose, onSuccess }) => {
         try {
             setLoading(true);
             const response = await getTargetUsers();
-            
+
             if (response?.data && Array.isArray(response.data)) {
                 // First array contains users with TotalTarget property
                 const usersData = response.data[0] || [];
-                
+
                 setUsers(usersData);
-                
+
                 // Pre-fill targets from TotalTarget in user object
                 const initialTargets = {};
                 usersData.forEach(user => {
@@ -117,9 +122,8 @@ const CreateTarget = ({ isOpen, onClose, onSuccess }) => {
                             {users.map((user, index) => (
                                 <div
                                     key={user.UserId}
-                                    className={`grid grid-cols-3 gap-6 px-6 py-4 ${
-                                        index !== users.length - 1 ? 'border-b border-gray-200' : ''
-                                    }`}
+                                    className={`grid grid-cols-3 gap-6 px-6 py-4 ${index !== users.length - 1 ? 'border-b border-gray-200' : ''
+                                        }`}
                                 >
                                     {/* User Field */}
                                     <div>

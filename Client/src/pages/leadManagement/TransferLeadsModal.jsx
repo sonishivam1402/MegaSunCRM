@@ -3,12 +3,17 @@ import { getAllUsersDD } from '../../api/userApi';
 import { transferLeads } from '../../api/leadApi';
 import { toast } from 'react-toastify';
 import CloseIcon from "../../assets/icons/CloseIcon";
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
 const TransferLeadsModal = ({ isOpen, onClose, onSuccess, leadsData }) => {
     const [usersOptions, setUsersOptions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [selectedUser, setSelectedUser] = useState('');
+
+    useEscapeKey(() => {
+        if (isOpen) onClose();
+    });
 
     // Fetch users for dropdown
     const getUsers = async () => {

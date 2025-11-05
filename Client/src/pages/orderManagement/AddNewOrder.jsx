@@ -5,6 +5,7 @@ import { createNewOrder } from '../../api/orderApi';
 import { toast } from 'react-toastify';
 import { getQuotationById } from '../../api/quotation';
 import countryStatesData from '../../utils/Country_States.json';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
 const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
     const [currentStep, setCurrentStep] = useState(1);
@@ -86,6 +87,10 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
     const [roundOff, setRoundOff] = useState('0.00');
 
     const [availableStates, setAvailableStates] = useState([]);
+
+    useEscapeKey(() => {
+        if (isOpen) onClose();
+    });
 
     // Update available states when shipping country changes
     useEffect(() => {

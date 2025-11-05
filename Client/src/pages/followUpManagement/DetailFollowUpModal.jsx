@@ -3,12 +3,17 @@ import CloseIcon from '../../assets/icons/CloseIcon';
 import { getFollowUpById } from '../../api/followUpApi';
 import dayjs from 'dayjs';
 import getLabelColor from '../../utils/GetLabelColor';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
 const DetailFollowUpModal = ({ isOpen, onClose, followUp }) => {
   const [followupData, setFollowUpData] = useState([]);
   const [productData, setProductData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('Details');
+
+   useEscapeKey(() => {
+    if (isOpen) onClose();
+  });
 
   const getData = async (id) => {
     setLoading(true);

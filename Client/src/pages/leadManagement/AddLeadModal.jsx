@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
 import { countryCodes } from '../../utils/Country_Codes';
 import countryStatesData from '../../utils/Country_States.json';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
 const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -56,6 +57,10 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
       }
     }
   }, [formData.country]);
+
+  useEscapeKey(() => {
+    if (isOpen) onClose();
+  });
 
   // Set initial states for India on mount
   useEffect(() => {

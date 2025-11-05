@@ -4,10 +4,15 @@ import { getFollowUpById } from '../../api/followUpApi';
 import dayjs from 'dayjs';
 import { getLastFollowupByQuotationId } from '../../api/quotation';
 import getLabelColor from '../../utils/GetLabelColor';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
 const ViewLastFollowUp = ({ isOpen, onClose, followUp }) => {
     const [followUps, setFollowUps] = useState([]);
     const [loading, setLoading] = useState(false);
+
+    useEscapeKey(() => {
+        if (isOpen) onClose();
+    });
 
     const getData = async (id) => {
         setLoading(true);
@@ -15,7 +20,7 @@ const ViewLastFollowUp = ({ isOpen, onClose, followUp }) => {
             const response = await getLastFollowupByQuotationId(id);
             const data = Array.isArray(response[0]) ? response[0] : [];
             setFollowUps(data);
-        
+
         } catch (error) {
             console.error('Error fetching follow-up:', error);
             setFollowUps([]);

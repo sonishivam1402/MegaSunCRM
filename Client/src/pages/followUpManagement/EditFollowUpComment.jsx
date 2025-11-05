@@ -3,22 +3,27 @@ import { getLeadsDD, getAllLeadStatusDD } from '../../api/leadApi';
 import { toast } from 'react-toastify';
 import CloseIcon from "../../assets/icons/CloseIcon";
 import { createFollowUp, updateFollowUpById } from '../../api/followUpApi';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
-const EditFollowUpComment = ({id, comment, isOpen, onClose, onSuccess }) => {
-    
+const EditFollowUpComment = ({ id, comment, isOpen, onClose, onSuccess }) => {
+
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
     const [comments, setComments] = useState('');
-    
+
+    useEscapeKey(() => {
+        if (isOpen) onClose();
+    });
+
     useEffect(() => {
-            if (isOpen) {
-                setLoading(true);
-                setComments(comment || '')                   
-                setLoading(false);
-            }
-        }, [isOpen]);
-    
+        if (isOpen) {
+            setLoading(true);
+            setComments(comment || '')
+            setLoading(false);
+        }
+    }, [isOpen]);
+
 
     // Handle form submission
     const handleSubmit = async () => {

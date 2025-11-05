@@ -405,11 +405,9 @@ const FollowUpManagement = () => {
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex flex-col gap-1">
                                             <div className="flex items-center gap-2">
-                                                <div className='flex flex-wrap'>
-                                                <span className="text-sm font-medium text-gray-900 cursor-pointer hover:text-[#0d4715] break-words">
+                                                <span className="text-sm font-medium text-gray-900 cursor-pointer hover:text-[#0d4715] whitespace-break-spaces break-words">
                                                     {followUp.LeadName || 'N/A'}
                                                 </span>
-                                                </div>
                                                 <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${getLabelColor(followUp.LeadType)}`}>
                                                     {followUp.LeadType || 'N/A'}
                                                 </span>

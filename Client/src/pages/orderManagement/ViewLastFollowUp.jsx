@@ -4,10 +4,15 @@ import { getFollowUpById } from '../../api/followUpApi';
 import dayjs from 'dayjs';
 import { getLastFollowupByOrderId } from '../../api/orderApi';
 import getLabelColor from '../../utils/GetLabelColor';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
 const ViewLastFollowUp = ({ isOpen, onClose, followUp }) => {
     const [followUps, setFollowUps] = useState([]);
     const [loading, setLoading] = useState(false);
+
+    useEscapeKey(() => {
+        if (isOpen) onClose();
+    });
 
     const getData = async (id) => {
         setLoading(true);

@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import CloseIcon from "../../assets/icons/CloseIcon";
 import { createFollowUp } from '../../api/followUpApi';
 import { Search } from 'lucide-react';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
 const AddNewFollowUp = ({ isOpen, onClose, onSuccess, followUp }) => {
     const [leads, setLeads] = useState([]);
@@ -67,6 +68,10 @@ const AddNewFollowUp = ({ isOpen, onClose, onSuccess, followUp }) => {
             toast.error('Failed to load statuses');
         }
     };
+
+    useEscapeKey(() => {
+        if (isOpen) onClose();
+    });
 
     // Load data on mount
     useEffect(() => {

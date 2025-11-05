@@ -2,12 +2,17 @@ import React, { useState, useEffect } from 'react';
 import CloseIcon from '../../assets/icons/CloseIcon';
 import { getLeadById } from '../../api/leadApi';
 import getLabelColor from '../../utils/GetLabelColor';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
 const LeadDetailModal = ({ isOpen, onClose, leadId }) => {
   const [leadData, setLeadData] = useState([]);
   const [productData, setProductData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('Details');
+
+  useEscapeKey(() => {
+    if (isOpen) onClose();
+  });
 
   const getData = async (id) => {
     setLoading(true);
@@ -88,7 +93,7 @@ const LeadDetailModal = ({ isOpen, onClose, leadId }) => {
                   <div className="flex items-center">
                     <span className="text-sm text-gray-700 w-32 flex-shrink-0">Lead phone number</span>
                     <span className="text-sm text-gray-500 mx-3">:</span>
-                    <span className="text-sm font-medium text-gray-900">{leadData.LeadPhoneNumber || 'N/A'} {leadData["Alternate Number"] ? ", "+ leadData["Alternate Number"] :""}</span>
+                    <span className="text-sm font-medium text-gray-900">{leadData.LeadPhoneNumber || 'N/A'} {leadData["Alternate Number"] ? ", " + leadData["Alternate Number"] : ""}</span>
                   </div>
 
                   {/* Lead Email */}
@@ -115,7 +120,7 @@ const LeadDetailModal = ({ isOpen, onClose, leadId }) => {
                         .map(part => part.trim())
                         .filter(Boolean) // removes empty parts
                         .join(', ')
-                      : 'N/A'}</span>
+                        : 'N/A'}</span>
                   </div>
 
                   {/* Lead address */}

@@ -3,6 +3,7 @@ import { getQuotationById, updateQuotationById } from '../../api/quotation';
 import { getAllProducts } from '../../api/productApi';
 import { toast } from 'react-toastify';
 import countryStatesData from '../../utils/Country_States.json';
+import { useEscapeKey } from '../../utils/useEscapeKey';
 
 const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -79,6 +80,10 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
   const [roundOff, setRoundOff] = useState('0.00');
 
   const [availableStates, setAvailableStates] = useState([]);
+
+  useEscapeKey(() => {
+    if (isOpen) onClose();
+  });
 
   // Update available states when shipping country changes
   useEffect(() => {
@@ -733,20 +738,20 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
         </div>
 
         <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Pincode</label>
-        <input
-          type="text"
-          value={shippingDetails.pincode}
-          onChange={(e) => {
-            const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-            setShippingDetails({ ...shippingDetails, pincode: value });
-            clearFieldError('pincode');
-          }}
-          placeholder="123456"
-          className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.pincode ? 'border-2 border-red-500' : ''}`}
-        />
-        {validationErrors.pincode && (<p className="text-red-500 text-sm mt-1">{validationErrors.pincode}</p>)}
-      </div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Pincode</label>
+          <input
+            type="text"
+            value={shippingDetails.pincode}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+              setShippingDetails({ ...shippingDetails, pincode: value });
+              clearFieldError('pincode');
+            }}
+            placeholder="123456"
+            className={`w-full px-4 py-3 bg-gray-200 rounded-md text-sm ${validationErrors.pincode ? 'border-2 border-red-500' : ''}`}
+          />
+          {validationErrors.pincode && (<p className="text-red-500 text-sm mt-1">{validationErrors.pincode}</p>)}
+        </div>
 
       </div>
     </div>
