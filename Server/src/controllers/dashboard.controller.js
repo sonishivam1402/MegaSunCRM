@@ -26,3 +26,27 @@ export const getDashboardDetails = async (req, res, next) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
+export const getProductsByRange = async (req, res) => {
+  try {
+    const pool = await poolPromise;
+    const { startDate, endDate } = req.query;
+    // console.log(startDate, endDate);
+    const result = await pool
+      .request()
+      .input("StartDate", sql.Date, startDate || null)
+      .input("EndDate", sql.Date, endDate || null)
+      .input("UserID", sql.UniqueIdentifier, req.user.id)
+      .execute("sp_GetDashboardProductByRange");
+
+    // result.recordset[0].ResultJson now holds the full JSON string
+    const jsonText = result.recordset[0].ResultJson;
+    const data = JSON.parse(jsonText);
+
+    res.json(data);
+  } catch (err) {
+    console.error("Error fetching dashboard details:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
