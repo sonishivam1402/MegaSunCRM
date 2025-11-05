@@ -456,7 +456,11 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                         <input
                           type="tel"
                           value={formData.contact}
-                          onChange={(e) => { const v = e.target.value; if (/^\d*$/.test(v)) handleInputChange('contact', v); }}
+                          onChange={(e) => { const v = e.target.value; 
+                            if (/^\d*$/.test(v)){
+                              if (formData.countryCode === '+91' && v.length > 10) return;
+                              handleInputChange('contact', v); }}
+                            }
                           placeholder="XXXXXXXXXX"
                           className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('contact') || (attemptedNext && formData.contact && !isContactValid()) ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'} ${invalidRing('contact')}`}
                         />
@@ -485,7 +489,11 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                         <input
                           type="tel"
                           value={formData.alternateContact}
-                          onChange={(e) => { const v = e.target.value; if (/^\d*$/.test(v)) handleInputChange('alternateContact', v); }}
+                          onChange={(e) => { const v = e.target.value; 
+                            if (/^\d*$/.test(v))
+                            { if (formData.altCountryCode === '+91' && v.length > 10) return; 
+                              handleInputChange('alternateContact', v); }}
+                            }
                           placeholder="XXXXXXXXXX"
                           className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${!isContactValid() ? 'bg-red-100' : 'bg-gray-200 focus:bg-white'}`}
                         />
@@ -752,7 +760,7 @@ const EditLeadModal = ({ isOpen, onClose, onSuccess, leadId }) => {
                                   <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                 </div>
                               </div>
-                              <input type="number" value={product.Quantity || 1} onChange={(e) => updateProduct(index, 'Quantity', e.target.value)} placeholder="Qty" min="1" className="w-20 px-3 py-3 bg-gray-200 border-0 rounded text-gray-700 outline-none focus:ring-0 focus:bg-white" />
+                              <input type="number" value={product.Quantity} onChange={(e) => updateProduct(index, 'Quantity', e.target.value)} placeholder="Qty" className="w-20 px-3 py-3 bg-gray-200 border-0 rounded text-gray-700 outline-none focus:ring-0 focus:bg-white" />
                               {formData.productMappings.length > 1 && (
                                 <button onClick={() => removeProduct(index)} className="p-3 text-red-600 hover:text-red-800 transition-colors"><TrashIcon size={16} /></button>
                               )}
