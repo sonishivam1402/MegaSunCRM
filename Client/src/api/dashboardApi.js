@@ -12,3 +12,21 @@ export const getDashboardData = async () => {
     throw err;
   }
 };
+
+// Get Dashboard Products Data
+export const getDashboardProducts = async (startDate, endDate) => {
+  try {
+    const res = await API.get("/dashboard/products",{
+      params : {
+        startDate,
+        endDate
+      }
+    });
+    return res.data;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in fetching dashboard products data : ", err);
+    }
+    throw err;
+  }
+};

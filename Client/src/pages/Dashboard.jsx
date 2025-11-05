@@ -1,32 +1,53 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from "../context/AuthContext";
-import { getDashboardData } from '../api/dashboardApi'
+import { getDashboardData, getDashboardProducts } from '../api/dashboardApi'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
+  const [dashboardProductData, setDashboardProductData] = useState([]);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [loading, setLoading] = useState(true);
   const [analyticsTab, setAnalyticsTab] = useState('targets');
   const [leadStateTab, setLeadStateTab] = useState('chart');
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const response = await getDashboardData();
-        setDashboardData(response.DashboardData);
-        // console.log(response.DashboardData)
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // fetch function
+  const fetchDashboardProductData = async (start, end) => {
+    setLoading(true);
+    try {
+      const response = await getDashboardProducts(start, end);
+      setDashboardProductData(response.DashboardData || []);
+      // console.log("Dashboard data:", response);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const fetchDashboardData = async () => {
+    try {
+      const response = await getDashboardData();
+      setDashboardData(response.DashboardData);
+      // console.log(response.DashboardData)
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [])
+
+  useEffect(() => {
+    fetchDashboardProductData(startDate, endDate);
+  }, [startDate, endDate]);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -112,6 +133,14 @@ const Dashboard = () => {
     );
   };
 
+  const formatValue = (key, value) => {
+    if (key === "ProductCount") return value || 0;
+    return value || "-";
+  };
+
+  // column configuration (you already had a config)
+  const columns = ["SerialNo", "ProductName", "ProductCount"];
+
   return (
     <div className="min-h-screen">
       {/* Header */}
@@ -133,7 +162,7 @@ const Dashboard = () => {
                 {Object.entries(cards || {})
                   .filter(([key]) => permissions[key] === 1)
                   .map(([key, data]) => (
-                    <div key={key} onClick={()=>navigate(data.navigationPath)} className="p-4 border border-gray-200 rounded flex flex-col justify-center w-full hover:cursor-pointer">
+                    <div key={key} onClick={() => navigate(data.navigationPath)} className="p-4 border border-gray-200 rounded flex flex-col justify-center w-full hover:cursor-pointer">
                       <div className="mb-3 flex justify-between items-center">
                         <span className="font-semibold text-gray-800">{getStatusLabel(key)}</span>
                         <div
@@ -345,6 +374,76 @@ const Dashboard = () => {
               {renderTable(analyticsTab)}
             </div>
           )}
+
+
+        {/* Product Table */}
+        <div className="p-6 rounded-sm shadow-md border-t">
+          {/* Header Section */}
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-800">
+              Product Analytics
+            </h2>
+
+            <div className="flex gap-3 items-center">
+              <div className="flex flex-col">
+                <label className="text-xs text-gray-500 mb-1">Start Date</label>
+                <input
+                  type="date"
+                  className="border rounded px-2 py-1 text-sm"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <label className="text-xs text-gray-500 mb-1">End Date</label>
+                <input
+                  type="date"
+                  className="border rounded px-2 py-1 text-sm"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Table Section */}
+          <div
+            className="overflow-y-auto max-h-96 rounded-md"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            <style>{`div::-webkit-scrollbar { display: none; }`}</style>
+
+            {loading ? (
+              <div className="text-center py-8 text-gray-500">Loading...</div>
+            ) : dashboardProductData.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                No product data found.
+              </div>
+            ) : (
+              <table className="w-full text-sm">
+                <thead className="border-b sticky top-0 bg-[#f1f0e9]">
+                  <tr className="text-gray-600 font-semibold">
+                    <th className="text-left py-3 px-2">Serial No.</th>
+                    <th className="text-left py-3 px-2">Product Name</th>
+                    <th className="text-left py-3 px-2">Quantity</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dashboardProductData.map((row, idx) => (
+                    <tr key={idx} className="border-b hover:bg-gray-50">
+                      {columns.map((col) => (
+                        <td key={col} className="py-3 px-2 text-gray-800">
+                          {formatValue(col, row[col])}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
