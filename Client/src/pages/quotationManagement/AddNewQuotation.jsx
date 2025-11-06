@@ -52,6 +52,8 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess, id }) => {
     const [currency, setCurrency] = useState('rupees');
     const [currencySymbol, setCurrencySymbol] = useState('₹');
     const [productOptions, setProductOptions] = useState([]);
+    const [openDropdownId, setOpenDropdownId] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Currency symbol mapping
     const currencySymbols = {
@@ -507,7 +509,10 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess, id }) => {
 
         // Step 5: Grand Total = Net Total + Tax Amount + Round Off
         const roundOffValue = parseFloat(roundOff) || 0;
-        const grandTotal = netTotal + taxAmount + roundOffValue;
+        const packingChargeValue = parseFloat(packingCharge) || 0;
+        const courierChargeValue = parseFloat(courierCharge) || 0;
+        const freightChargeValue = parseFloat(freightCharge) || 0;
+        const grandTotal = netTotal + taxAmount + roundOffValue + packingChargeValue + courierChargeValue + freightChargeValue;
 
         return {
             basicAmount: basicAmount.toFixed(2),
@@ -518,6 +523,9 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess, id }) => {
             igst: igst.toFixed(2),
             taxAmount: taxAmount.toFixed(2),
             roundOff: roundOffValue.toFixed(2),
+            packingCharge: packingChargeValue.toFixed(2),
+            courierCharge: courierChargeValue.toFixed(2),
+            freightCharge: freightChargeValue.toFixed(2),
             grandTotal: grandTotal.toFixed(2)
         };
     };
@@ -1045,7 +1053,7 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess, id }) => {
             </div>
 
             {/* Item Table */}
-            <div className="overflow-x-auto">
+            <div className="overflow-x-visible">
                 <table className="w-full text-sm border-collapse">
                     <thead>
                         <tr className="bg-gray-100">
@@ -1067,45 +1075,96 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess, id }) => {
                                     {row.isExternalProduct && !row.manuallyEntered ? (
                                         // External product from lead - locked with replace dropdown below
                                         <div className="space-y-1">
-                                            <input
-                                                type="text"
-                                                value={row.itemName}
-                                                disabled
-                                                className="w-full px-2 py-1 bg-yellow-50 border border-yellow-300 rounded text-sm cursor-not-allowed"
-                                            />
-                                            <p className="text-xs text-yellow-700">⚠️ Product from lead (not in catalog)</p>
-                                            <select
-                                                value=""
-                                                onChange={(e) => {
-                                                    if (e.target.value) {
-                                                        handleItemRowChange(row.id, 'itemName', e.target.value);
-                                                    }
-                                                }}
-                                                className="w-full px-2 py-1 bg-gray-100 rounded text-xs"
-                                            >
-                                                <option value="">Replace with product from catalog...</option>
-                                                {productOptions.map(product => (
-                                                    <option key={product.productId} value={product.productName}>{product.productName}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    ) : (
-                                        // Normal + Custom product selection - input with datalist
                                         <input
                                             type="text"
-                                            list={`products-${row.id}`}
                                             value={row.itemName}
-                                            onChange={(e) => handleItemRowChange(row.id, 'itemName', e.target.value)}
+                                            disabled
+                                            className="w-full px-2 py-1 bg-yellow-50 border border-yellow-300 rounded text-sm cursor-not-allowed"
+                                        />
+                                        <p className="text-xs text-yellow-700">⚠️ Product from lead (not in catalog)</p>
+                                        <select
+                                            value=""
+                                            onChange={(e) => {
+                                            if (e.target.value) {
+                                                handleItemRowChange(row.id, 'itemName', e.target.value);
+                                            }
+                                            }}
+                                            className="w-full px-2 py-1 bg-gray-100 rounded text-xs"
+                                        >
+                                            <option value="">Replace with product from catalog...</option>
+                                            {productOptions.map(product => (
+                                            <option key={product.productId} value={product.productName}>{product.productName}</option>
+                                            ))}
+                                        </select>
+                                        </div>
+                                    ) : (
+                                        // Normal + Custom product selection - custom dropdown with search
+                                        <div className="relative">
+                                        <input
+                                            type="text"
+                                            value={openDropdownId === row.id ? searchTerm : row.itemName}
+                                            onChange={(e) => {
+                                            setSearchTerm(e.target.value);
+                                            if (openDropdownId !== row.id) {
+                                                setOpenDropdownId(row.id);
+                                            }
+                                            }}
+                                            onFocus={() => {
+                                            setSearchTerm(row.itemName || '');
+                                            setOpenDropdownId(row.id);
+                                            }}
+                                            onBlur={() => {
+                                            setTimeout(() => {
+                                                if (searchTerm && searchTerm !== row.itemName) {
+                                                handleItemRowChange(row.id, 'itemName', searchTerm);
+                                                }
+                                                setOpenDropdownId(null);
+                                                setSearchTerm('');
+                                            }, 200);
+                                            }}
                                             placeholder="Type or select product"
                                             className="w-full px-2 py-1 bg-gray-100 rounded text-sm"
                                         />
+                                        
+                                        {/* Dropdown */}
+                                        {openDropdownId === row.id && (
+                                            <div className="absolute z-[100] w-64 mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto left-0">
+                                            {productOptions
+                                                .filter(product => 
+                                                product.productName.toLowerCase().includes((searchTerm || '').toLowerCase())
+                                                )
+                                                .map(product => (
+                                                <div
+                                                    key={product.productId}
+                                                    onMouseDown={(e) => {
+                                                    e.preventDefault();
+                                                    handleItemRowChange(row.id, 'itemName', product.productName);
+                                                    setOpenDropdownId(null);
+                                                    setSearchTerm('');
+                                                    }}
+                                                    className="px-3 py-2 hover:bg-blue-500 hover:text-white cursor-pointer text-sm"
+                                                >
+                                                    {product.productName}
+                                                </div>
+                                                ))
+                                            }
+                                            {productOptions.filter(product => 
+                                                product.productName.toLowerCase().includes((searchTerm || '').toLowerCase())
+                                            ).length === 0 && searchTerm && (
+                                                <div className="px-3 py-2 text-sm text-gray-500 italic">
+                                                Press Enter or click outside to add "{searchTerm}" as custom product
+                                                </div>
+                                            )}
+                                            {!searchTerm && (
+                                                <div className="px-3 py-2 text-sm text-gray-400">
+                                                Type to search products...
+                                                </div>
+                                            )}
+                                            </div>
+                                        )}
+                                        </div>
                                     )}
-                                    <datalist id={`products-${row.id}`}>
-                                        {productOptions.map(product => (
-                                            <option key={product.productId} value={product.productName} />
-                                        ))}
-                                    </datalist>
-                                </td>
+                                    </td>
                                 <td className="px-3 py-2">
                                     <input
                                         type="text"
