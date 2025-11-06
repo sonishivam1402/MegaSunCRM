@@ -509,7 +509,10 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess, id }) => {
 
         // Step 5: Grand Total = Net Total + Tax Amount + Round Off
         const roundOffValue = parseFloat(roundOff) || 0;
-        const grandTotal = netTotal + taxAmount + roundOffValue;
+        const packingChargeValue = parseFloat(packingCharge) || 0;
+        const courierChargeValue = parseFloat(courierCharge) || 0;
+        const freightChargeValue = parseFloat(freightCharge) || 0;
+        const grandTotal = netTotal + taxAmount + roundOffValue + packingChargeValue + courierChargeValue + freightChargeValue;
 
         return {
             basicAmount: basicAmount.toFixed(2),
@@ -520,6 +523,9 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess, id }) => {
             igst: igst.toFixed(2),
             taxAmount: taxAmount.toFixed(2),
             roundOff: roundOffValue.toFixed(2),
+            packingCharge: packingChargeValue.toFixed(2),
+            courierCharge: courierChargeValue.toFixed(2),
+            freightCharge: freightChargeValue.toFixed(2),
             grandTotal: grandTotal.toFixed(2)
         };
     };

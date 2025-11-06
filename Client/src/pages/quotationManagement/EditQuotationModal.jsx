@@ -49,7 +49,7 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
   const [currencySymbol, setCurrencySymbol] = useState('₹');
   const [productOptions, setProductOptions] = useState([]);
   const [openDropdownId, setOpenDropdownId] = useState(null);
-  const [searchTerm, setSearchTerm] = useState(''); 
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Currency symbol mapping
   const currencySymbols = {
@@ -408,7 +408,11 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
     }
 
     const roundOffValue = parseFloat(roundOff) || 0;
-    const grandTotal = netTotal + taxAmount + roundOffValue;
+    const packingChargeValue = parseFloat(packingCharge) || 0;
+    const courierChargeValue = parseFloat(courierCharge) || 0;
+    const freightChargeValue = parseFloat(freightCharge) || 0;
+    const grandTotal = netTotal + taxAmount + roundOffValue + packingChargeValue + courierChargeValue + freightChargeValue;
+
 
     return {
       basicAmount: basicAmount.toFixed(2),
@@ -419,6 +423,9 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
       igst: igst.toFixed(2),
       taxAmount: taxAmount.toFixed(2),
       roundOff: roundOffValue.toFixed(2),
+      packingCharge: packingChargeValue.toFixed(2),
+      courierCharge: courierChargeValue.toFixed(2),
+      freightCharge: freightChargeValue.toFixed(2),
       grandTotal: grandTotal.toFixed(2)
     };
   };
@@ -920,12 +927,12 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
                         placeholder="Type or select product"
                         className="w-full px-2 py-1 bg-gray-100 rounded text-sm"
                       />
-                      
+
                       {/* Dropdown - CHANGE THIS PART */}
                       {openDropdownId === row.id && (
                         <div className="absolute z-[100] w-64 mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto left-0">
                           {productOptions
-                            .filter(product => 
+                            .filter(product =>
                               product.productName.toLowerCase().includes((searchTerm || '').toLowerCase())
                             )
                             .map(product => (
@@ -943,13 +950,13 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
                               </div>
                             ))
                           }
-                          {productOptions.filter(product => 
+                          {productOptions.filter(product =>
                             product.productName.toLowerCase().includes((searchTerm || '').toLowerCase())
                           ).length === 0 && searchTerm && (
-                            <div className="px-3 py-2 text-sm text-gray-500 italic">
-                              Press Enter or click outside to add "{searchTerm}" as custom product
-                            </div>
-                          )}
+                              <div className="px-3 py-2 text-sm text-gray-500 italic">
+                                Press Enter or click outside to add "{searchTerm}" as custom product
+                              </div>
+                            )}
                           {!searchTerm && (
                             <div className="px-3 py-2 text-sm text-gray-400">
                               Type to search products...
