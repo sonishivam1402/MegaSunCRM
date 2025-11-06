@@ -48,6 +48,8 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
   const [currency, setCurrency] = useState('rupees');
   const [currencySymbol, setCurrencySymbol] = useState('₹');
   const [productOptions, setProductOptions] = useState([]);
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState(''); 
 
   // Currency symbol mapping
   const currencySymbols = {
@@ -846,7 +848,7 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-visible">
         <table className="w-full text-sm border-collapse">
           <thead>
             <tr className="bg-gray-100">
@@ -891,21 +893,72 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
                       </select>
                     </div>
                   ) : (
-                    // Normal + Custom product selection - input with datalist
-                    <input
-                      type="text"
-                      list={`products-${row.id}`}
-                      value={row.itemName}
-                      onChange={(e) => handleItemRowChange(row.id, 'itemName', e.target.value)}
-                      placeholder="Type or select product"
-                      className="w-full px-2 py-1 bg-gray-100 rounded text-sm"
-                    />
+                    // Normal + Custom product selection - custom dropdown with search
+                    <div className="relative"> {/* Keep this relative */}
+                      <input
+                        type="text"
+                        value={openDropdownId === row.id ? searchTerm : row.itemName}
+                        onChange={(e) => {
+                          setSearchTerm(e.target.value);
+                          if (openDropdownId !== row.id) {
+                            setOpenDropdownId(row.id);
+                          }
+                        }}
+                        onFocus={() => {
+                          setSearchTerm(row.itemName || '');
+                          setOpenDropdownId(row.id);
+                        }}
+                        onBlur={() => {
+                          setTimeout(() => {
+                            if (searchTerm && searchTerm !== row.itemName) {
+                              handleItemRowChange(row.id, 'itemName', searchTerm);
+                            }
+                            setOpenDropdownId(null);
+                            setSearchTerm('');
+                          }, 200);
+                        }}
+                        placeholder="Type or select product"
+                        className="w-full px-2 py-1 bg-gray-100 rounded text-sm"
+                      />
+                      
+                      {/* Dropdown - CHANGE THIS PART */}
+                      {openDropdownId === row.id && (
+                        <div className="absolute z-[100] w-64 mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto left-0">
+                          {productOptions
+                            .filter(product => 
+                              product.productName.toLowerCase().includes((searchTerm || '').toLowerCase())
+                            )
+                            .map(product => (
+                              <div
+                                key={product.productId}
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  handleItemRowChange(row.id, 'itemName', product.productName);
+                                  setOpenDropdownId(null);
+                                  setSearchTerm('');
+                                }}
+                                className="px-3 py-2 hover:bg-blue-500 hover:text-white cursor-pointer text-sm"
+                              >
+                                {product.productName}
+                              </div>
+                            ))
+                          }
+                          {productOptions.filter(product => 
+                            product.productName.toLowerCase().includes((searchTerm || '').toLowerCase())
+                          ).length === 0 && searchTerm && (
+                            <div className="px-3 py-2 text-sm text-gray-500 italic">
+                              Press Enter or click outside to add "{searchTerm}" as custom product
+                            </div>
+                          )}
+                          {!searchTerm && (
+                            <div className="px-3 py-2 text-sm text-gray-400">
+                              Type to search products...
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   )}
-                  <datalist id={`products-${row.id}`}>
-                    {productOptions.map(product => (
-                      <option key={product.productId} value={product.productName} />
-                    ))}
-                  </datalist>
                 </td>
                 <td className="px-3 py-2">
                   <input type="text" placeholder="HSN Code" value={row.hsnCode} onChange={(e) => handleItemRowChange(row.id, 'hsnCode', e.target.value)} className="w-20 px-2 py-1 bg-gray-100 rounded text-sm" />
