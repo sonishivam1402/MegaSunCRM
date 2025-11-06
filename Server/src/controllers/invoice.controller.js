@@ -104,7 +104,7 @@ function convertToPDFFormat(dbData) {
     quotation: {
       number: header.SystemGeneratedId,
       date: formattedDate,
-      dispatchDays: dispatchDays.toString(),
+      dispatchDays: header.ExpectedDispatchDays ? header.ExpectedDispatchDays : 'N/A',
       paymentTerms: header.PaymentTerms,
     },
     billTo: {
@@ -148,9 +148,12 @@ function convertToPDFFormat(dbData) {
       sgst: header.SGST || 0,
       cgst: header.CGST || 0,
       igst: header.IGST || 0,
+      packingCharge: header.PackingCharge || 0,
+      freightCharge: header.FreightCharge || 0,
+      courierCharge: header.CourierCharge || 0,
       grandTotal: header.GrandTotal,
       amountInWords: amountInWords,
-      notes: header.Notes
+      notes: header.Notes,
     },
   };
 }
@@ -159,15 +162,29 @@ function convertToPDFFormat(dbData) {
 function generateQuotationHTML(type, trigger, data) {
   const hasDiscount = data.items.some((item) => item.discount > 0);
 
+  // Calculate dynamic height for last row
+  // Default row height is 20px, table should accommodate 10 rows minimum (200px)
+  const itemCount = data.items.length;
+  const defaultRowHeight = 20;
+  const minRowsToShow = 15;
+  const minTableHeight = minRowsToShow * defaultRowHeight; // 200px
+
+  // Calculate the last row height to fill remaining space if items < 10
+  const lastItemHeight =
+    itemCount < minRowsToShow
+      ? (minRowsToShow - itemCount + 1) * defaultRowHeight
+      : defaultRowHeight;
+
   // Generate items HTML
   const itemsHTML = data.items
-    .map((item) => {
+    .map((item, index) => {
       const discountAmount =
         item.discount > 0 ? (item.rate * item.qty * item.discount) / 100 : 0;
       const netAmount = item.basicAmount - discountAmount;
+      const isLastItem = index === data.items.length - 1;
 
       return `
-            <tr class="item-row">
+            <tr class="item-row ${isLastItem ? "last-item" : ""}">
                 <td class="text-center">${item.sr}</td>
                 <td>
                     <strong>${item.name}</strong>
@@ -204,16 +221,31 @@ function generateQuotationHTML(type, trigger, data) {
     taxHTML = `
             <div class="tax-amount">(+ Add Tax) SGST: Rs. ${data.totals.sgst.toLocaleString(
               "en-IN"
-            )}.00</div>
+            )}</div>
             <div class="tax-amount">(+ Add Tax) CGST: Rs. ${data.totals.cgst.toLocaleString(
               "en-IN"
-            )}.00</div>
+            )}</div>
         `;
   } else if (data.totals.taxFormat === "IGST") {
     taxHTML = `<div class="tax-amount">(+ Add Tax) IGST: Rs. ${data.totals.igst.toLocaleString(
       "en-IN"
-    )}.00</div>`;
+    )}</div>`;
   }
+
+ let chargeHtml = `
+  ${data.totals.packingCharge !== 0 
+    ? `<div class="tax-amount">Packing Charge: Rs. ${data.totals.packingCharge.toLocaleString("en-IN")}</div>` 
+    : ""}
+
+  ${data.totals.courierCharge !== 0 
+    ? `<div class="tax-amount">Courier Charge: Rs. ${data.totals.courierCharge.toLocaleString("en-IN")}</div>` 
+    : ""}
+
+  ${data.totals.freightCharge !== 0 
+    ? `<div class="tax-amount">Freight Charge: Rs. ${data.totals.freightCharge.toLocaleString("en-IN")}</div>` 
+    : ""}
+`;
+
 
   return `<!DOCTYPE html>
 <html>
@@ -367,6 +399,14 @@ function generateQuotationHTML(type, trigger, data) {
             //height: auto;
         }
 
+        .items-table .last-item {
+            height: ${lastItemHeight}px !important;
+        }
+
+        .items-table tbody {
+            min-height: ${minTableHeight}px;
+        }
+
         .items-table .total-row td {
           border: 1px solid #000; /* Keep all borders for total row */
         }
@@ -410,14 +450,14 @@ function generateQuotationHTML(type, trigger, data) {
 
         .tax-amount {
             font-size: 8px;
-            padding: 5px 0;
+            // padding: 5px 0;
         }
 
         .grand-total {
             font-weight: bold;
             font-size: 9px;
-            text-align: center;
-            padding: 8px 0;
+            text-align: left;
+            // padding: 8px 0;
         }
 
         .amount-words {
@@ -518,11 +558,23 @@ function generateQuotationHTML(type, trigger, data) {
             </div>
         </div>
 
-        <div class="title-bar">${type == "quotation" ? (trigger == "quotation" ? "SALES QUOTATION" : "PERFORMA INVOICE") : "PERFORMA INVOICE"}</div>
+        <div class="title-bar">${
+          type == "quotation"
+            ? trigger == "quotation"
+              ? "SALES QUOTATION"
+              : "PERFORMA INVOICE"
+            : "PERFORMA INVOICE"
+        }</div>
 
         <div class="info-grid">
             <div class="info-cell">
-                <div class="info-label">Quotation Number:</div>
+                <div class="info-label">${
+                  type == "quotation"
+                    ? trigger == "quotation"
+                      ? "Quotation"
+                      : "Invoice"
+                    : "Invoice"
+                } Number:</div>
                 <div>${data.quotation.number}</div>
             </div>
             <div class="info-cell">
@@ -544,7 +596,9 @@ function generateQuotationHTML(type, trigger, data) {
                 <div class="party-title">Bill To:</div>
                 <div class="party-name">${data.billTo.name}</div>
                 <div>${data.billTo.location}</div>
-                <div class="party-mobile"><strong>Mobile:</strong> ${data.billTo.mobile}</div>
+                <div class="party-mobile"><strong>Mobile:</strong> ${
+                  data.billTo.mobile
+                }</div>
             </div>
             <div class="party-cell">
                 <div class="party-title">Ship To:</div>
@@ -613,9 +667,10 @@ function generateQuotationHTML(type, trigger, data) {
             </div>
             <div class="bottom-cell tax-cell">
                 ${taxHTML}
+                ${chargeHtml}
                 <div class="grand-total">GRAND TOTAL: Rs. ${data.totals.grandTotal.toLocaleString(
                   "en-IN"
-                )}.00</div>
+                )}</div>
             </div>
         </div>
 
@@ -690,7 +745,7 @@ export const getQuotationPdf = async (req, res, next) => {
     const quotationData = convertToPDFFormat({ header, products });
 
     // Generate HTML
-    const html = generateQuotationHTML(type, trigger ,quotationData);
+    const html = generateQuotationHTML(type, trigger, quotationData);
 
     // Launch Puppeteer
     browser = await puppeteer.launch({
