@@ -427,9 +427,9 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                       }}
                       placeholder="XXXXXXXXXX"
                       className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('contact') ||
-                          (attemptedNext && formData.contact && !isContactValid())
-                          ? 'bg-red-100'
-                          : 'bg-gray-200 focus:bg-white'
+                        (attemptedNext && formData.contact && !isContactValid())
+                        ? 'bg-red-100'
+                        : 'bg-gray-200 focus:bg-white'
                         } ${invalidRing('contact')}`}
                     />
                   </div>

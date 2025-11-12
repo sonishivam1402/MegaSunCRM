@@ -11,7 +11,7 @@ const Targets = ({ refreshKey }) => {
   const targetMenus = menus.find(item => item.Name === "Target");
   // State management
   const [targets, setTargets] = useState([]);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(25);
   const [pageNumber, setPageNumber] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -25,7 +25,7 @@ const Targets = ({ refreshKey }) => {
   const totalPages = Math.ceil(totalRecords / pageSize);
 
   // Fetch targets with pagination
-  const fetchTargets = useCallback(async (page = 1, limit = 10) => {
+  const fetchTargets = useCallback(async (page = 1, limit = 25) => {
     try {
       setLoading(true);
       const offset = (page - 1) * limit;
@@ -206,7 +206,7 @@ const Targets = ({ refreshKey }) => {
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
                 className="appearance-none bg-btn-gray hover:cursor-pointer rounded-s-xs px-3 py-1 pr-8 text-sm"
               >
-                <option value={10}>10</option>
+                <option value={25}>25</option>
                 <option value={50}>50</option>
                 <option value={100}>100</option>
                 <option value={200}>200</option>

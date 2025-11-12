@@ -604,16 +604,26 @@ export const transferLeads = async (req, res, next) => {
   try {
     const { data } = req.body;
     const pool = await poolPromise;
+
+    // Ensure leadIds is always an array
+    const leadIdsArray = Array.isArray(data.leadIds)
+      ? data.leadIds
+      : [data.leadIds];
+
     const result = await pool
       .request()
       .input("AssignedTo", sql.UniqueIdentifier, data.selectedUser)
       .input("ModifiedBy", sql.UniqueIdentifier, req.user.id)
-      .input("LeadIdList", sql.NVarChar(sql.MAX), JSON.stringify(data.leadIds))
+      .input("LeadIdList", sql.NVarChar(sql.MAX), JSON.stringify(leadIdsArray))
       .execute("sp_TransferAssignedLeads");
 
-    res.json(result.recordsets[0]);
+    if (result.recordset[0].SUCCESS) {
+      res.status(201).json(result.recordsets[0]);
+    } else {
+      res.json(result.recordsets[0]);
+    }
   } catch (err) {
-    console.error("Error in transfering lead :", err);
+    console.error("Error in transferring leads:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

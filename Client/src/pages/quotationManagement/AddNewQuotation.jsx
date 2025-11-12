@@ -341,6 +341,19 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess, id }) => {
             }
         }
 
+        if (field === 'hsnCode') {
+            const len = value.length;
+
+            if (len > 8) {
+                toast.error('HSN Code cannot exceed 8 characters');
+                return;
+            }
+
+            if (len > 0 && len < 4) {
+                toast.error('HSN Code must be at least 4 characters');
+            }
+        }
+
         // Validate negative values for qty, rate, and discount
         if (['qty', 'rate', 'discount'].includes(field)) {
             const numValue = parseFloat(value);
@@ -542,6 +555,18 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess, id }) => {
 
         if (invalidItems.length > 0) {
             toast.error('All items must have a price greater than zero');
+            setLoading(false);
+            return;
+        }
+
+        const invalidHsnItems = itemRows.filter(row => {
+            const len = row.hsnCode?.length || 0;
+            return len === 0 && (len < 4 || len > 8); // invalid only if 1–3 or >8
+        });
+
+        // If any invalid → block submit
+        if (invalidHsnItems.length > 0) {
+            toast.error("All HSN Codes must be 4 to 8 digits");
             setLoading(false);
             return;
         }
@@ -1075,96 +1100,96 @@ const AddNewQuotationModal = ({ isOpen, onClose, onSuccess, id }) => {
                                     {row.isExternalProduct && !row.manuallyEntered ? (
                                         // External product from lead - locked with replace dropdown below
                                         <div className="space-y-1">
-                                        <input
-                                            type="text"
-                                            value={row.itemName}
-                                            disabled
-                                            className="w-full px-2 py-1 bg-yellow-50 border border-yellow-300 rounded text-sm cursor-not-allowed"
-                                        />
-                                        <p className="text-xs text-yellow-700">⚠️ Product from lead (not in catalog)</p>
-                                        <select
-                                            value=""
-                                            onChange={(e) => {
-                                            if (e.target.value) {
-                                                handleItemRowChange(row.id, 'itemName', e.target.value);
-                                            }
-                                            }}
-                                            className="w-full px-2 py-1 bg-gray-100 rounded text-xs"
-                                        >
-                                            <option value="">Replace with product from catalog...</option>
-                                            {productOptions.map(product => (
-                                            <option key={product.productId} value={product.productName}>{product.productName}</option>
-                                            ))}
-                                        </select>
+                                            <input
+                                                type="text"
+                                                value={row.itemName}
+                                                disabled
+                                                className="w-full px-2 py-1 bg-yellow-50 border border-yellow-300 rounded text-sm cursor-not-allowed"
+                                            />
+                                            <p className="text-xs text-yellow-700">⚠️ Product from lead (not in catalog)</p>
+                                            <select
+                                                value=""
+                                                onChange={(e) => {
+                                                    if (e.target.value) {
+                                                        handleItemRowChange(row.id, 'itemName', e.target.value);
+                                                    }
+                                                }}
+                                                className="w-full px-2 py-1 bg-gray-100 rounded text-xs"
+                                            >
+                                                <option value="">Replace with product from catalog...</option>
+                                                {productOptions.map(product => (
+                                                    <option key={product.productId} value={product.productName}>{product.productName}</option>
+                                                ))}
+                                            </select>
                                         </div>
                                     ) : (
                                         // Normal + Custom product selection - custom dropdown with search
                                         <div className="relative">
-                                        <input
-                                            type="text"
-                                            value={openDropdownId === row.id ? searchTerm : row.itemName}
-                                            onChange={(e) => {
-                                            setSearchTerm(e.target.value);
-                                            if (openDropdownId !== row.id) {
-                                                setOpenDropdownId(row.id);
-                                            }
-                                            }}
-                                            onFocus={() => {
-                                            setSearchTerm(row.itemName || '');
-                                            setOpenDropdownId(row.id);
-                                            }}
-                                            onBlur={() => {
-                                            setTimeout(() => {
-                                                if (searchTerm && searchTerm !== row.itemName) {
-                                                handleItemRowChange(row.id, 'itemName', searchTerm);
-                                                }
-                                                setOpenDropdownId(null);
-                                                setSearchTerm('');
-                                            }, 200);
-                                            }}
-                                            placeholder="Type or select product"
-                                            className="w-full px-2 py-1 bg-gray-100 rounded text-sm"
-                                        />
-                                        
-                                        {/* Dropdown */}
-                                        {openDropdownId === row.id && (
-                                            <div className="absolute z-[100] w-64 mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto left-0">
-                                            {productOptions
-                                                .filter(product => 
-                                                product.productName.toLowerCase().includes((searchTerm || '').toLowerCase())
-                                                )
-                                                .map(product => (
-                                                <div
-                                                    key={product.productId}
-                                                    onMouseDown={(e) => {
-                                                    e.preventDefault();
-                                                    handleItemRowChange(row.id, 'itemName', product.productName);
-                                                    setOpenDropdownId(null);
-                                                    setSearchTerm('');
-                                                    }}
-                                                    className="px-3 py-2 hover:bg-blue-500 hover:text-white cursor-pointer text-sm"
-                                                >
-                                                    {product.productName}
-                                                </div>
-                                                ))
-                                            }
-                                            {productOptions.filter(product => 
-                                                product.productName.toLowerCase().includes((searchTerm || '').toLowerCase())
-                                            ).length === 0 && searchTerm && (
-                                                <div className="px-3 py-2 text-sm text-gray-500 italic">
-                                                Press Enter or click outside to add "{searchTerm}" as custom product
+                                            <input
+                                                type="text"
+                                                value={openDropdownId === row.id ? searchTerm : row.itemName}
+                                                onChange={(e) => {
+                                                    setSearchTerm(e.target.value);
+                                                    if (openDropdownId !== row.id) {
+                                                        setOpenDropdownId(row.id);
+                                                    }
+                                                }}
+                                                onFocus={() => {
+                                                    setSearchTerm(row.itemName || '');
+                                                    setOpenDropdownId(row.id);
+                                                }}
+                                                onBlur={() => {
+                                                    setTimeout(() => {
+                                                        if (searchTerm && searchTerm !== row.itemName) {
+                                                            handleItemRowChange(row.id, 'itemName', searchTerm);
+                                                        }
+                                                        setOpenDropdownId(null);
+                                                        setSearchTerm('');
+                                                    }, 200);
+                                                }}
+                                                placeholder="Type or select product"
+                                                className="w-full px-2 py-1 bg-gray-100 rounded text-sm"
+                                            />
+
+                                            {/* Dropdown */}
+                                            {openDropdownId === row.id && (
+                                                <div className="absolute z-[100] w-64 mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto left-0">
+                                                    {productOptions
+                                                        .filter(product =>
+                                                            product.productName.toLowerCase().includes((searchTerm || '').toLowerCase())
+                                                        )
+                                                        .map(product => (
+                                                            <div
+                                                                key={product.productId}
+                                                                onMouseDown={(e) => {
+                                                                    e.preventDefault();
+                                                                    handleItemRowChange(row.id, 'itemName', product.productName);
+                                                                    setOpenDropdownId(null);
+                                                                    setSearchTerm('');
+                                                                }}
+                                                                className="px-3 py-2 hover:bg-blue-500 hover:text-white cursor-pointer text-sm"
+                                                            >
+                                                                {product.productName}
+                                                            </div>
+                                                        ))
+                                                    }
+                                                    {productOptions.filter(product =>
+                                                        product.productName.toLowerCase().includes((searchTerm || '').toLowerCase())
+                                                    ).length === 0 && searchTerm && (
+                                                            <div className="px-3 py-2 text-sm text-gray-500 italic">
+                                                                Press Enter or click outside to add "{searchTerm}" as custom product
+                                                            </div>
+                                                        )}
+                                                    {!searchTerm && (
+                                                        <div className="px-3 py-2 text-sm text-gray-400">
+                                                            Type to search products...
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
-                                            {!searchTerm && (
-                                                <div className="px-3 py-2 text-sm text-gray-400">
-                                                Type to search products...
-                                                </div>
-                                            )}
-                                            </div>
-                                        )}
                                         </div>
                                     )}
-                                    </td>
+                                </td>
                                 <td className="px-3 py-2">
                                     <input
                                         type="text"
