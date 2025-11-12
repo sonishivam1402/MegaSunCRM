@@ -5,7 +5,7 @@ const Products = () => {
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [pageNumber, setPageNumber] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(25);
   const [totalRecords, setTotalRecords] = useState(0);
   const [loading, setLoading] = useState(false);
 
@@ -18,7 +18,7 @@ const Products = () => {
   const totalPages = useMemo(() => Math.ceil(totalRecords / pageSize), [totalRecords, pageSize]);
 
   // Fetch products function with abort controller
-  const fetchProducts = useCallback(async (search = '', page = 1, size = 10) => {
+  const fetchProducts = useCallback(async (search = '', page = 1, size = 25) => {
     try {
       // Cancel previous request
       if (abortControllerRef.current) {
@@ -350,10 +350,10 @@ const PaginationControls = React.memo(({
           className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           disabled={loading}
         >
-          <option value={10}>10</option>
-          <option value={20}>20</option>
+          <option value={25}>25</option>
           <option value={50}>50</option>
           <option value={100}>100</option>
+          <option value={200}>200</option>
         </select>
         <span className="text-sm text-gray-600">per page</span>
       </div>

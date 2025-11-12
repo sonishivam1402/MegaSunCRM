@@ -10,7 +10,7 @@ const AllUserTypesTab = ({ refreshKey }) => {
     const [userTypes, setUserTypes] = useState([]);
     const [userTypeInfo, setUserTypeInfo] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [recordsPerPage, setRecordsPerPage] = useState(10);
+    const [recordsPerPage, setRecordsPerPage] = useState(25);
     const [activeDropdown, setActiveDropdown] = useState(null);
     const [isEditUserTypeModalOpen, setIsEditUserTypeModalOpen] = useState(false);
     const dropdownRefs = useRef({});
@@ -174,10 +174,10 @@ const AllUserTypesTab = ({ refreshKey }) => {
                                 onChange={(e) => handleRecordsPerPageChange(Number(e.target.value))}
                                 className="appearance-none w-full px-1 py-1 text-sm hover:cursor-pointer  "
                             >
-                                <option value={10}>10</option>
                                 <option value={25}>25</option>
                                 <option value={50}>50</option>
                                 <option value={100}>100</option>
+                                <option value={200}>200</option>
                             </select>
                             <img src="/icons/Dropdown.png" alt="Dropdown" className="absolute right-2 ml-2 mt-0.5 w-4 h-2 pointer-events-none opacity-50" />
                         </div>

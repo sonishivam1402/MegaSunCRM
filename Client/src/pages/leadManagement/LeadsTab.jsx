@@ -20,7 +20,7 @@ const LeadsTab = ({ refreshKey }) => {
   // State management
   const [leads, setLeads] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(25);
   const [pageNumber, setPageNumber] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -58,7 +58,7 @@ const LeadsTab = ({ refreshKey }) => {
   const totalPages = Math.ceil(totalRecords / pageSize);
 
   // Fetch leads with pagination, search, and filters
-  const fetchLeads = useCallback(async (search = '', page = 1, limit = 10, status = '', leadTypeId = '', sourceId = '') => {
+  const fetchLeads = useCallback(async (search = '', page = 1, limit = 25, status = '', leadTypeId = '', sourceId = '') => {
     // console.log('API CALL TRIGGERED:', {
     //   search: search,
     //   page: page,
@@ -659,7 +659,7 @@ const LeadsTab = ({ refreshKey }) => {
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
                 className="appearance-none bg-btn-gray hover:cursor-pointer rounded-s-xs px-3 py-1 pr-8 text-sm"
               >
-                <option value={10}>10</option>
+                <option value={25}>25</option>
                 <option value={50}>50</option>
                 <option value={100}>100</option>
                 <option value={200}>200</option>
@@ -752,7 +752,7 @@ const LeadsTab = ({ refreshKey }) => {
           isOpen={editModalOpen}
           onClose={() => setEditModalOpen(false)}
           leadId={selectedLeadId}
-          onSuccess={fetchLeads}
+          onSuccess={()=>{fetchLeads(), setPageNumber(1)}}
         />
       )}
 
@@ -763,7 +763,7 @@ const LeadsTab = ({ refreshKey }) => {
             setTransferLeadModalOpen(false);
             setCheckedLeadIds([]);
           }}
-          onSuccess={fetchLeads}
+          onSuccess={()=>{fetchLeads(), setPageNumber(1)}}
           leadsData={checkedLeadIds} // Array of lead objects
         />
       )}

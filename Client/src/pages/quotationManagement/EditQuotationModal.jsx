@@ -293,6 +293,19 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
       }
     }
 
+    if (field === 'hsnCode') {
+      const len = value.length;
+
+      if (len > 8) {
+        toast.error('HSN Code cannot exceed 8 characters');
+        return;
+      }
+
+      if (len > 0 && len < 4) {
+        toast.error('HSN Code must be at least 4 characters');
+      }
+    }
+
     if (['qty', 'rate', 'discount'].includes(field)) {
       const numValue = parseFloat(value);
       if (numValue < 0) {
@@ -442,6 +455,18 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
 
     if (invalidItems.length > 0) {
       toast.error('All items must have a price greater than zero');
+      setLoading(false);
+      return;
+    }
+
+    const invalidHsnItems = itemRows.filter(row => {
+      const len = row.hsnCode?.length || 0;
+      return len === 0 && (len < 4 || len > 8); // invalid only if 1–3 or >8
+    });
+
+    // If any invalid → block submit
+    if (invalidHsnItems.length > 0) {
+      toast.error("All HSN Codes must be 4 to 8 digits");
       setLoading(false);
       return;
     }
