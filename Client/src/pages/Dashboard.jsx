@@ -10,6 +10,7 @@ const Dashboard = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [loading, setLoading] = useState(true);
+  const [productLoading, setProductLoading] = useState(true);
   const [analyticsTab, setAnalyticsTab] = useState('targets');
   const [leadStateTab, setLeadStateTab] = useState('chart');
   const { user } = useAuth();
@@ -17,7 +18,7 @@ const Dashboard = () => {
 
   // fetch function
   const fetchDashboardProductData = async (start, end) => {
-    setLoading(true);
+    setProductLoading(true);
     try {
       const response = await getDashboardProducts(start, end);
       setDashboardProductData(response.DashboardData || []);
@@ -25,7 +26,7 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {
-      setLoading(false);
+      setProductLoading(false);
     }
   };
 
@@ -43,7 +44,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
-  }, [])
+  }, []);
 
   useEffect(() => {
     fetchDashboardProductData(startDate, endDate);
@@ -414,7 +415,7 @@ const Dashboard = () => {
           >
             <style>{`div::-webkit-scrollbar { display: none; }`}</style>
 
-            {loading ? (
+            {productLoading ? (
               <div className="text-center py-8 text-gray-500">Loading...</div>
             ) : dashboardProductData.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
