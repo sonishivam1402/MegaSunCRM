@@ -788,7 +788,7 @@ const LeadsTab = ({ refreshKey }) => {
         <AddNewFollowUp
           isOpen={addFollowUpModalOpen}
           onClose={() => { setAddFollowUpModalOpen(false), setSelectedLeadId(null) }}
-          onSuccess={() => null}
+          onSuccess={()=>{fetchLeads(), setPageNumber(1)}}
           followUp={selectedLeadId}
         />
       )}

@@ -487,6 +487,16 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
         }
     };
 
+    const handleItemRowBlur = (id, field, value) => {
+        if (field === 'hsnCode') {
+            const len = value.length;
+
+            if (len > 0 && len < 4) {
+                toast.error('HSN Code must be at least 4 characters');
+            }
+        }
+    };
+
     const handleItemRowChange = (id, field, value) => {
 
         // Validate quantity must be greater than 0
@@ -504,10 +514,6 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
             if (len > 8) {
                 toast.error('HSN Code cannot exceed 8 characters');
                 return;
-            }
-
-            if (len > 0 && len < 4) {
-                toast.error('HSN Code must be at least 4 characters');
             }
         }
 
@@ -696,7 +702,7 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
 
         const invalidHsnItems = itemRows.filter(row => {
             const len = row.hsnCode?.length || 0;
-            return len === 0 && (len < 4 || len > 8); // invalid only if 1–3 or >8
+            return len > 0 && (len < 4 || len > 8);
         });
 
         // If any invalid → block submit
@@ -1305,7 +1311,11 @@ const AddNewOrderModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
                                         placeholder="HSN Code"
                                         value={row.hsnCode}
                                         onChange={(e) => handleItemRowChange(row.id, 'hsnCode', e.target.value)}
-                                        className="w-20 px-2 py-1 bg-gray-100 rounded text-sm"
+                                        onBlur={(e) => handleItemRowBlur(row.id, 'hsnCode', e.target.value)}
+                                        className={`w-20 px-2 py-1 bg-gray-100 rounded text-sm ${row.hsnCode.length > 0 && row.hsnCode.length < 4
+                                            ? 'border-2 border-red-500'
+                                            : 'border border-gray-300'
+                                            }`}
                                     />
                                 </td>
                                 <td className="px-3 py-2">

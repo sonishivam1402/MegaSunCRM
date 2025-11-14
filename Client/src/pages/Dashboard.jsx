@@ -48,7 +48,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDashboardProductData(startDate, endDate);
-  }, [startDate, endDate]);
+  }, []);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -385,7 +385,7 @@ const Dashboard = () => {
               Product Analytics
             </h2>
 
-            <div className="flex gap-3 items-center">
+            <div className="flex gap-3 items-end">
               <div className="flex flex-col">
                 <label className="text-xs text-gray-500 mb-1">Start Date</label>
                 <input
@@ -405,12 +405,18 @@ const Dashboard = () => {
                   onChange={(e) => setEndDate(e.target.value)}
                 />
               </div>
+              <button
+                onClick={() => fetchDashboardProductData(startDate, endDate)}
+                className="px-4 py-1 h-7.5 bg-green-500 text-white rounded text-sm"
+              >
+                Apply
+              </button>
             </div>
           </div>
 
           {/* Table Section */}
           <div
-            className="overflow-y-auto max-h-96 rounded-md"
+            className="max-h-94 rounded-md"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             <style>{`div::-webkit-scrollbar { display: none; }`}</style>
@@ -422,26 +428,61 @@ const Dashboard = () => {
                 No product data found.
               </div>
             ) : (
-              <table className="w-full text-sm">
-                <thead className="border-b sticky top-0 bg-[#f1f0e9]">
-                  <tr className="text-gray-600 font-semibold">
-                    <th className="text-left py-3 px-2">Serial No.</th>
-                    <th className="text-left py-3 px-2">Product Name</th>
-                    <th className="text-left py-3 px-2">Quantity</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {dashboardProductData.map((row, idx) => (
-                    <tr key={idx} className="border-b hover:bg-gray-50">
-                      {columns.map((col) => (
-                        <td key={col} className="py-3 px-2 text-gray-800">
-                          {formatValue(col, row[col])}
-                        </td>
+              <div className='flex justify-between items-start gap-5'>
+                <div className="w-1/2 max-h-94 overflow-y-auto">
+                  <table className="w-full text-sm">
+                    <thead className="border-b sticky top-0 bg-[#f1f0e9]">
+                      <tr className="text-gray-600 font-semibold">
+                        <th className="text-left py-3 px-2">Serial No.</th>
+                        <th className="text-left py-3 px-2">Product Name</th>
+                        <th className="text-left py-3 px-2">Quantity</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dashboardProductData.map((row, idx) => (
+                        <tr key={idx} className="border-b hover:bg-gray-50">
+                          {columns.map((col) => (
+                            <td key={col} className="py-3 px-2 text-gray-800">
+                              {formatValue(col, row[col])}
+                            </td>
+                          ))}
+                        </tr>
                       ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="w-1/2 flex flex-col items-center">
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie
+                        data={dashboardProductData.sort((a, b) => b.ProductCount - a.ProductCount).slice(0, 5)}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={90}
+                        paddingAngle={2}
+                        dataKey="ProductCount"
+                      >
+                        {dashboardProductData.sort((a, b) => b.ProductCount - a.ProductCount).slice(0, 5).map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value, name, props) => [value, props.payload.ProductName]} />
+                    </PieChart>
+                  </ResponsiveContainer>
+
+                  <div className="flex flex-col gap-2 mt-2 text-xs w-full">
+                    {dashboardProductData.sort((a, b) => b.value - a.value).slice(0, 5).map((item, idx) => (
+                      <div key={idx} className="flex items-center justify-between gap-5">
+                        <div className="w-3 h-3 rounded" style={{ backgroundColor: COLORS[idx % COLORS.length] }}></div>
+                        <span className="text-gray-600 truncate">{item.ProductName}</span>
+                        <span className="text-gray-800 font-semibold ml-auto">{item.ProductCount}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </div>

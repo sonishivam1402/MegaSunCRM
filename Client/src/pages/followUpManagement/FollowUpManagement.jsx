@@ -655,7 +655,7 @@ const FollowUpManagement = () => {
                 <AddNewFollowUp
                     isOpen={addFollowUpModalOpen}
                     onClose={() => { setAddFollowUpModalOpen(false), setSelectedFollowUp(null) }}
-                    onSuccess={() => {fetchFollowUps(), setPageNumber(1)}}
+                    onSuccess={() => {fetchFollowUps('', activeFilter, 1, pageSize)}}
                     followUp={selectedFollowUp}
                 />
             )}
@@ -666,7 +666,7 @@ const FollowUpManagement = () => {
                     comment={selectedFollowUp?.Comments}
                     isOpen={editFollowUpModalOpen}
                     onClose={() => { setEditFollowUpModalOpen(false), setSelectedFollowUp(null) }}
-                    onSuccess={() => fetchFollowUps()}
+                    onSuccess={() => fetchFollowUps('', activeFilter, 1, pageSize)}
                 />
             )}
 

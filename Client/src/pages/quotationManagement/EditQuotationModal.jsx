@@ -284,6 +284,16 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
+  const handleItemRowBlur = (id, field, value) => {
+    if (field === 'hsnCode') {
+      const len = value.length;
+
+      if (len > 0 && len < 4) {
+        toast.error('HSN Code must be at least 4 characters');
+      }
+    }
+  };
+
   const handleItemRowChange = (id, field, value) => {
     if (field === 'qty') {
       const numValue = parseFloat(value);
@@ -299,10 +309,6 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
       if (len > 8) {
         toast.error('HSN Code cannot exceed 8 characters');
         return;
-      }
-
-      if (len > 0 && len < 4) {
-        toast.error('HSN Code must be at least 4 characters');
       }
     }
 
@@ -461,10 +467,9 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
 
     const invalidHsnItems = itemRows.filter(row => {
       const len = row.hsnCode?.length || 0;
-      return len === 0 && (len < 4 || len > 8); // invalid only if 1–3 or >8
+      return len > 0 && (len < 4 || len > 8); // invalid if not empty AND (too short OR too long)
     });
 
-    // If any invalid → block submit
     if (invalidHsnItems.length > 0) {
       toast.error("All HSN Codes must be 4 to 8 digits");
       setLoading(false);
@@ -993,7 +998,17 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
                   )}
                 </td>
                 <td className="px-3 py-2">
-                  <input type="text" placeholder="HSN Code" value={row.hsnCode} onChange={(e) => handleItemRowChange(row.id, 'hsnCode', e.target.value)} className="w-20 px-2 py-1 bg-gray-100 rounded text-sm" />
+                  <input
+                    type="text"
+                    placeholder="HSN Code"
+                    value={row.hsnCode}
+                    onChange={(e) => handleItemRowChange(row.id, 'hsnCode', e.target.value)}
+                    onBlur={(e) => handleItemRowBlur(row.id, 'hsnCode', e.target.value)}
+                    className={`w-20 px-2 py-1 bg-gray-100 rounded text-sm ${row.hsnCode.length > 0 && row.hsnCode.length < 4
+                      ? 'border-2 border-red-500'
+                      : 'border border-gray-300'
+                      }`}
+                  />
                 </td>
                 <td className="px-3 py-2">
                   <input type="number" value={row.qty} onChange={(e) => handleItemRowChange(row.id, 'qty', e.target.value)} className="w-16 px-2 py-1 bg-gray-100 rounded text-sm" />
