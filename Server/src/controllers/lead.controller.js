@@ -121,6 +121,26 @@ export const updateLeadById = async (req, res, next) => {
   }
 };
 
+export const mobileBlurValidation = async (req, res, next) => {
+  try {
+    const contact = req.query.contact;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("Contact", sql.NVarChar, contact)
+      .execute("sp_LeadsBlurValidation");
+
+    if (result.recordset[0].Success) {
+      res.status(201).json(result.recordsets[0]);
+    } else {
+      res.json(result.recordsets[0]);
+    }
+  } catch (err) {
+    console.error("Error in checking lead contact details :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // Get all leads
 export const getAllLeads = async (req, res, next) => {
   try {
@@ -148,6 +168,37 @@ export const getAllLeads = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all leads :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get all todays leads
+export const getTodaysLeads = async (req, res, next) => {
+  try {
+    const {
+      search = "",
+      limit = 10,
+      offset = 0,
+      status,
+      leadTypeId,
+      sourceId,
+      userId,
+    } = req.query;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("SearchParameter", sql.NVarChar(100), search)
+      .input("LimitParameter", sql.Int, parseInt(limit))
+      .input("OffsetParameter", sql.Int, parseInt(offset))
+      .input("StatusParam", sql.UniqueIdentifier, status)
+      .input("LeadTypeId", sql.UniqueIdentifier, leadTypeId)
+      .input("LeadSourceId", sql.UniqueIdentifier, sourceId)
+      .input("UserId", sql.UniqueIdentifier, userId)
+      .execute("sp_GetTodaysLeads");
+
+    res.json(result.recordsets);
+  } catch (err) {
+    console.error("Error in fetching all todays leads :", err);
     res.status(500).json({ message: "Server error" });
   }
 };

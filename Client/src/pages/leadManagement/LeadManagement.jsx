@@ -13,6 +13,7 @@ import OpenIcon from '../../assets/icons/OpenIcon';
 import { exportLeads } from '../../api/leadApi';
 import { useAuth } from '../../context/AuthContext';
 import ImportLeadModal from './ImportLeadModal';
+import TodaysLeadTab from './todaysLeadTab';
 
 const LeadManagement = () => {
 
@@ -75,6 +76,7 @@ const LeadManagement = () => {
 
     const tabs = [
         { id: 'leads', label: 'All Leads', component: LeadsTab, btnLabel: "Create New Lead", openModal: () => setAddLeadModalOpen(true) },
+        { id: 'todaysLeads', label: 'Todays Leads', component: TodaysLeadTab, btnLabel: "Create New Lead", openModal: () => setAddLeadModalOpen(true) },
         { id: 'newLeads', label: 'New Leads', component: NewLeadsTab, btnLabel: "Import New Lead", openModal: () => setImportLeadModalOpen(true) },
         { id: 'leadTypes', label: 'Lead Types', component: LeadTypeTab, btnLabel: "Create New Type", openModal: () => setAddTypeModalOpen(true) },
         { id: 'leadSources', label: 'Lead Sources', component: LeadSourceTab, btnLabel: "Create New Source", openModal: () => setAddSourceModalOpen(true) },

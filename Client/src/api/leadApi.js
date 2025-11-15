@@ -15,6 +15,21 @@ export const getAllLeads = async ({ search = "", limit = 10, offset = 0, status,
   }
 };
 
+// Get All todays Leads
+export const getTodaysLeads = async ({ search = "", limit = 10, offset = 0, status, leadTypeId, sourceId, userId }) => {
+  try {
+    const res = await API.get("/lead/todays", {
+      params: { search, limit, offset, status, leadTypeId, sourceId, userId },
+    });
+    return res.data;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in fetching all todays leads", err);
+    }
+    throw err;
+  }
+};
+
 // Get All Leads for Dropdown
 export const getLeadsDD = async () => {
   try {
@@ -338,6 +353,21 @@ export const transferLeads = async (data) => {
   } catch (err) {
     if (err.response && err.response.status !== 401) {
       console.error("Error in transfering leads", err);
+    }
+    throw err;
+  }
+};
+
+// Validate contact already exist
+export const checkContact = async (contact) => {
+  try {
+    const res = await API.get(`/lead/contactValidate`, {
+      params: { contact }
+    });
+    return res;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in validating contact", err);
     }
     throw err;
   }

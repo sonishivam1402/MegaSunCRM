@@ -4,12 +4,14 @@ import { transferLeads } from '../../api/leadApi';
 import { toast } from 'react-toastify';
 import CloseIcon from "../../assets/icons/CloseIcon";
 import { useEscapeKey } from '../../utils/useEscapeKey';
+import { useAuth } from '../../context/AuthContext';
 
-const TransferLeadsModal = ({ isOpen, onClose, onSuccess, leadsData }) => {
+const TransferLeadsModal = ({ isOpen, onClose, onSuccess, leadsData, page }) => {
     const [usersOptions, setUsersOptions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
-    const [selectedUser, setSelectedUser] = useState('');
+    const { user } = useAuth();
+    const [selectedUser, setSelectedUser] = useState(user.IsAdmin ? '' : page == "leads" ? '' : user.UserId);
 
     useEscapeKey(() => {
         if (isOpen) onClose();
@@ -36,6 +38,7 @@ const TransferLeadsModal = ({ isOpen, onClose, onSuccess, leadsData }) => {
 
     // Handle transfer
     const handleTransfer = async () => {
+
         if (!selectedUser) {
             toast.error('Please select a user');
             return;
@@ -190,16 +193,31 @@ const TransferLeadsModal = ({ isOpen, onClose, onSuccess, leadsData }) => {
                                 </label>
                                 <div className="relative">
                                     <select
-                                        value={selectedUser}
+                                        value={user.IsAdmin ? selectedUser : page == "leads" ? selectedUser : user.UserId}
                                         onChange={(e) => setSelectedUser(e.target.value)}
                                         className="w-full appearance-none bg-white rounded-sm px-4 py-2.5 pr-10 text-sm border border-gray-300"
                                     >
-                                        <option value="">Select user</option>
-                                        {usersOptions.map((user) => (
-                                            <option key={user.UserId} value={user.UserId}>
-                                                {user.Name || user.UserName}
-                                            </option>
-                                        ))}
+                                        {user.IsAdmin ? (
+                                            <>
+                                                <option value="">Select user</option>
+                                                {usersOptions.map((user) => (
+                                                    <option key={user.UserId} value={user.UserId}>
+                                                        {user.Name || user.UserName}
+                                                    </option>
+                                                ))}
+                                            </>
+                                        ) : page == "leads" ?
+                                            <>
+                                                <option value="">Select user</option>
+                                                {usersOptions.map((user) => (
+                                                    <option key={user.UserId} value={user.UserId}>
+                                                        {user.Name || user.UserName}
+                                                    </option>
+                                                ))}
+                                            </>
+                                            : (
+                                                <option value={user.UserId}>{user.Name}</option>
+                                            )}
                                     </select>
                                     <img
                                         src="/icons/Dropdown.png"

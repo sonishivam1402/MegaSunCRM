@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import CloseIcon from '../../assets/icons/CloseIcon';
 import AddIcon from '../../assets/icons/AddIcon';
 import TrashIcon from '../../assets/icons/TrashIcon';
-import { getAllLeadSourcesDD, getAllLeadStatusDD, getAllLeadTypesDD, createNewLead } from '../../api/leadApi';
+import { getAllLeadSourcesDD, getAllLeadStatusDD, getAllLeadTypesDD, createNewLead, checkContact } from '../../api/leadApi';
 import { getAllUsersDD } from '../../api/userApi';
 import { getProductOptions } from '../../api/productApi';
 import { toast } from 'react-toastify';
@@ -137,6 +137,18 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
       }));
     }
   }, [user.UserId, user.IsAdmin]);
+
+  const handleContactValidation = async (countryCode, contact) => {
+    contact = countryCode+"-"+contact;
+    try {
+      const response = await checkContact(contact);
+      if (response.status == 201) {
+        toast.error(response.data[0].Message);
+      }
+    } catch (error) {
+      toast.error('Failed to check contact validation');
+    }
+  }
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -332,7 +344,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-3">
-            <button onClick={()=>handleStepClick(1)} className="text-gray-600">
+            <button onClick={() => handleStepClick(1)} className="text-gray-600">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -425,6 +437,7 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
                           handleInputChange('contact', value);
                         }
                       }}
+                      onBlur={(e) => handleContactValidation(formData.countryCode, e.target.value)}
                       placeholder="XXXXXXXXXX"
                       className={`w-full px-4 py-3 border-0 rounded text-gray-700 placeholder-gray-500 outline-none focus:ring-0 ${isFieldInvalid('contact') ||
                         (attemptedNext && formData.contact && !isContactValid())
