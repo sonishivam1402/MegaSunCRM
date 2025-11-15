@@ -172,7 +172,6 @@ export const countryCodes = [
   { code: "+256", flag: "🇺🇬", name: "Uganda" },
   { code: "+380", flag: "🇺🇦", name: "Ukraine" },
   { code: "+971", flag: "🇦🇪", name: "United Arab Emirates" },
-  { code: "+44", flag: "🇬🇧", name: "United Kingdom" },
   { code: "+1", flag: "🇺🇸", name: "United States" },
   { code: "+598", flag: "🇺🇾", name: "Uruguay" },
   { code: "+998", flag: "🇺🇿", name: "Uzbekistan" },

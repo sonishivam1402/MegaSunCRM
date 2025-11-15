@@ -166,3 +166,18 @@ export const getAllUsersDD = async () => {
     throw err;
   }
 }; 
+
+// Validate contact already exist
+export const checkContact = async (contact) => {
+  try {
+    const res = await API.get(`/user/contact`, {
+      params: { contact }
+    });
+    return res;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in validating contact", err);
+    }
+    throw err;
+  }
+};

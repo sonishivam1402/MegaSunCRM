@@ -566,3 +566,23 @@ export const getUsersForDropdown = async (req, res, next) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const userMobileBlurValidation = async (req, res, next) => {
+  try {
+    const contact = req.query.contact;
+    const pool = await poolPromise;
+    const result = await pool
+      .request()
+      .input("Contact", sql.NVarChar, contact)
+      .execute("sp_UserContactBlurValidation");
+
+    if (result.recordset[0].Success) {
+      res.status(201).json(result.recordsets[0]);
+    } else {
+      res.json(result.recordsets[0]);
+    }
+  } catch (err) {
+    console.error("Error in checking user contact details :", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};

@@ -13,6 +13,18 @@ export const getDashboardData = async () => {
   }
 };
 
+export const getDashboardLeadershipData = async () => {
+  try {
+    const res = await API.get("/dashboard/users");
+    return res.data;
+  } catch (err) {
+    if (err.response && err.response.status !== 401) {
+      console.error("Error in fetching dashboard leadership data : ", err);
+    }
+    throw err;
+  }
+};
+
 // Get Dashboard Products Data
 export const getDashboardProducts = async (startDate, endDate) => {
   try {

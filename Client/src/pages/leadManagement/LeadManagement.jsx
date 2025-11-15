@@ -14,16 +14,19 @@ import { exportLeads } from '../../api/leadApi';
 import { useAuth } from '../../context/AuthContext';
 import ImportLeadModal from './ImportLeadModal';
 import TodaysLeadTab from './todaysLeadTab';
+import AddNewFollowUp from '../followUpManagement/AddNewFollowUp';
 
 const LeadManagement = () => {
 
     const [activeTab, setActiveTab] = useState('leads');
     const [loading, setLoading] = useState(false);
     const [addLeadModalOpen, setAddLeadModalOpen] = useState(false);
+    const [addFollowUpModalOpen, setAddFollowUpModalOpen] = useState(false);
     const [importLeadModalOpen, setImportLeadModalOpen] = useState(false);
     const [addTypeModalOpen, setAddTypeModalOpen] = useState(false);
     const [addStatusModalOpen, setAddStatusModalOpen] = useState(false);
     const [addSourceModalOpen, setAddSourceModalOpen] = useState(false);
+    const [selectedLeadId, setSelectedLeadId] = useState(null);
     const [refreshKey, setRefreshKey] = useState(0);
     const { user, menus } = useAuth();
 
@@ -31,6 +34,11 @@ const LeadManagement = () => {
 
     const handleNewCreatedData = () => {
         setRefreshKey(prev => prev + 1);
+    };
+
+    const handleFollowUp = (leadData) => {
+        setSelectedLeadId(leadData)
+        setAddFollowUpModalOpen(true)
     };
 
     const handleExport = async () => {
@@ -149,7 +157,7 @@ const LeadManagement = () => {
                 <AddLeadModal
                     isOpen={addLeadModalOpen}
                     onClose={() => setAddLeadModalOpen(false)}
-                    onSuccess={handleNewCreatedData}
+                    onSuccess={(leadData)=>{handleNewCreatedData(); handleFollowUp(leadData);}}
                 />
             )}
 
@@ -184,6 +192,15 @@ const LeadManagement = () => {
                     isOpen={importLeadModalOpen}
                     onClose={() => setImportLeadModalOpen(false)}
                     onSuccess={handleNewCreatedData}
+                />
+            )}
+
+            {addFollowUpModalOpen && (
+                <AddNewFollowUp
+                    isOpen={addFollowUpModalOpen}
+                    onClose={() => { setAddFollowUpModalOpen(false), setSelectedLeadId(null) }}
+                    onSuccess={handleNewCreatedData}
+                    followUp={selectedLeadId}
                 />
             )}
 
