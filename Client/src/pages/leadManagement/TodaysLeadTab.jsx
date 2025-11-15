@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { deleteLeadById, getAllLeads, getAllLeadSourcesDD, getAllLeadStatusDD, getAllLeadTypesDD, getAllNewLeads } from '../../api/leadApi';
+import { deleteLeadById, getAllLeads, getAllLeadSourcesDD, getAllLeadStatusDD, getAllLeadTypesDD, getTodaysLeads } from '../../api/leadApi';
 import LeadDetailModal from './LeadDetailModal';
 import EditIcon from "../../assets/icons/EditIcon";
 import AddIcon from "../../assets/icons/AddIcon";
@@ -8,15 +8,15 @@ import WhatsAppIcon from '../../assets/icons/WhatsAppIcon';
 import ThreeDotIcon from '../../assets/icons/ThreeDotIcon';
 import { toast } from 'react-toastify';
 import EditLeadModal from './EditLeadModal';
+import LastFollowUpModal from './LastFollowUpModal';
+import AddNewFollowUp from '../followUpManagement/AddNewFollowUp';
 import { useAuth } from '../../context/AuthContext';
+import HistoryModal from '../followUpManagement/HistoryModal';
 import getLabelColor from '../../utils/GetLabelColor';
 import TransferLeadsModal from './TransferLeadsModal';
-import { transferLeads } from '../../api/leadApi';
+import AddNewQuotationModal from '../quotationManagement/AddNewQuotation';
 
-const NewLeadsTab = ({ refreshKey }) => {
-
-  const { user } = useAuth();
-
+const TodaysLeadTab = ({ refreshKey }) => {
   // State management
   const [leads, setLeads] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -24,7 +24,6 @@ const NewLeadsTab = ({ refreshKey }) => {
   const [pageNumber, setPageNumber] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [checkedLeadIds, setCheckedLeadIds] = useState([]);
 
   // Filters
   const [leadTypeFilter, setLeadTypeFilter] = useState('');
@@ -37,12 +36,20 @@ const NewLeadsTab = ({ refreshKey }) => {
   // Modal and dropdown states
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [lastFollowUpModalOpen, setLastFollowUpModalOpen] = useState(false);
+  const [addFollowUpModalOpen, setAddFollowUpModalOpen] = useState(false);
+  const [addQuotationModalOpen, setAddQuotationModalOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedLeadId, setSelectedLeadId] = useState(null);
   const [transferLeadModalOpen, setTransferLeadModalOpen] = useState(false);
+  const [selectedLeadId, setSelectedLeadId] = useState(null);
+  const [checkedLeadIds, setCheckedLeadIds] = useState([]);
   const dropdownRefs = useRef({});
+  const { user, menus } = useAuth();
+
+  const leadMenu = menus.find(item => item.Name === "My Leads");
+  const followUpMenu = menus.find(item => item.Name === "Followups");
 
   // Debounce timer ref
   const searchTimeoutRef = useRef(null);
@@ -71,7 +78,8 @@ const NewLeadsTab = ({ refreshKey }) => {
       const apiParams = {
         search: search,
         limit: limit,
-        offset: offset
+        offset: offset,
+        userId: user.UserId
       };
 
       // Add status filter if provided
@@ -89,7 +97,7 @@ const NewLeadsTab = ({ refreshKey }) => {
         apiParams.sourceId = sourceId;
       }
 
-      const response = await getAllNewLeads(apiParams);
+      const response = await getTodaysLeads(apiParams);
       // Handle the actual API response structure
       // Response is an array with [leads_array, total_count_array, success_message_array]
       if (response && Array.isArray(response) && response.length >= 2) {
@@ -114,55 +122,6 @@ const NewLeadsTab = ({ refreshKey }) => {
       setLoading(false);
     }
   }, []);
-
-  // Function to handle checkbox change
-  const handleCheckboxChange = (lead) => {
-    setCheckedLeadIds((prevSelected) => {
-      const isAlreadySelected = prevSelected.some(
-        (item) => item.LeadId === lead.LeadId
-      );
-
-      if (isAlreadySelected) {
-        // Remove if already selected
-        return prevSelected.filter((item) => item.LeadId !== lead.LeadId);
-      } else {
-        // Add the whole lead object (Id, Name, Mobile)
-        return [...prevSelected, lead];
-      }
-    });
-  };
-
-  // Handle transfer
-  const handleTransfer = async (leadId) => {
-
-    if (!leadId) {
-      toast.error('Something went Wrong');
-      return;
-    }
-
-    try {
-
-      const data = {
-        selectedUser : user.UserId,
-        leadIds : leadId,
-      };
-
-      const response = await transferLeads(data);
-      if (response.status === 201) {
-        toast.success(response.data.MESSAGE || 'Leads transferred successfully');
-        await fetchLeads();
-      } else {
-        toast.error(
-          response.data?.[0]?.MESSAGE ||
-          response.data?.MESSAGE ||
-          "Something went wrong"
-        );
-      }
-    } catch (err) {
-      console.error('Error transferring leads:', err);
-      toast.error('Failed to transfer leads');
-    }
-  };
 
   // Fetch filter options
   const getLeadTypes = async () => {
@@ -319,8 +278,20 @@ const NewLeadsTab = ({ refreshKey }) => {
     setActiveDropdown(null);
   };
 
+  const handleAdd = (leadId) => {
+    setAddFollowUpModalOpen(true);
+    setSelectedLeadId(leadId);
+    setActiveDropdown(null);
+  };
+
   const handleDetails = (leadId) => {
     setDetailModalOpen(true);
+    setSelectedLeadId(leadId);
+    setActiveDropdown(null);
+  };
+
+  const handleQuotation = (leadId) => {
+    setAddQuotationModalOpen(true);
     setSelectedLeadId(leadId);
     setActiveDropdown(null);
   };
@@ -331,17 +302,28 @@ const NewLeadsTab = ({ refreshKey }) => {
     setActiveDropdown(null);
   };
 
-  // const handleCall = (lead) => {
-  //   console.log('Call lead:', lead);
-  //   // Implement call functionality
-  //   setActiveDropdown(null);
-  // };
+  const handleCall = (leadId) => {
+    setLastFollowUpModalOpen(true)
+    setSelectedLeadId(leadId)
+    setActiveDropdown(null);
+  };
 
-  // const handleWhatsApp = (lead) => {
-  //   console.log('WhatsApp lead:', lead);
-  //   // Implement WhatsApp functionality
-  //   setActiveDropdown(null);
-  // };
+  const handleWhatsApp = (lead) => {
+    if (!lead?.Contact) {
+      console.error("No contact found for this lead");
+      return;
+    }
+
+    // Ensure correct format (without spaces, etc.)
+    const phone = lead.Contact.replace(/\D/g, "");
+
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=91${phone}`;
+
+    // Open in new tab
+    window.open(whatsappUrl, "_blank");
+
+    setActiveDropdown(null);
+  };
 
   const confirmDelete = async () => {
     if (!selectedLeadId) return;
@@ -360,11 +342,28 @@ const NewLeadsTab = ({ refreshKey }) => {
     }
   };
 
+  // Function to handle checkbox change
+  const handleCheckboxChange = (lead) => {
+    setCheckedLeadIds((prevSelected) => {
+      const isAlreadySelected = prevSelected.some(
+        (item) => item.LeadId === lead.LeadId
+      );
+
+      if (isAlreadySelected) {
+        // Remove if already selected
+        return prevSelected.filter((item) => item.LeadId !== lead.LeadId);
+      } else {
+        // Add the whole lead object (Id, Name, Mobile)
+        return [...prevSelected, lead];
+      }
+    });
+  };
+
   const formatProducts = (products) => {
     if (!products || products.length === 0) return 'N/A';
     const productList = products.split(",").map(p => p.trim());
     const displayed = productList.slice(0, 2).join(", ");
-    const extra = productList.length > 2 ? `, ${productList.length - 2} more` : "";
+    const extra = productList.length > 2 ? `, ${productList.length - 2} more..` : "";
 
     return displayed + extra;
   }
@@ -373,7 +372,6 @@ const NewLeadsTab = ({ refreshKey }) => {
     <div className="flex flex-col h-full">
       {/* Filter Controls */}
       <div className="px-6 py-4 flex-shrink-0">
-
         <div className="flex justify-between items-center gap-4">
           <div className="flex items-center gap-4">
             {/* Search */}
@@ -547,7 +545,6 @@ const NewLeadsTab = ({ refreshKey }) => {
                       </div>
                     </td>
                   }
-
                   {/* Lead Source */}
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
                     {lead.LeadSource || 'N/A'}
@@ -562,42 +559,48 @@ const NewLeadsTab = ({ refreshKey }) => {
 
                   {/* Actions */}
                   <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <div className="flex justify-end items-center gap-2">
+                    <div className="flex justify-end items-center gap-1">
                       {/* Call Button */}
-                      {/* <button
-                        onClick={() => handleCall(lead)}
-                        className="p-2 hover:bg-gray-100 rounded-full"
-                        title="Call"
-                      >
-                        <HistoryIcon size={16} />
-                      </button> */}
+                      {followUpMenu?.ReadAccess && (
+                        <button
+                          onClick={() => handleCall(lead.LeadId)}
+                          className="p-2 hover:bg-gray-100 rounded-full"
+                          title="Call"
+                        >
+                          <HistoryIcon size={14} />
+                        </button>
+                      )}
 
                       {/* Edit Button */}
-                      {/* <button
-                        onClick={() => handleEdit(lead.LeadId)}
-                        className="p-2 hover:bg-gray-100 rounded-full"
-                        title="Edit"
-                      >
-                        <EditIcon size={16} />
-                      </button> */}
+                      {leadMenu?.UpdateAccess && (
+                        <button
+                          onClick={() => handleEdit(lead.LeadId)}
+                          className="p-2 hover:bg-gray-100 rounded-full"
+                          title="Edit"
+                        >
+                          <EditIcon size={14} />
+                        </button>
+                      )}
 
                       {/* Add Button */}
-                      {/* <button
-                        onClick={() => handleAdd(lead)}
-                        className="p-2 hover:bg-gray-100 rounded-full"
-                        title="Edit"
-                      >
-                        <AddIcon size={16} />
-                      </button> */}
+                      {followUpMenu?.CreateAccess && (
+                        <button
+                          onClick={() => handleAdd(lead)}
+                          className="p-2 hover:bg-gray-100 rounded-full"
+                          title="Create FollowUp"
+                        >
+                          <AddIcon size={14} />
+                        </button>
+                      )}
 
                       {/* WhatsApp Button */}
-                      {/* <button
+                      <button
                         onClick={() => handleWhatsApp(lead)}
                         className="p-2 hover:bg-gray-100 rounded-full"
                         title="WhatsApp"
                       >
-                        <WhatsAppIcon size={16} />
-                      </button> */}
+                        <WhatsAppIcon size={14} />
+                      </button>
 
                       {/* More Options */}
                       <div className="relative" ref={el => dropdownRefs.current[lead.LeadId] = el}>
@@ -610,7 +613,7 @@ const NewLeadsTab = ({ refreshKey }) => {
 
                         {/* Dropdown Menu */}
                         {activeDropdown === lead.LeadId && (
-                          <div className="absolute right-0 mt-1 w-30 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+                          <div className="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg border border-gray-200 z-50">
                             <div className="py-1">
                               <button
                                 onClick={() => handleDetails(lead.LeadId)}
@@ -619,23 +622,19 @@ const NewLeadsTab = ({ refreshKey }) => {
                                 Details
                               </button>
                               <button
-                                onClick={() => handleTransfer(lead.LeadId)}
+                                onClick={() => handleQuotation(lead.LeadId)}
                                 className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
                               >
-                                Assign To Me
+                                Create Quotation
                               </button>
-                              <button
-                                onClick={() => handleEdit(lead.LeadId)}
-                                className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => handleDelete(lead.LeadId)}
-                                className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
-                              >
-                                Delete
-                              </button>
+                              {leadMenu?.DeleteAccess && (
+                                <button
+                                  onClick={() => handleDelete(lead.LeadId)}
+                                  className="block w-full text-left px-4 py-2 text-sm hover:cursor-pointer text-gray-700 hover:bg-gray-50 transition-colors"
+                                >
+                                  Delete
+                                </button>
+                              )}
                             </div>
                           </div>
                         )}
@@ -731,18 +730,31 @@ const NewLeadsTab = ({ refreshKey }) => {
         </div>
       )}
 
-      <LeadDetailModal
-        isOpen={detailModalOpen}
-        onClose={() => setDetailModalOpen(false)}
-        leadId={selectedLeadId}
-      />
+      {detailModalOpen && (
+        <LeadDetailModal
+          isOpen={detailModalOpen}
+          onClose={() => setDetailModalOpen(false)}
+          leadId={selectedLeadId}
+        />
+      )}
 
-      <EditLeadModal
-        isOpen={editModalOpen}
-        onClose={() => setEditModalOpen(false)}
-        leadId={selectedLeadId}
-        onSuccess={()=>{fetchLeads(), setPageNumber(1)}}
-      />
+      {addQuotationModalOpen && (
+        <AddNewQuotationModal
+          isOpen={addQuotationModalOpen}
+          onClose={() => setAddQuotationModalOpen(false)}
+          onSuccess={()=>null}
+          id={selectedLeadId}
+        />
+      )}
+
+      {editModalOpen && (
+        <EditLeadModal
+          isOpen={editModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          leadId={selectedLeadId}
+          onSuccess={()=>{fetchLeads(), setPageNumber(1)}}
+        />
+      )}
 
       {transferLeadModalOpen && (
         <TransferLeadsModal
@@ -753,7 +765,32 @@ const NewLeadsTab = ({ refreshKey }) => {
           }}
           onSuccess={()=>{fetchLeads(), setPageNumber(1)}}
           leadsData={checkedLeadIds} // Array of lead objects
-          page="newLeads"
+          page = "leads"
+        />
+      )}
+
+      {/* {lastFollowUpModalOpen && (
+        <LastFollowUpModal
+          isOpen={lastFollowUpModalOpen}
+          onClose={() => { setLastFollowUpModalOpen(false), setSelectedLeadId(null) }}
+          leadId={selectedLeadId}
+        />
+      )} */}
+
+      {lastFollowUpModalOpen && (
+        <HistoryModal
+          isOpen={lastFollowUpModalOpen}
+          onClose={() => { setLastFollowUpModalOpen(false), setSelectedLeadId(null) }}
+          followUp={selectedLeadId}
+        />
+      )}
+
+      {addFollowUpModalOpen && (
+        <AddNewFollowUp
+          isOpen={addFollowUpModalOpen}
+          onClose={() => { setAddFollowUpModalOpen(false), setSelectedLeadId(null) }}
+          onSuccess={()=>{fetchLeads(), setPageNumber(1)}}
+          followUp={selectedLeadId}
         />
       )}
 
@@ -761,4 +798,4 @@ const NewLeadsTab = ({ refreshKey }) => {
   );
 };
 
-export default NewLeadsTab;
+export default TodaysLeadTab;

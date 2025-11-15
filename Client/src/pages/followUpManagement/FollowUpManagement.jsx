@@ -43,6 +43,7 @@ const FollowUpManagement = () => {
     // Filter tabs
     const filterTabs = [
         { label: 'All', value: 'All' },
+        { label: 'Todays FollowUp', value: 'Todays' },
         { label: 'Upcoming', value: 'Upcoming' },
         { label: 'Deal Done', value: 'Deal Done' },
         { label: 'Expired', value: 'Expired' },

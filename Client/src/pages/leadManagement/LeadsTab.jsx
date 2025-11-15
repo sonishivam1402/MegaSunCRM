@@ -765,6 +765,7 @@ const LeadsTab = ({ refreshKey }) => {
           }}
           onSuccess={()=>{fetchLeads(), setPageNumber(1)}}
           leadsData={checkedLeadIds} // Array of lead objects
+          page = "leads"
         />
       )}
 

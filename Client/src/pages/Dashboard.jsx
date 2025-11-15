@@ -213,10 +213,13 @@ const Dashboard = () => {
             <div className="p-6 w-full border-r" style={{ paddingBottom: '2rem' }}>
               <h2 className="text-lg font-bold text-gray-800 mb-4">Lead Source Analytics</h2>
               <ResponsiveContainer width="100%" height={Math.max(leadSourceData.length * 40, 180)}>
-                <BarChart data={leadSourceData} layout="vertical" margin={{ top: 20, right: 50 }}>
+                <BarChart data={leadSourceData} margin={{ top: 20, right: 50 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                  <XAxis type="number" />
-                  <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 12 }} />
+                  <XAxis dataKey="name"
+                    type="category"
+                    tick={{ fontSize: 12 }} />
+                  <YAxis type="number"
+                    allowDecimals={false} />
                   <Tooltip />
                   <Bar dataKey="value">
                     {leadSourceData.map((entry, index) => (
@@ -225,7 +228,7 @@ const Dashboard = () => {
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
-              <div className="m-10 text-sm p-10">
+              {/* <div className="m-10 text-sm p-10">
                 {leadSourceData.map((item, idx) => (
                   <div key={idx} className="flex items-center justify-between gap-5">
                     <div className="flex items-center  gap-5">
@@ -235,7 +238,7 @@ const Dashboard = () => {
                     <span className="text-gray-800 font-semibold">{item.value}</span>
                   </div>
                 ))}
-              </div>
+              </div> */}
             </div>
 
 

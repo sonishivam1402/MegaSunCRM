@@ -13,7 +13,7 @@ export const getFollowUps = async (req, res, next) => {
       .input("LimitParameter", sql.Int, parseInt(limit))
       .input("OffsetParameter", sql.Int, parseInt(offset))
       .input("UserId", sql.UniqueIdentifier, userId)
-      .execute("sp_GetFollowups_v2");
+      .execute("sp_GetFollowups_v3");
 
     res.json(result.recordsets);
   } catch (err) {
