@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from "../context/AuthContext";
-import { getDashboardData, getDashboardProducts } from '../api/dashboardApi'
+import { getDashboardData, getDashboardLeadershipData, getDashboardProducts } from '../api/dashboardApi'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
+  const [dashboardLeadershipData, setDashboardLeadershipData] = useState(null);
   const [dashboardProductData, setDashboardProductData] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -42,8 +43,21 @@ const Dashboard = () => {
     }
   };
 
+  const fetchDashboardLeadershipData = async () => {
+    try {
+      const response = await getDashboardLeadershipData();
+      setDashboardLeadershipData(response.LeaderboardData);
+      // console.log(response.LeaderboardData);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchDashboardData();
+    fetchDashboardLeadershipData();
   }, []);
 
   useEffect(() => {
@@ -73,6 +87,31 @@ const Dashboard = () => {
   const getStatusLabel = (name) => {
     if (name === 'followups') return 'Follow ups';
     return name.charAt(0).toUpperCase() + name.slice(1);
+  };
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(value);
+  };
+
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-3 border border-gray-200 rounded shadow-lg">
+          <p className="text-sm font-medium text-gray-900">{payload[0].payload.name}</p>
+          <p className="text-sm text-gray-600">
+            Target: {formatCurrency(payload[0].payload.totalTarget)}
+          </p>
+          <p className="text-sm text-gray-600">
+            Collection: {formatCurrency(payload[0].payload.totalCollection)}
+          </p>
+        </div>
+      );
+    }
+    return null;
   };
 
   const renderTable = (tableKey) => {
@@ -381,7 +420,7 @@ const Dashboard = () => {
 
 
         {/* Product Table */}
-        <div className="p-6 rounded-sm shadow-md border-t">
+        <div className="p-6 rounded-sm border-t">
           {/* Header Section */}
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-800">
@@ -487,6 +526,86 @@ const Dashboard = () => {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+
+        <div className="p-6 border-t">
+          <h2 className="pb-5 text-xl font-semibold text-gray-800">
+            LeaderBoard Analytics
+          </h2>
+          <div className='flex justify-around items-start gap-2'>
+            {dashboardLeadershipData?.all?.length > 0 ? (
+              <ResponsiveContainer width="80%" height={350}>
+                <BarChart data={dashboardLeadershipData.all}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 12, fill: '#6b7280' }}
+                    axisLine={{ stroke: '#e5e7eb' }}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 12, fill: '#6b7280' }}
+                    axisLine={{ stroke: '#e5e7eb' }}
+                    tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar
+                    dataKey="totalCollection"
+                    fill="#6b9080"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-[350px] text-gray-500">
+                No data available.
+              </div>
+            )}
+            <div>
+              {dashboardLeadershipData?.top3?.length > 0 && (
+                <div className="space-y-3">
+                  {dashboardLeadershipData.top3.map((stat, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center border border-gray-200 rounded-md"
+                    >
+                      {/* Rank */}
+                      <div className="w-20 flex items-center justify-center py-6 border-r">
+                        <span className="text-3xl font-semibold text-gray-800">
+                          {stat.rank}.
+                        </span>
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 py-4 px-5">
+                        <p className="text-sm font-medium text-gray-900 mb-1">
+                          {stat.name}
+                        </p>
+                        <p className="text-xl font-semibold text-gray-800">
+                          {formatCurrency(stat.totalCollection)}
+                        </p>
+                      </div>
+
+                      {/* Profile */}
+                      <div className="w-16 h-16 rounded-full overflow-hidden mr-6 border">
+                        {stat.profileImage ? (
+                          <img
+                            src={stat.profileImage}
+                            alt={stat.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-black text-xl font-semibold">
+                            {stat.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
           </div>
         </div>
       </div>

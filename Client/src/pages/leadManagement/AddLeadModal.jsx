@@ -294,8 +294,9 @@ const AddLeadModal = ({ isOpen, onClose, onSuccess }) => {
       try {
         const response = await createNewLead(submitData);
         if (response.status == 201) {
+          const leadData = {LeadId : response.data[0].LeadId, Name : formData.name, Contact : formData.countryCode + "-" + formData.contact};
           toast.success(response.data[0].Message);
-          onSuccess();
+          onSuccess(leadData);
           handleClose();
         }
         else {

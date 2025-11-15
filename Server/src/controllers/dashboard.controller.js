@@ -6,7 +6,7 @@ export const getDashboardDetails = async (req, res, next) => {
         const result = await pool
             .request()
             .input("UserId", sql.UniqueIdentifier, req.user.id)
-            .execute("sp_GetDashboardData_v5");
+            .execute("sp_GetDashboardData_v6");
 
         // Assuming the SP returns [{ DashboardData: '...json string...' }]
         let data = result.recordset[0];
@@ -26,6 +26,34 @@ export const getDashboardDetails = async (req, res, next) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
+export const getDashboardLeadershipData = async (req, res, next) => {
+    try {
+        const pool = await poolPromise;
+        const result = await pool
+            .request()
+            .execute("sp_GetDashboardLeaderboardData");
+
+        // Assuming the SP returns [{ DashboardData: '...json string...' }]
+        let data = result.recordset[0];
+        // console.log(result.recordsets);
+
+        if (data && data.LeaderboardData) {
+            try {
+                data.LeaderboardData = JSON.parse(data.LeaderboardData);
+            } catch (err) {
+                console.error("Error parsing Leaderboard Data JSON:", err);
+            }
+        }
+
+        res.json(data);
+
+    } catch (err) {
+        console.error("Error in fetching dashboard details :", err);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
 
 export const getProductsByRange = async (req, res) => {
   try {

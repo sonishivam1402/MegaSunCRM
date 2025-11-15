@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { createNewUser, getAllUserTypeNames } from '../../api/userApi';
+import { checkContact, createNewUser, getAllUserTypeNames } from '../../api/userApi';
 import { toast } from 'react-toastify';
 import CloseIcon from "../../assets/icons/CloseIcon";
 import { countryCodes } from '../../utils/Country_Codes';
@@ -28,6 +28,18 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
   useEscapeKey(() => {
     if (isOpen) onClose();
   });
+
+  const handleContactValidation = async (countryCode, contact) => {
+    contact = countryCode + "-" + contact;
+    try {
+      const response = await checkContact(contact);
+      if (response.status == 201) {
+        toast.error(response.data[0].Message);
+      }
+    } catch (error) {
+      toast.error('Failed to check contact validation');
+    }
+  }
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -208,6 +220,7 @@ const AddUserModal = ({ isOpen, onClose, onUserCreated }) => {
                       name="contact"
                       value={formData.contact}
                       onChange={handleInputChange}
+                      onBlur={(e) => handleContactValidation(formData.countryCode, e.target.value)}
                       placeholder="XXXXXXXXXX"
                       className={`w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400   bg-gray-50
                      ${submitted && (!formData.contact || !/^[0-9]{10}$/.test(formData.contact)) ? "!border-red-500" : "border-gray-300"} `}
