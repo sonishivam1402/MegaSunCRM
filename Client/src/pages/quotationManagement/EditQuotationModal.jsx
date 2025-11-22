@@ -291,6 +291,10 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
       if (len > 0 && len < 4) {
         toast.error('HSN Code must be at least 4 characters');
       }
+
+      if (len > 8) {
+        toast.error('HSN Code cannot exceed 8 characters');
+      }
     }
   };
 
@@ -299,15 +303,6 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
       const numValue = parseFloat(value);
       if (numValue <= 0) {
         toast.error('Quantity must be greater than 0');
-        return;
-      }
-    }
-
-    if (field === 'hsnCode') {
-      const len = value.length;
-
-      if (len > 8) {
-        toast.error('HSN Code cannot exceed 8 characters');
         return;
       }
     }
@@ -1004,7 +999,7 @@ const EditQuotationModal = ({ isOpen, onClose, onSuccess, quotationId }) => {
                     value={row.hsnCode}
                     onChange={(e) => handleItemRowChange(row.id, 'hsnCode', e.target.value)}
                     onBlur={(e) => handleItemRowBlur(row.id, 'hsnCode', e.target.value)}
-                    className={`w-20 px-2 py-1 bg-gray-100 rounded text-sm ${row.hsnCode.length > 0 && row.hsnCode.length < 4
+                    className={`w-20 px-2 py-1 bg-gray-100 rounded text-sm ${row.hsnCode.length > 0 && row.hsnCode.length < 4 || row.hsnCode.length > 8
                       ? 'border-2 border-red-500'
                       : 'border border-gray-300'
                       }`}
