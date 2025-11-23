@@ -15,6 +15,7 @@ import targetRouter from "./routes/targetRoutes.js";
 import dashboardRouter from "./routes/dashboardRoutes.js";
 import indiaMartRouter from "./routes/indiaMartRoutes.js";
 import notifyRouter from "./routes/notificationRoutes.js";
+import facebookRouter from "./routes/facebookRoutes.js";
 
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
@@ -40,6 +41,7 @@ app.use("/api/order", orderRouter);
 app.use("/api/target", targetRouter);
 app.use("/api/indiaMart", indiaMartRouter);
 app.use("/api/notify", notifyRouter);
+app.use("/facebook", facebookRouter);
 
 app.get("/api/test", (req, res) => {
   res.json({ message: "Hello from backend!" });
