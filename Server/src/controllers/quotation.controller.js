@@ -26,7 +26,13 @@ export const exportQuotations = async (req, res, next) => {
     res.send(csv);
   } catch (err) {
     console.error("Error in exporting quotation details :", err);
-    next(err);
+    const appError = new Error("Failed to export quotations");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -56,7 +62,13 @@ export const getQuotations = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching quotation deatils :", err);
-    next(err);
+    const appError = new Error("Failed to fetch quotations");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -73,7 +85,13 @@ export const getQuotationById = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching quotation deatils by Id :", err);
-    next(err);
+    const appError = new Error("Failed to fetch quotation by ID");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -90,7 +108,13 @@ export const getFollowUpByQuotationId = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching follow up deatils by quotation Id :", err);
-    next(err);
+    const appError = new Error("Failed to fetch follow-up by quotation ID");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -113,7 +137,13 @@ export const deleteQuotationById = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in deleting quotation by Id :", err);
-    next(err);
+    const appError = new Error("Failed to delete quotation");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -178,7 +208,13 @@ export const createNewQuotation = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in creating new quotation :", err);
-    next(err);
+    const appError = new Error("Failed to create quotation");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -244,6 +280,12 @@ export const updateQuotationById = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in updating quotation :", err);
-    next(err);
+    const appError = new Error("Failed to update quotation");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };

@@ -26,7 +26,13 @@ export const exportOrders = async (req, res, next) => {
     res.send(csv);
   } catch (err) {
     console.error("Error in exporting order details :", err);
-    next(err);
+    const appError = new Error("Failed to export orders");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -49,7 +55,13 @@ export const getOrders = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching order deatils :", err);
-    next(err);
+    const appError = new Error("Failed to fetch orders");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -66,7 +78,13 @@ export const getOrderById = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching order deatils by Id :", err);
-    next(err);
+    const appError = new Error("Failed to fetch order by ID");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -83,7 +101,13 @@ export const getFollowUpByOrderId = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching follow up deatils by order Id :", err);
-    next(err);
+    const appError = new Error("Failed to fetch follow-up by order ID");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -112,7 +136,13 @@ export const deleteOrderById = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in deleting order by Id :", err);
-    next(err);
+    const appError = new Error("Failed to delete order");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -136,7 +166,13 @@ export const dispatchOrderById = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in dispatching order by Id :", err);
-    next(err);
+    const appError = new Error("Failed to dispatch order");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -198,7 +234,13 @@ export const createNewOrder = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in creating new order :", err);
-    next(err);
+    const appError = new Error("Failed to create order");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -261,6 +303,12 @@ export const updateOrderById = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in updating order :", err);
-    next(err);
+    const appError = new Error("Failed to update order");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };

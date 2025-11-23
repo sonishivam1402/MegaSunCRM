@@ -15,7 +15,13 @@ export const getTargets = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching target deatils :", err);
-    next(err);
+    const appError = new Error("Failed to fetch targets");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -33,7 +39,13 @@ export const getTargetByUserId = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching target deatil by user id :", err);
-    next(err);
+    const appError = new Error("Failed to fetch target by user ID");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -45,7 +57,13 @@ export const getTargetUsers = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching target users :", err);
-    next(err);
+    const appError = new Error("Failed to fetch target users");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -73,7 +91,13 @@ export const getOrderByUserIdAndMonth = async (req, res, next) => {
       "Error in fetching target deatils by user id and month :",
       err
     );
-    next(err);
+    const appError = new Error("Failed to fetch orders by user ID and month");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -100,7 +124,13 @@ export const createTarget = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in creating target :", err);
-    next(err);
+    const appError = new Error("Failed to create target");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -117,6 +147,12 @@ export const getTargetSalesByUserId = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching target sales deatil by user id :", err);
-    next(err);
+    const appError = new Error("Failed to fetch target sales by user ID");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
