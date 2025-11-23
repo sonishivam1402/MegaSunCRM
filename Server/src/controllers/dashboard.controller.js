@@ -23,7 +23,7 @@ export const getDashboardDetails = async (req, res, next) => {
 
     } catch (err) {
         console.error("Error in fetching dashboard details :", err);
-        res.status(500).json({ message: "Server error" });
+        next(err);
     }
 };
 
@@ -50,7 +50,7 @@ export const getDashboardLeadershipData = async (req, res, next) => {
 
     } catch (err) {
         console.error("Error in fetching dashboard details :", err);
-        res.status(500).json({ message: "Server error" });
+        next(err);
     }
 };
 
@@ -74,7 +74,7 @@ export const getProductsByRange = async (req, res) => {
     res.json(data);
   } catch (err) {
     console.error("Error fetching dashboard details:", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
