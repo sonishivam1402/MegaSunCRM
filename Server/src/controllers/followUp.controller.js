@@ -1,5 +1,6 @@
 import { sql, poolPromise } from "../database/db.js";
 import { Parser } from "json2csv";
+import logger from "../utils/logger.js";
 
 // Get all FollowUps
 export const getFollowUps = async (req, res, next) => {
@@ -18,7 +19,7 @@ export const getFollowUps = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching follow-up deatils :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -38,13 +39,24 @@ export const createNewFollowUp = async (req, res, next) => {
 
     const response = result.recordset[0];
     if (response.Success) {
+      logger.info("FollowUp creation succeed", {
+        requestId: req.id,
+      });
       res.status(201).json(response);
     } else {
+      logger.warn("FollowUp creation failed", {
+        requestId: req.id,
+      });
       res.status(200).json(response); // Or 400 if it's a failure
     }
   } catch (err) {
-    console.error("Error in creating new follow-up :", err);
-    res.status(500).json({ message: "Server error" });
+    const appError = new Error("FollowUp Creation Failed");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -61,7 +73,7 @@ export const getFollowUpByLeadId = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching follow-up deatils by leadId :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -78,7 +90,7 @@ export const getFollowUpByFollowUpId = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching follow-up deatils by Followup Id :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -97,13 +109,19 @@ export const updateFollowUpComment = async (req, res, next) => {
 
     const response = result.recordset[0];
     if (response.Success) {
+      logger.info("FollowUp updation succeed", {
+        requestId: req.id,
+      });
       res.status(201).json(response);
     } else {
+      logger.warn("FollowUp updation failed", {
+        requestId: req.id,
+      });
       res.status(200).json(response); // Or 400 if it's a failure
     }
   } catch (err) {
     console.error("Error in updating follow-up comment :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -120,13 +138,19 @@ export const deleteFollowUpByFollowUpId = async (req, res, next) => {
 
     const response = result.recordset[0];
     if (response.Success) {
+      logger.info("FollowUp deletion succeed", {
+        requestId: req.id,
+      });
       res.status(201).json(response);
     } else {
+      logger.warn("FollowUp deleted failed", {
+        requestId: req.id,
+      });
       res.status(200).json(response); // Or 400 if it's a failure
     }
   } catch (err) {
     console.error("Error in deleting follow-up deatils by Followup Id :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -147,11 +171,15 @@ export const exportFollowUps = async (req, res, next) => {
       `attachment; filename=export_${Date.now()}.csv`
     );
 
+    logger.info("FollowUp exported", {
+      requestId: req.id,
+    });
+
     // Send CSV
     res.send(csv);
   } catch (err) {
     console.error("Error in exporting follow-up deatils :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -168,6 +196,6 @@ export const getLastFollowUpByLeadId = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching follow-up deatils by lead Id :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };

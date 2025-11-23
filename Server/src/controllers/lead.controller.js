@@ -1,6 +1,7 @@
 import { sql, poolPromise } from "../database/db.js";
 import validator from "validator";
 import { Parser } from "json2csv";
+import logger from "../utils/logger.js";
 
 // Create Lead
 export const createLead = async (req, res, next) => {
@@ -51,13 +52,19 @@ export const createLead = async (req, res, next) => {
 
     // console.log(result.recordsets);
     if (result.recordset[0].Success) {
+      logger.info("Lead creation succeed", {
+        requestId: req.id,
+      });
       res.status(201).json(result.recordsets[0]);
     } else {
+      logger.warn("Lead creation failed", {
+        requestId: req.id,
+      });
       res.json(result.recordsets[0]);
     }
   } catch (err) {
     console.error("Error in creating lead :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -111,13 +118,19 @@ export const updateLeadById = async (req, res, next) => {
       .execute("sp_UpdateLeadByLeadId_v1");
 
     if (result.recordset[0].Success) {
+      logger.info("Lead updation succeed", {
+        requestId: req.id,
+      });
       res.status(201).json(result.recordsets[0]);
     } else {
+      logger.info("Lead updation succeed", {
+        requestId: req.id,
+      });
       res.json(result.recordsets[0]);
     }
   } catch (err) {
     console.error("Error in updating lead :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -137,7 +150,7 @@ export const mobileBlurValidation = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in checking lead contact details :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -168,7 +181,7 @@ export const getAllLeads = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all leads :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -199,7 +212,7 @@ export const getTodaysLeads = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all todays leads :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -228,7 +241,7 @@ export const getAllUnassignedLeads = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all leads :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -245,7 +258,7 @@ export const getLeadById = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching lead deatils :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -258,7 +271,7 @@ export const getLeadSources = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all lead sources :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -275,13 +288,19 @@ export const createLeadSource = async (req, res, next) => {
       .execute("sp_CreateLeadSource");
 
     if (result.recordset[0].Success) {
+      logger.info("Lead Source Creation Succeed", {
+        requestId: req.id,
+      });
       res.status(201).json(result.recordsets[0]);
     } else {
+      logger.info("Lead Source Creation failed", {
+        requestId: req.id,
+      });
       res.json(result.recordsets[0]);
     }
   } catch (err) {
     console.error("Error in creating lead sources :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -306,7 +325,7 @@ export const updateLeadSource = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in updating lead sources :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -324,7 +343,7 @@ export const deleteLeadSource = async (req, res, next) => {
     res.json(result.recordsets[0]);
   } catch (err) {
     console.error("Error in deleting lead sources :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -337,7 +356,7 @@ export const getLeadStatus = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all lead status :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -360,7 +379,7 @@ export const createLeadStatus = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in creating lead status :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -385,7 +404,7 @@ export const updateLeadStatus = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in updating lead status :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -403,7 +422,7 @@ export const deleteLeadStatus = async (req, res, next) => {
     res.json(result.recordsets[0]);
   } catch (err) {
     console.error("Error in deleting lead status :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -416,7 +435,7 @@ export const getLeadTypes = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all lead types :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -439,7 +458,7 @@ export const createLeadType = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in creating lead type :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -465,7 +484,7 @@ export const updateLeadType = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in updating lead type :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -483,7 +502,7 @@ export const deleteLeadType = async (req, res, next) => {
     res.json(result.recordsets[0]);
   } catch (err) {
     console.error("Error in deleting lead type :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -496,7 +515,7 @@ export const getLeadSourcesForDropdown = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all lead sources :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -509,7 +528,7 @@ export const getLeadTypesForDropdown = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all lead types :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -522,7 +541,7 @@ export const getLeadStatusForDropdown = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all lead status :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -540,7 +559,7 @@ export const deleteLead = async (req, res, next) => {
     res.json(result.recordsets[0]);
   } catch (err) {
     console.error("Error in deleting lead :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -556,7 +575,7 @@ export const getLeadsForDropdown = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all leads for dropdown :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -577,11 +596,15 @@ export const exportLeads = async (req, res, next) => {
       `attachment; filename=export_${Date.now()}.csv`
     );
 
+    logger.info("Lead Exported Successfully", {
+      requestId: req.id,
+    });
+
     // Send CSV
     res.send(csv);
   } catch (err) {
     console.error("Error in exporting leads deatils :", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
 
@@ -641,6 +664,12 @@ export const importLeads = async (req, res, next) => {
       })),
     };
 
+    logger.info("Lead Imported Successfully", {
+      requestId: req.id,
+      successCount: response.successCount,
+      failedCount: response.failedCount,
+    });
+
     return res.json(response);
   } catch (error) {
     console.error("Import error:", error);
@@ -669,12 +698,18 @@ export const transferLeads = async (req, res, next) => {
       .execute("sp_TransferAssignedLeads");
 
     if (result.recordset[0].SUCCESS) {
+      logger.info("Lead Transfer Successfully", {
+        requestId: req.id,
+      });
       res.status(201).json(result.recordsets[0]);
     } else {
+      logger.warn("Lead Transfer Failed", {
+        requestId: req.id,
+      });
       res.json(result.recordsets[0]);
     }
   } catch (err) {
     console.error("Error in transferring leads:", err);
-    res.status(500).json({ message: "Server error" });
+    next(err);
   }
 };
