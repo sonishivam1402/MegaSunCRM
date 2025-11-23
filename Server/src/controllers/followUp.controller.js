@@ -19,7 +19,13 @@ export const getFollowUps = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching follow-up deatils :", err);
-    next(err);
+    const appError = new Error("Failed to fetch follow-ups");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -50,7 +56,7 @@ export const createNewFollowUp = async (req, res, next) => {
       res.status(200).json(response); // Or 400 if it's a failure
     }
   } catch (err) {
-    const appError = new Error("FollowUp Creation Failed");
+    const appError = new Error("Failed to create follow-up");
     appError.additionalData = {
       sqlMessage: err.message,
       sqlProcName: err.procName,
@@ -73,7 +79,13 @@ export const getFollowUpByLeadId = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching follow-up deatils by leadId :", err);
-    next(err);
+    const appError = new Error("Failed to fetch follow-up by lead ID");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -90,7 +102,13 @@ export const getFollowUpByFollowUpId = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching follow-up deatils by Followup Id :", err);
-    next(err);
+    const appError = new Error("Failed to fetch follow-up by follow-up ID");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -121,7 +139,13 @@ export const updateFollowUpComment = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in updating follow-up comment :", err);
-    next(err);
+    const appError = new Error("Failed to update follow-up comment");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -150,7 +174,13 @@ export const deleteFollowUpByFollowUpId = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in deleting follow-up deatils by Followup Id :", err);
-    next(err);
+    const appError = new Error("Failed to delete follow-up");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -179,7 +209,13 @@ export const exportFollowUps = async (req, res, next) => {
     res.send(csv);
   } catch (err) {
     console.error("Error in exporting follow-up deatils :", err);
-    next(err);
+    const appError = new Error("Failed to export follow-ups");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -196,6 +232,12 @@ export const getLastFollowUpByLeadId = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching follow-up deatils by lead Id :", err);
-    next(err);
+    const appError = new Error("Failed to fetch last follow-up by lead ID");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };

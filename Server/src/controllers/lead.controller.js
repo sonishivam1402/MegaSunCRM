@@ -64,7 +64,13 @@ export const createLead = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in creating lead :", err);
-    next(err);
+    const appError = new Error("Failed to create lead");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -130,7 +136,13 @@ export const updateLeadById = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in updating lead :", err);
-    next(err);
+    const appError = new Error("Failed to update lead");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -150,7 +162,13 @@ export const mobileBlurValidation = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in checking lead contact details :", err);
-    next(err);
+    const appError = new Error("Failed to validate lead contact");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -181,7 +199,13 @@ export const getAllLeads = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all leads :", err);
-    next(err);
+    const appError = new Error("Failed to fetch all leads");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -212,7 +236,13 @@ export const getTodaysLeads = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all todays leads :", err);
-    next(err);
+    const appError = new Error("Failed to fetch today's leads");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -241,7 +271,13 @@ export const getAllUnassignedLeads = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all leads :", err);
-    next(err);
+    const appError = new Error("Failed to fetch unassigned leads");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -258,7 +294,13 @@ export const getLeadById = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching lead deatils :", err);
-    next(err);
+    const appError = new Error("Failed to fetch lead details");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -271,7 +313,13 @@ export const getLeadSources = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all lead sources :", err);
-    next(err);
+    const appError = new Error("Failed to fetch lead sources");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -300,7 +348,13 @@ export const createLeadSource = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in creating lead sources :", err);
-    next(err);
+    const appError = new Error("Failed to create lead source");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -325,7 +379,13 @@ export const updateLeadSource = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in updating lead sources :", err);
-    next(err);
+    const appError = new Error("Failed to update lead source");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -343,7 +403,13 @@ export const deleteLeadSource = async (req, res, next) => {
     res.json(result.recordsets[0]);
   } catch (err) {
     console.error("Error in deleting lead sources :", err);
-    next(err);
+    const appError = new Error("Failed to delete lead source");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -356,7 +422,13 @@ export const getLeadStatus = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all lead status :", err);
-    next(err);
+    const appError = new Error("Failed to fetch lead status");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -379,7 +451,13 @@ export const createLeadStatus = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in creating lead status :", err);
-    next(err);
+    const appError = new Error("Failed to create lead status");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -404,7 +482,13 @@ export const updateLeadStatus = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in updating lead status :", err);
-    next(err);
+    const appError = new Error("Failed to update lead status");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -422,7 +506,13 @@ export const deleteLeadStatus = async (req, res, next) => {
     res.json(result.recordsets[0]);
   } catch (err) {
     console.error("Error in deleting lead status :", err);
-    next(err);
+    const appError = new Error("Failed to delete lead status");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -435,7 +525,13 @@ export const getLeadTypes = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all lead types :", err);
-    next(err);
+    const appError = new Error("Failed to fetch lead types");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -458,7 +554,13 @@ export const createLeadType = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in creating lead type :", err);
-    next(err);
+    const appError = new Error("Failed to create lead type");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -484,7 +586,13 @@ export const updateLeadType = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in updating lead type :", err);
-    next(err);
+    const appError = new Error("Failed to update lead type");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -502,7 +610,13 @@ export const deleteLeadType = async (req, res, next) => {
     res.json(result.recordsets[0]);
   } catch (err) {
     console.error("Error in deleting lead type :", err);
-    next(err);
+    const appError = new Error("Failed to delete lead type");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -515,7 +629,13 @@ export const getLeadSourcesForDropdown = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all lead sources :", err);
-    next(err);
+    const appError = new Error("Failed to fetch lead sources for dropdown");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -528,7 +648,13 @@ export const getLeadTypesForDropdown = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all lead types :", err);
-    next(err);
+    const appError = new Error("Failed to fetch lead types for dropdown");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -541,7 +667,13 @@ export const getLeadStatusForDropdown = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all lead status :", err);
-    next(err);
+    const appError = new Error("Failed to fetch lead status for dropdown");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -559,7 +691,13 @@ export const deleteLead = async (req, res, next) => {
     res.json(result.recordsets[0]);
   } catch (err) {
     console.error("Error in deleting lead :", err);
-    next(err);
+    const appError = new Error("Failed to delete lead");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -575,7 +713,13 @@ export const getLeadsForDropdown = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all leads for dropdown :", err);
-    next(err);
+    const appError = new Error("Failed to fetch leads for dropdown");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -604,7 +748,13 @@ export const exportLeads = async (req, res, next) => {
     res.send(csv);
   } catch (err) {
     console.error("Error in exporting leads deatils :", err);
-    next(err);
+    const appError = new Error("Failed to export leads");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -710,6 +860,12 @@ export const transferLeads = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in transferring leads:", err);
-    next(err);
+    const appError = new Error("Failed to transfer leads");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };

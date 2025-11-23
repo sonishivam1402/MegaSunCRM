@@ -79,7 +79,13 @@ export const signIn = async (req, res) => {
       menus: menusResult.recordset,
     });
   } catch (err) {
-    next(err);
+    const appError = new Error("Failed to sign in");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -119,7 +125,13 @@ export const refreshToken = async (req, res) => {
 
     res.json({ accessToken: newAccessToken });
   } catch (err) {
-    next(err);
+    const appError = new Error("Failed to create new refresh token");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -140,7 +152,13 @@ export const logout = async (req, res) => {
 
     res.json({ message: "Logged out" });
   } catch (err) {
-    next(err);
+    const appError = new Error("Failed to logout");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 

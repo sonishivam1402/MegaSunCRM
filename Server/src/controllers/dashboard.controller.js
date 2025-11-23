@@ -23,7 +23,13 @@ export const getDashboardDetails = async (req, res, next) => {
 
     } catch (err) {
         console.error("Error in fetching dashboard details :", err);
-        next(err);
+        const appError = new Error("Failed to fetch dashboard details");
+        appError.additionalData = {
+          sqlMessage: err.message,
+          sqlProcName: err.procName,
+          sqlNumber: err.number,
+        };
+        return next(appError);
     }
 };
 
@@ -50,7 +56,13 @@ export const getDashboardLeadershipData = async (req, res, next) => {
 
     } catch (err) {
         console.error("Error in fetching dashboard details :", err);
-        next(err);
+        const appError = new Error("Failed to fetch dashboard leadership data");
+        appError.additionalData = {
+          sqlMessage: err.message,
+          sqlProcName: err.procName,
+          sqlNumber: err.number,
+        };
+        return next(appError);
     }
 };
 
@@ -74,7 +86,13 @@ export const getProductsByRange = async (req, res) => {
     res.json(data);
   } catch (err) {
     console.error("Error fetching dashboard details:", err);
-    next(err);
+    const appError = new Error("Failed to fetch products by range");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
