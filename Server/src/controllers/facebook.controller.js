@@ -1,4 +1,3 @@
-    // controllers/facebook.controller.js
 import axios from "axios";
 import { sql, poolPromise } from "../database/db.js";
 import { CREATED_BY_USER_ID, FB_VERIFY_TOKEN, FB_APP_ID, FB_APP_SECRET, FB_ACCESS_TOKEN_ENV, FB_GRAPH_API_VERSION, FACEBOOK_LEAD_SOURCE_NAME } from "../config/env.js";
@@ -203,7 +202,7 @@ async function getValidAccessToken() {
 }
 
 /* ============================================================
-  DB INSERTION FOR LEADS (using your SP)
+  DB INSERTION FOR LEADS
 ============================================================ */
 async function insertFacebookLeadsToDatabase(crmLeads) {
   // crmLeads = array of normalized objects ready for CRM
