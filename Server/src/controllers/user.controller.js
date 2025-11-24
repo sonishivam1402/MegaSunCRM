@@ -46,14 +46,26 @@ export const createNewUser = async (req, res, next) => {
       .execute("sp_CreateNewUser");
 
     if (result.recordset[0].Success) {
+      logger.info("User Created Successfully", {
+        requestId: req.id,
+      });
       res.status(201).json(result.recordset[0]);
     } else {
+      logger.warn("User Creation Failed", {
+        requestId: req.id,
+      });
       res.json(result.recordset[0]);
     }
 
   } catch (err) {
     console.error("Error in creating new user :", err);
-    res.status(500).json({ message: "Server error" });
+    const appError = new Error("Failed to create user");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -75,7 +87,13 @@ export const getAllUsers = async (req, res, next) => {
 
   } catch (err) {
     console.error("Error in fetching all users :", err);
-    res.status(500).json({ message: "Server error" });
+    const appError = new Error("Failed to fetch all users");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -99,7 +117,13 @@ export const getUserById = async (req, res, next) => {
 
   } catch (err) {
     console.error("Error in fetching user deatils :", err);
-    res.status(500).json({ message: "Server error" });
+    const appError = new Error("Failed to fetch user details");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -116,7 +140,13 @@ export const getUserTypeNames = async (req, res, next) => {
 
   } catch (err) {
     console.error("Error in fetching user types :", err);
-    res.status(500).json({ message: "Server error" });
+    const appError = new Error("Failed to fetch user type names");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -145,7 +175,13 @@ export const getUserType = async (req, res, next) => {
 
   } catch (err) {
     console.error("Error in fetching user types:", err);
-    res.status(500).json({ message: "Server error" });
+    const appError = new Error("Failed to fetch user types");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -183,13 +219,25 @@ export const updateUserbyId = async (req, res, next) => {
 
     //console.log(result.recordset[0])
     if (result.recordset[0].Success) {
+      logger.info("User Updated Successfully", {
+        requestId: req.id,
+      });
       res.status(201).json(result.recordset[0]);
     } else {
+      logger.warn("User Updation Failed", {
+        requestId: req.id,
+      });
       res.json(result.recordset[0]);
     }
   } catch (err) {
     console.error("Error in updating user :", err);
-    res.status(500).json({ message: "Server error" });
+    const appError = new Error("Failed to update user");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -217,13 +265,25 @@ export const updateImageByUserId = async (req, res, next) => {
 
     //console.log(result.recordset[0])
     if (result.recordset[0].Success) {
+      logger.info("User Image Updated Successfully", {
+        requestId: req.id,
+      });
       res.status(201).json(result.recordset[0]);
     } else {
+      logger.warn("User Image Updation Failed", {
+        requestId: req.id,
+      });
       res.json(result.recordset[0]);
     }
   } catch (err) {
     console.error("Error in updating image :", err);
-    res.status(500).json({ message: "Server error" });
+    const appError = new Error("Failed to update user image");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -242,14 +302,26 @@ export const updatePassword = async (req, res, next) => {
       .execute("sp_UpdatePassword");
 
     if (result.recordset[0].Success) {
+      logger.info("User Updated Password Successfully", {
+        requestId: req.id,
+      });
       res.status(201).json(result.recordset[0]);
     } else {
+      logger.warn("User Password Updation Failed", {
+        requestId: req.id,
+      });
       res.json(result.recordset[0]);
     }
 
   } catch (err) {
     console.error("Error in updating password :", err);
-    res.status(500).json({ message: "Server error" });
+    const appError = new Error("Failed to update password");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -377,8 +449,14 @@ export const createUserType = async (req, res) => {
       .execute("sp_CreateUserType_v1");
 
     if (result.recordset[0].Success) {
+      logger.info("User Type Created Successfully", {
+        requestId: req.id,
+      });
       res.status(201).json(result.recordset[0]);
     } else {
+      logger.warn("User Type Creation Failed", {
+        requestId: req.id,
+      });
       res.json(result.recordset[0]);
     }
   } catch (err) {
@@ -519,8 +597,14 @@ export const updateUserTypeById = async (req, res) => {
     //console.log(result.recordset[0])
 
     if (result.recordset[0].Success) {
+      logger.info("User Type Updated Successfully", {
+        requestId: req.id,
+      });
       res.status(201).json(result.recordset[0]);
     } else {
+      logger.warn("User Type Updation Failed", {
+        requestId: req.id,
+      });
       res.json(result.recordset[0]);
     }
   } catch (err) {
@@ -549,7 +633,13 @@ export const getUserTypeById = async (req, res, next) => {
 
   } catch (err) {
     console.error("Error in fetching user type by id :", err);
-    res.status(500).json({ message: "Server error" });
+    const appError = new Error("Failed to fetch user type by ID");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -563,7 +653,13 @@ export const getUsersForDropdown = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching all users :", err);
-    res.status(500).json({ message: "Server error" });
+    const appError = new Error("Failed to fetch users for dropdown");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -583,6 +679,12 @@ export const userMobileBlurValidation = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in checking user contact details :", err);
-    res.status(500).json({ message: "Server error" });
+    const appError = new Error("Failed to validate user contact");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };

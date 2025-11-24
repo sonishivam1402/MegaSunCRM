@@ -18,11 +18,21 @@ export const exportQuotations = async (req, res, next) => {
       `attachment; filename=export_${Date.now()}.csv`
     );
 
+    logger.info("Quotation Exported Successfully", {
+      requestId: req.id,
+    });
+
     // Send CSV
     res.send(csv);
   } catch (err) {
     console.error("Error in exporting quotation details :", err);
-    res.status(500).json({ message: "Server error" });
+    const appError = new Error("Failed to export quotations");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -35,7 +45,7 @@ export const getQuotations = async (req, res, next) => {
       limit = 10,
       type,
       assignedTo,
-      userId
+      userId,
     } = req.query;
 
     const pool = await poolPromise;
@@ -52,7 +62,13 @@ export const getQuotations = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching quotation deatils :", err);
-    res.status(500).json({ message: "Server error" });
+    const appError = new Error("Failed to fetch quotations");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -69,7 +85,13 @@ export const getQuotationById = async (req, res, next) => {
     res.json(result.recordsets);
   } catch (err) {
     console.error("Error in fetching quotation deatils by Id :", err);
-    res.status(500).json({ message: "Server error" });
+    const appError = new Error("Failed to fetch quotation by ID");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -85,11 +107,14 @@ export const getFollowUpByQuotationId = async (req, res, next) => {
 
     res.json(result.recordsets);
   } catch (err) {
-    console.error(
-      "Error in fetching follow up deatils by quotation Id :",
-      err
-    );
-    res.status(500).json({ message: "Server error" });
+    console.error("Error in fetching follow up deatils by quotation Id :", err);
+    const appError = new Error("Failed to fetch follow-up by quotation ID");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -112,7 +137,13 @@ export const deleteQuotationById = async (req, res, next) => {
     }
   } catch (err) {
     console.error("Error in deleting quotation by Id :", err);
-    res.status(500).json({ message: "Server error" });
+    const appError = new Error("Failed to delete quotation");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -128,7 +159,11 @@ export const createNewQuotation = async (req, res, next) => {
       .input("QuotationBy", sql.UniqueIdentifier, req.user.id)
       .input("QuotationDate", sql.Date, data.quotationDate)
       .input("ShippingCompanyName", sql.NVarChar(200), data.shippingCompanyName)
-      .input("ShippingEmailAddress", sql.NVarChar(200), data.shippingEmailAddress)
+      .input(
+        "ShippingEmailAddress",
+        sql.NVarChar(200),
+        data.shippingEmailAddress
+      )
       .input("ShippingAddress", sql.NVarChar(sql.MAX), data.shippingAddress)
       .input("ShippingCity", sql.NVarChar(100), data.shippingCity)
       .input("ShippingState", sql.NVarChar(100), data.shippingState)
@@ -161,13 +196,25 @@ export const createNewQuotation = async (req, res, next) => {
     const response = result.recordset[0];
     // console.log(response);
     if (response.Success) {
+      logger.info("Quotation Created Successfully", {
+        requestId: req.id,
+      });
       res.status(201).json(response);
     } else {
+      logger.warn("Quotation Creation Failed", {
+        requestId: req.id,
+      });
       res.status(200).json(response);
     }
   } catch (err) {
     console.error("Error in creating new quotation :", err);
-    res.status(500).json({ message: "Server error" });
+    const appError = new Error("Failed to create quotation");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
 
@@ -184,7 +231,11 @@ export const updateQuotationById = async (req, res, next) => {
       .input("QuotationBy", sql.UniqueIdentifier, data.quotationBy)
       .input("QuotationDate", sql.Date, data.quotationDate)
       .input("ShippingCompanyName", sql.NVarChar(200), data.shippingCompanyName)
-      .input("ShippingEmailAddress", sql.NVarChar(200), data.shippingEmailAddress)
+      .input(
+        "ShippingEmailAddress",
+        sql.NVarChar(200),
+        data.shippingEmailAddress
+      )
       .input("ShippingAddress", sql.NVarChar(sql.MAX), data.shippingAddress)
       .input("ShippingCity", sql.NVarChar(100), data.shippingCity)
       .input("ShippingState", sql.NVarChar(100), data.shippingState)
@@ -217,12 +268,24 @@ export const updateQuotationById = async (req, res, next) => {
     const response = result.recordset[0];
     // console.log(response);
     if (response.Success) {
+      logger.info("Quotation Updated Successfully", {
+        requestId: req.id,
+      });
       res.status(201).json(response);
     } else {
+      logger.warn("Quotation Updation Failed", {
+        requestId: req.id,
+      });
       res.status(200).json(response);
     }
   } catch (err) {
     console.error("Error in updating quotation :", err);
-    res.status(500).json({ message: "Server error" });
+    const appError = new Error("Failed to update quotation");
+    appError.additionalData = {
+      sqlMessage: err.message,
+      sqlProcName: err.procName,
+      sqlNumber: err.number,
+    };
+    return next(appError);
   }
 };
