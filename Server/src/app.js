@@ -15,6 +15,7 @@ import targetRouter from "./routes/targetRoutes.js";
 import dashboardRouter from "./routes/dashboardRoutes.js";
 import indiaMartRouter from "./routes/indiaMartRoutes.js";
 import notifyRouter from "./routes/notificationRoutes.js";
+import facebookRouter from "./routes/facebookRoutes.js";
 import requestLogger from "./middlewares/requestLogger.js";
 import logger from "./utils/logger.js";
 import requestId from "./middlewares/requestId.js";
@@ -40,6 +41,7 @@ app.use("/api/order", orderRouter);
 app.use("/api/target", targetRouter);
 app.use("/api/indiaMart", indiaMartRouter);
 app.use("/api/notify", notifyRouter);
+app.use("/api/facebook", facebookRouter);
 
 app.get("/api/test", (req, res) => {
   logger.info("Test API executed successfully");
