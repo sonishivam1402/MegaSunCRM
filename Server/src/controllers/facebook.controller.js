@@ -1,20 +1,8 @@
     // controllers/facebook.controller.js
 import axios from "axios";
 import { sql, poolPromise } from "../database/db.js";
-import { CREATED_BY_USER_ID } from "../config/env.js";
+import { CREATED_BY_USER_ID, FB_VERIFY_TOKEN, FB_APP_ID, FB_APP_SECRET, FB_ACCESS_TOKEN, FB_GRAPH_API_VERSION, FB_LEAD_SOURCE_NAME, FACEBOOK_LEAD_SOURCE_NAME } from "../config/env.js";
 
-/* ============================================================
-  CONFIG
-============================================================ */
-const FB_VERIFY_TOKEN = process.env.FB_VERIFY_TOKEN || "";
-const FB_APP_ID = process.env.FB_APP_ID || "";
-const FB_APP_SECRET = process.env.FB_APP_SECRET || "";
-const FB_ACCESS_TOKEN_ENV = process.env.FB_ACCESS_TOKEN || "";
-const FB_GRAPH_API_VERSION = process.env.FB_GRAPH_API_VERSION || "v19.0";
-
-// used when calling sp_CreateAPIImportedBulkLeads
-const FACEBOOK_LEAD_SOURCE_NAME =
-  process.env.FB_LEAD_SOURCE_NAME || "Facebook";
 
 /* Token cache (in-memory) */
 let tokenCache = {

@@ -41,7 +41,7 @@ app.use("/api/order", orderRouter);
 app.use("/api/target", targetRouter);
 app.use("/api/indiaMart", indiaMartRouter);
 app.use("/api/notify", notifyRouter);
-app.use("/facebook", facebookRouter);
+app.use("/api/facebook", facebookRouter);
 
 app.get("/api/test", (req, res) => {
   res.json({ message: "Hello from backend!" });
