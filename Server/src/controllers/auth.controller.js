@@ -72,12 +72,25 @@ export const signIn = async (req, res) => {
       requestId: req.id,
     });
 
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: true, // set to false for localhost
+      sameSite: "strict",
+      path: "/",
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      path: "/",
+    });
+
     res.json({
-      accessToken,
-      refreshToken,
       user: userWithoutPassword,
       menus: menusResult.recordset,
     });
+
   } catch (err) {
     const appError = new Error("Failed to sign in");
     appError.additionalData = {
@@ -92,7 +105,7 @@ export const signIn = async (req, res) => {
 // Create Refresh Token
 export const refreshToken = async (req, res) => {
   try {
-    const { refreshToken } = req.body;
+    const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
       logger.warn("Refresh Token failed", {
         requestId: req.id,
@@ -122,8 +135,16 @@ export const refreshToken = async (req, res) => {
       email: tokenData.Email,
       userTypeId: tokenData.UserTypeId,
     });
+  
+    res.cookie("accessToken", newAccessToken, {
+      httpOnly: true,
+      secure: true, 
+      sameSite: "strict",
+      path: "/",
+    });
 
-    res.json({ accessToken: newAccessToken });
+    return res.status(200).json({ message: "Access token refreshed" });
+  
   } catch (err) {
     const appError = new Error("Failed to create new refresh token");
     appError.additionalData = {
@@ -136,21 +157,38 @@ export const refreshToken = async (req, res) => {
 };
 
 // Logout
-export const logout = async (req, res) => {
+export const logout = async (req, res, next) => {
   try {
-    const { refreshToken } = req.body;
-    const pool = await poolPromise;
+    const refreshToken = req.cookies.refreshToken;
 
-    await pool
-      .request()
-      .input("Token", sql.NVarChar, refreshToken)
-      .execute("sp_DeleteRefreshToken");
+    if (refreshToken) {
+      const pool = await poolPromise;
 
-    logger.info("Logout Success", {
-      requestId: req.id,
+      await pool
+        .request()
+        .input("Token", sql.NVarChar, refreshToken)
+        .execute("sp_DeleteRefreshToken");
+    }
+
+    // CLEAR BOTH COOKIES
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      path: "/",
     });
 
-    res.json({ message: "Logged out" });
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      path: "/",
+    });
+
+    logger.info("Logout Success", { requestId: req.id });
+
+    return res.json({ message: "Logged out successfully" });
+
   } catch (err) {
     const appError = new Error("Failed to logout");
     appError.additionalData = {
@@ -161,6 +199,7 @@ export const logout = async (req, res) => {
     return next(appError);
   }
 };
+
 
 // Reusable log function
 async function logActivity(UserId, activityType, attemptedUsername) {

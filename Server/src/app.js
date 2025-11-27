@@ -20,12 +20,14 @@ import requestLogger from "./middlewares/requestLogger.js";
 import logger from "./utils/logger.js";
 import requestId from "./middlewares/requestId.js";
 import { parseErrorStack } from "./utils/parseStack.js";
+import cookieParser from "cookie-parser";
 
 const app = express();
 
 app.use(cors(corsOptions));
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(requestId);
 app.use(requestLogger);
 
