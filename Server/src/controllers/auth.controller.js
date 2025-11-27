@@ -53,6 +53,7 @@ export const signIn = async (req, res) => {
     const refreshToken = generateRefreshToken({
       id: user.UserId,
     });
+
     const expiryDate = new Date();
     expiryDate.setDate(expiryDate.getDate() + 7);
 
@@ -90,7 +91,6 @@ export const signIn = async (req, res) => {
       user: userWithoutPassword,
       menus: menusResult.recordset,
     });
-
   } catch (err) {
     const appError = new Error("Failed to sign in");
     appError.additionalData = {
@@ -120,6 +120,7 @@ export const refreshToken = async (req, res) => {
       .execute("sp_GetRefreshToken");
 
     const tokenData = result.recordset[0];
+
     if (!tokenData || new Date(tokenData.ExpiryDate) < new Date()) {
       logger.warn("Refresh Token failed", {
         requestId: req.id,
@@ -135,16 +136,15 @@ export const refreshToken = async (req, res) => {
       email: tokenData.Email,
       userTypeId: tokenData.UserTypeId,
     });
-  
+
     res.cookie("accessToken", newAccessToken, {
       httpOnly: true,
-      secure: true, 
+      secure: true,
       sameSite: "strict",
       path: "/",
     });
 
     return res.status(200).json({ message: "Access token refreshed" });
-  
   } catch (err) {
     const appError = new Error("Failed to create new refresh token");
     appError.additionalData = {
@@ -188,7 +188,6 @@ export const logout = async (req, res, next) => {
     logger.info("Logout Success", { requestId: req.id });
 
     return res.json({ message: "Logged out successfully" });
-
   } catch (err) {
     const appError = new Error("Failed to logout");
     appError.additionalData = {
@@ -199,7 +198,6 @@ export const logout = async (req, res, next) => {
     return next(appError);
   }
 };
-
 
 // Reusable log function
 async function logActivity(UserId, activityType, attemptedUsername) {

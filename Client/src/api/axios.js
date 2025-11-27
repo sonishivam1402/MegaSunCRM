@@ -21,6 +21,7 @@ API.interceptors.response.use(
         return API(originalRequest);
       } catch (err) {
         console.error("Refresh failed:", err);
+        localStorage.clear();
         window.location.href = "/login";
         return Promise.reject(err);
       }
