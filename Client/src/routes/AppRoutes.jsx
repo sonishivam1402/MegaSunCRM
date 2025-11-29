@@ -6,13 +6,13 @@ import Layout from "../components/Layout";
 import UserDetailsPage from "../pages/userManagement/UserDetail";
 import UserTypeDetail from "../pages/userManagement/UserTypeDetail";
 import UserManagementWrapper from "../pages/userManagement/UserManagementWrapper";
-import Products from "../pages/productManagement/Products";
 import NotFound from "../pages/NotFound";
 import LeadManagement from "../pages/leadManagement/LeadManagement";
 import FollowUpManagement from "../pages/followUpManagement/FollowUpManagement";
 import Quotation from "../pages/quotationManagement/Quotation";
 import Order from "../pages/orderManagement/Orders";
 import Targets from "../pages/targetManagement/Targets";
+import Product from "../pages/productManagement/Product";
 
 export default function AppRoutes() {
 
@@ -43,8 +43,7 @@ export default function AppRoutes() {
         <Route path="/orders" element={<Order/>} />
         <Route path="/target" element={<Targets/>} />
 
-        <Route path="/products" element={<Products />} />
-        
+        <Route path="/products" element={<Product />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
