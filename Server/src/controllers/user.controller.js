@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import uploadFile from '../database/s3.js';
 import validateBit from "../utils/validateBit.js";
 import validator from "validator";
+import logger from "../utils/logger.js";
 
 // Create New User
 export const createNewUser = async (req, res, next) => {

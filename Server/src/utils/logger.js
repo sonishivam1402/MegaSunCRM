@@ -1,6 +1,7 @@
 import winston from "winston";
 import "winston-daily-rotate-file";
 import MSSQLErrorTransport from "./dbTransport.js";
+import {NODE_ENV} from '../config/env.js';
 
 const fileRotateTransport = new winston.transports.DailyRotateFile({
   filename: "logs/app-%DATE%.log",
@@ -11,7 +12,7 @@ const fileRotateTransport = new winston.transports.DailyRotateFile({
 });
 
 const logger = winston.createLogger({
-  level: "http",
+  level: NODE_ENV == 'production' ? "info" : "http",
   format: winston.format.combine(
     winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
     winston.format.json()
