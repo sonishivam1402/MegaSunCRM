@@ -1,10 +1,10 @@
 import API from "./axios";
 
 // Get All Leads
-export const getAllLeads = async ({ search = "", limit = 10, offset = 0, status, leadTypeId, sourceId, userId }) => {
+export const getAllLeads = async ({ search = "", limit = 10, offset = 0, status, leadTypeId, sourceId, userId, startDate, endDate }) => {
   try {
     const res = await API.get("/lead", {
-      params: { search, limit, offset, status, leadTypeId, sourceId, userId },
+      params: { search, limit, offset, status, leadTypeId, sourceId, userId, startDate, endDate },
     });
     return res.data;
   } catch (err) {
@@ -44,10 +44,10 @@ export const getLeadsDD = async () => {
 };
 
 // Get All New Leads
-export const getAllNewLeads = async ({ search = "", limit = 10, offset = 0, status, leadTypeId, sourceId }) => {
+export const getAllNewLeads = async ({ search = "", limit = 10, offset = 0, status, leadTypeId, sourceId, startDate, endDate }) => {
   try {
     const res = await API.get("/lead/newLeads", {
-      params: { search, limit, offset, status, leadTypeId, sourceId },
+      params: { search, limit, offset, status, leadTypeId, sourceId, startDate, endDate },
     });
     return res.data;
   } catch (err) {

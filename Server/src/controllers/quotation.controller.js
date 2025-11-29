@@ -47,6 +47,8 @@ export const getQuotations = async (req, res, next) => {
       type,
       assignedTo,
       userId,
+      startDate,
+      endDate
     } = req.query;
 
     const pool = await poolPromise;
@@ -58,6 +60,8 @@ export const getQuotations = async (req, res, next) => {
       .input("IsDomestic", sql.Bit, parseInt(type))
       .input("AssignedTo", sql.UniqueIdentifier, assignedTo)
       .input("UserId", sql.UniqueIdentifier, userId)
+      .input("StartDate", sql.Date, startDate)
+      .input("EndDate", sql.Date, endDate)
       .execute("sp_GetQuotation");
 
     res.json(result.recordsets);

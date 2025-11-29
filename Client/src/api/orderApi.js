@@ -1,10 +1,10 @@
 import API from "./axios";
 
 // Get Orders
-export const getOrders = async ({search, offset, limit, type, assignedTo}) => {
+export const getOrders = async ({search, offset, limit, type, assignedTo, startDate, endDate}) => {
   try {
     const res = await API.get(`/order`,{
-        params : {search, offset, limit, type, assignedTo}
+        params : {search, offset, limit, type, assignedTo, startDate, endDate}
     });
     return res;
   } catch (err) {

@@ -12,6 +12,8 @@ import { useAuth } from '../../context/AuthContext';
 import getLabelColor from '../../utils/GetLabelColor';
 import TransferLeadsModal from './TransferLeadsModal';
 import { transferLeads } from '../../api/leadApi';
+import DateRangePickerModal from '../../components/DateRangePickerModal ';
+import { Calendar } from 'lucide-react';
 
 const NewLeadsTab = ({ refreshKey }) => {
 
@@ -30,9 +32,12 @@ const NewLeadsTab = ({ refreshKey }) => {
   const [leadTypeFilter, setLeadTypeFilter] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
   const [leadTypeOptions, setLeadTypeOptions] = useState([]);
   const [sourceOptions, setSourceOptions] = useState([]);
   const [statusOptions, setStatusOptions] = useState([]);
+  const [dateFilterModalOpen, setDateFilterModalOpen] = useState(false);
 
   // Modal and dropdown states
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -51,7 +56,7 @@ const NewLeadsTab = ({ refreshKey }) => {
   const totalPages = Math.ceil(totalRecords / pageSize);
 
   // Fetch leads with pagination, search, and filters
-  const fetchLeads = useCallback(async (search = '', page = 1, limit = 25, status = '', leadTypeId = '', sourceId = '') => {
+  const fetchLeads = useCallback(async (search = '', page = 1, limit = 25, status = '', leadTypeId = '', sourceId = '', startDateParam = null, endDateParam = null) => {
     // console.log('API CALL TRIGGERED:', {
     //   search: search,
     //   page: page,
@@ -87,6 +92,16 @@ const NewLeadsTab = ({ refreshKey }) => {
       // Add sourceId filter if provided
       if (sourceId !== '') {
         apiParams.sourceId = sourceId;
+      }
+
+      // Add date filters if provided (format as YYYY-MM-DD)
+      if (startDateParam) {
+        const date = new Date(startDateParam);
+        apiParams.startDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+      }
+      if (endDateParam) {
+        const date = new Date(endDateParam);
+        apiParams.endDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
       }
 
       const response = await getAllNewLeads(apiParams);
@@ -209,9 +224,9 @@ const NewLeadsTab = ({ refreshKey }) => {
     // console.log('SETTING 1-SECOND TIMEOUT FOR SEARCH');
     searchTimeoutRef.current = setTimeout(() => {
       //console.log('TIMEOUT COMPLETED - Making API call');
-      fetchLeads(searchValue, page, limit, statusFilter, leadTypeFilter, sourceFilter);
+      fetchLeads(searchValue, page, limit, statusFilter, leadTypeFilter, sourceFilter, startDate, endDate);
     }, 1000);
-  }, [pageSize, fetchLeads, statusFilter, leadTypeFilter, sourceFilter]);
+  }, [pageSize, fetchLeads, statusFilter, leadTypeFilter, sourceFilter, startDate, endDate]);
 
   // Handle search input change
   const handleSearchChange = (e) => {
@@ -222,7 +237,7 @@ const NewLeadsTab = ({ refreshKey }) => {
     // If search is cleared (empty), fetch all leads immediately
     if (value === '') {
       //console.log('SEARCH CLEARED - Immediate API call for all leads');
-      fetchLeads('', 1, pageSize, statusFilter, leadTypeFilter, sourceFilter);
+      fetchLeads('', 1, pageSize, statusFilter, leadTypeFilter, sourceFilter, startDate, endDate);
       return;
     }
 
@@ -235,7 +250,7 @@ const NewLeadsTab = ({ refreshKey }) => {
     if (page >= 1 && page <= totalPages) {
       setPageNumber(page);
       const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
-      fetchLeads(currentSearch, page, pageSize, statusFilter, leadTypeFilter, sourceFilter);
+      fetchLeads(currentSearch, page, pageSize, statusFilter, leadTypeFilter, sourceFilter, startDate, endDate);
     }
   };
 
@@ -244,7 +259,7 @@ const NewLeadsTab = ({ refreshKey }) => {
     setPageSize(newPageSize);
     setPageNumber(1); // Reset to first page
     const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
-    fetchLeads(currentSearch, 1, newPageSize, statusFilter, leadTypeFilter, sourceFilter);
+    fetchLeads(currentSearch, 1, newPageSize, statusFilter, leadTypeFilter, sourceFilter, startDate, endDate);
   };
 
   // Handle lead type filter change
@@ -253,7 +268,7 @@ const NewLeadsTab = ({ refreshKey }) => {
     setLeadTypeFilter(value);
     setPageNumber(1); // Reset to first page
     const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
-    fetchLeads(currentSearch, 1, pageSize, statusFilter, value, sourceFilter);
+    fetchLeads(currentSearch, 1, pageSize, statusFilter, value, sourceFilter, startDate, endDate);
   };
 
   // Handle source filter change
@@ -262,7 +277,7 @@ const NewLeadsTab = ({ refreshKey }) => {
     setSourceFilter(value);
     setPageNumber(1); // Reset to first page
     const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
-    fetchLeads(currentSearch, 1, pageSize, statusFilter, leadTypeFilter, value);
+    fetchLeads(currentSearch, 1, pageSize, statusFilter, leadTypeFilter, value, startDate, endDate);
   };
 
   // Handle status filter change
@@ -271,13 +286,31 @@ const NewLeadsTab = ({ refreshKey }) => {
     setStatusFilter(value);
     setPageNumber(1); // Reset to first page
     const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
-    fetchLeads(currentSearch, 1, pageSize, value, leadTypeFilter, sourceFilter);
+    fetchLeads(currentSearch, 1, pageSize, value, leadTypeFilter, sourceFilter, startDate, endDate);
+  };
+
+  // Handle date filter confirmation
+  const handleDateFilterConfirm = (start, end) => {
+    setStartDate(start);
+    setEndDate(end);
+    setPageNumber(1); // Reset to first page
+    const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
+    fetchLeads(currentSearch, 1, pageSize, statusFilter, leadTypeFilter, sourceFilter, start, end);
+  };
+
+  // Handle date filter clear
+  const handleDateFilterClear = () => {
+    setStartDate(null);
+    setEndDate(null);
+    setPageNumber(1); // Reset to first page
+    const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
+    fetchLeads(currentSearch, 1, pageSize, statusFilter, leadTypeFilter, sourceFilter, null, null);
   };
 
   // Initial data fetch
   useEffect(() => {
     //console.log('INITIAL LOAD - Component mounted or refreshKey changed');
-    fetchLeads('', 1, pageSize, statusFilter, leadTypeFilter, sourceFilter);
+    fetchLeads('', 1, pageSize, statusFilter, leadTypeFilter, sourceFilter, startDate, endDate);
     getLeadTypes();
     getSources();
     getStatuses();
@@ -437,6 +470,18 @@ const NewLeadsTab = ({ refreshKey }) => {
               </select>
               <img src="/icons/Dropdown.png" alt="Dropdown" className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-2 pointer-events-none opacity-50" />
             </div>
+
+            {/* Date Filter */}
+            <button
+              onClick={() => setDateFilterModalOpen(true)}
+              className={`flex items-center gap-2 px-4 py-2 bg-btn-gray rounded-s-xs text-sm hover:cursor-pointer ${startDate && endDate ? 'bg-green-100 border border-green-500' : ''}`}
+            >
+              <Calendar size={14} color='gray' />
+              Date Filter
+              {(startDate || endDate) && (
+                <span className="ml-1 text-xs text-green-700">●</span>
+              )}
+            </button>
           </div>
           <button
             onClick={() => {
@@ -754,6 +799,17 @@ const NewLeadsTab = ({ refreshKey }) => {
           onSuccess={()=>{fetchLeads(), setPageNumber(1)}}
           leadsData={checkedLeadIds} // Array of lead objects
           page="newLeads"
+        />
+      )}
+
+      {dateFilterModalOpen && (
+        <DateRangePickerModal
+          isOpen={dateFilterModalOpen}
+          onClose={() => setDateFilterModalOpen(false)}
+          onConfirm={handleDateFilterConfirm}
+          onClear={handleDateFilterClear}
+          initialStartDate={startDate}
+          initialEndDate={endDate}
         />
       )}
 

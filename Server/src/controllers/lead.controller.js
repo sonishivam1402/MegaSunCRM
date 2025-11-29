@@ -183,6 +183,8 @@ export const getAllLeads = async (req, res, next) => {
       leadTypeId,
       sourceId,
       userId,
+      startDate,
+      endDate
     } = req.query;
     const pool = await poolPromise;
     const result = await pool
@@ -193,6 +195,8 @@ export const getAllLeads = async (req, res, next) => {
       .input("StatusParam", sql.UniqueIdentifier, status)
       .input("LeadTypeId", sql.UniqueIdentifier, leadTypeId)
       .input("LeadSourceId", sql.UniqueIdentifier, sourceId)
+      .input("StartDate", sql.Date, startDate)
+      .input("EndDate", sql.Date, endDate)
       .input("UserId", sql.UniqueIdentifier, userId)
       .execute("sp_GetLeads");
 
@@ -256,6 +260,8 @@ export const getAllUnassignedLeads = async (req, res, next) => {
       status,
       leadTypeId,
       sourceId,
+      startDate,
+      endDate
     } = req.query;
     const pool = await poolPromise;
     const result = await pool
@@ -266,6 +272,8 @@ export const getAllUnassignedLeads = async (req, res, next) => {
       .input("StatusParam", sql.UniqueIdentifier, status)
       .input("LeadTypeId", sql.UniqueIdentifier, leadTypeId)
       .input("SourceParameter", sql.UniqueIdentifier, sourceId)
+      .input("StartDate", sql.Date, startDate)
+      .input("EndDate", sql.Date, endDate)
       .execute("sp_GetUnAssignedLeads");
 
     res.json(result.recordsets);
