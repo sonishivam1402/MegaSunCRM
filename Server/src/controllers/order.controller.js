@@ -40,7 +40,7 @@ export const exportOrders = async (req, res, next) => {
 // Get Orders
 export const getOrders = async (req, res, next) => {
   try {
-    const { search, offset = 0, limit = 10, type, assignedTo } = req.query;
+    const { search, offset = 0, limit = 10, type, assignedTo, startDate, endDate } = req.query;
 
     const pool = await poolPromise;
     const result = await pool
@@ -51,6 +51,8 @@ export const getOrders = async (req, res, next) => {
       .input("IsDomestic", sql.Bit, parseInt(type))
       .input("AssignedTo", sql.UniqueIdentifier, assignedTo)
       .input("UserId", sql.UniqueIdentifier, req.user.id)
+      .input("StartDate", sql.Date, startDate)
+      .input("EndDate", sql.Date, endDate)
       .execute("sp_GetOrder");
 
     res.json(result.recordsets);

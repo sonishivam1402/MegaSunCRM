@@ -10,6 +10,8 @@ import EditQuotationModal from './EditQuotationModal';
 import AddNewOrder from '../orderManagement/AddNewOrder';
 import { getQuotationPdf } from '../../api/invoiceApi';
 import { useAuth } from '../../context/AuthContext';
+import DateRangePickerModal from '../../components/DateRangePickerModal ';
+import { Calendar } from 'lucide-react';
 
 const Quotation = ({ refreshKey }) => {
     const { user, menus } = useAuth();
@@ -30,7 +32,10 @@ const Quotation = ({ refreshKey }) => {
     // Filters - FIX: Initialize typeFilter with '1' to match default select value
     const [typeFilter, setTypeFilter] = useState('1');
     const [salesmanFilter, setSalesmanFilter] = useState('');
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
     const [salesmanOptions, setSalesmanOptions] = useState([]);
+    const [dateFilterModalOpen, setDateFilterModalOpen] = useState(false);
 
     // Modal and dropdown states
     const [addModalOpen, setAddModalOpen] = useState(false);
@@ -61,7 +66,7 @@ const Quotation = ({ refreshKey }) => {
     };
 
     // Fetch quotations with pagination, search, and filters
-    const fetchQuotations = useCallback(async (search = '', page = 1, limit = 25, type = '', assignedTo = '') => {
+    const fetchQuotations = useCallback(async (search = '', page = 1, limit = 25, type = '', assignedTo = '', startDateParam = null, endDateParam = null) => {
         try {
             setLoading(true);
             const offset = (page - 1) * limit;
@@ -80,6 +85,16 @@ const Quotation = ({ refreshKey }) => {
                 params.assignedTo = assignedTo;
             } else {
                 params.assignedTo = null;
+            }
+
+            // Add date filters if provided (format as YYYY-MM-DD)
+            if (startDateParam) {
+                const date = new Date(startDateParam);
+                params.startDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            }
+            if (endDateParam) {
+                const date = new Date(endDateParam);
+                params.endDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
             }
 
             //console.log('API Request Params:', params);
@@ -116,9 +131,9 @@ const Quotation = ({ refreshKey }) => {
         }
 
         searchTimeoutRef.current = setTimeout(() => {
-            fetchQuotations(searchValue, page, limit, typeFilter, salesmanFilter);
+            fetchQuotations(searchValue, page, limit, typeFilter, salesmanFilter, startDate, endDate);
         }, 1000);
-    }, [pageSize, fetchQuotations, typeFilter, salesmanFilter]);
+    }, [pageSize, fetchQuotations, typeFilter, salesmanFilter, startDate, endDate]);
 
     // Handle search input change
     const handleSearchChange = (e) => {
@@ -128,7 +143,7 @@ const Quotation = ({ refreshKey }) => {
 
         if (value === '' || value.trim().length < 3) {
             // FIX: Fetch without search when cleared or less than 3 chars
-            fetchQuotations('', 1, pageSize, typeFilter, salesmanFilter);
+            fetchQuotations('', 1, pageSize, typeFilter, salesmanFilter, startDate, endDate);
             return;
         }
 
@@ -140,7 +155,7 @@ const Quotation = ({ refreshKey }) => {
         if (page >= 1 && page <= totalPages) {
             setPageNumber(page);
             const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
-            fetchQuotations(currentSearch, page, pageSize, typeFilter, salesmanFilter);
+            fetchQuotations(currentSearch, page, pageSize, typeFilter, salesmanFilter, startDate, endDate);
         }
     };
 
@@ -149,7 +164,7 @@ const Quotation = ({ refreshKey }) => {
         setPageSize(newPageSize);
         setPageNumber(1);
         const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
-        fetchQuotations(currentSearch, 1, newPageSize, typeFilter, salesmanFilter);
+        fetchQuotations(currentSearch, 1, newPageSize, typeFilter, salesmanFilter, startDate, endDate);
     };
 
     // Handle type filter change
@@ -158,7 +173,7 @@ const Quotation = ({ refreshKey }) => {
         setTypeFilter(value);
         setPageNumber(1);
         const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
-        fetchQuotations(currentSearch, 1, pageSize, value, salesmanFilter);
+        fetchQuotations(currentSearch, 1, pageSize, value, salesmanFilter, startDate, endDate);
     };
 
     // Handle salesman filter change
@@ -167,7 +182,25 @@ const Quotation = ({ refreshKey }) => {
         setSalesmanFilter(value);
         setPageNumber(1);
         const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
-        fetchQuotations(currentSearch, 1, pageSize, typeFilter, value);
+        fetchQuotations(currentSearch, 1, pageSize, typeFilter, value, startDate, endDate);
+    };
+
+    // Handle date filter confirmation
+    const handleDateFilterConfirm = (start, end) => {
+        setStartDate(start);
+        setEndDate(end);
+        setPageNumber(1); // Reset to first page
+        const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
+        fetchQuotations(currentSearch, 1, pageSize, typeFilter, salesmanFilter, start, end);
+    };
+
+    // Handle date filter clear
+    const handleDateFilterClear = () => {
+        setStartDate(null);
+        setEndDate(null);
+        setPageNumber(1); // Reset to first page
+        const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
+        fetchQuotations(currentSearch, 1, pageSize, typeFilter, salesmanFilter, null, null);
     };
 
     // Initial data fetch
@@ -177,7 +210,7 @@ const Quotation = ({ refreshKey }) => {
 
     // FIX: Initial fetch with proper default type filter
     useEffect(() => {
-        fetchQuotations('', pageNumber, pageSize, typeFilter, salesmanFilter);
+        fetchQuotations('', pageNumber, pageSize, typeFilter, salesmanFilter, startDate, endDate);
     }, [refreshKey]);
 
     // Cleanup timeout on unmount
@@ -272,7 +305,7 @@ const Quotation = ({ refreshKey }) => {
     };
 
     const handleModalSuccess = () => {
-        fetchQuotations('', 1, pageSize, typeFilter, salesmanFilter);
+        fetchQuotations('', 1, pageSize, typeFilter, salesmanFilter, startDate, endDate);
     };
 
     const handleDelete = (Id) => {
@@ -426,6 +459,18 @@ const Quotation = ({ refreshKey }) => {
                             </svg>
                         </div>
                     )}
+
+                    {/* Date Filter */}
+                    <button
+                        onClick={() => setDateFilterModalOpen(true)}
+                        className={`flex items-center gap-2 px-4 py-2 bg-btn-gray border border-gray-300 rounded-md text-sm hover:cursor-pointer ${startDate && endDate ? 'bg-green-100 border-green-500' : ''}`}
+                    >
+                        <Calendar size={14} color='gray' />
+                        Date Filter
+                        {(startDate || endDate) && (
+                            <span className="ml-1 text-xs text-green-700">●</span>
+                        )}
+                    </button>
 
                     <div className="flex-1"></div>
 
@@ -715,6 +760,17 @@ const Quotation = ({ refreshKey }) => {
                     onClose={() => setOrderModalOpen(false)}
                     onSuccess={() => null}
                     quotationId={selectedQuotation}
+                />
+            )}
+
+            {dateFilterModalOpen && (
+                <DateRangePickerModal
+                    isOpen={dateFilterModalOpen}
+                    onClose={() => setDateFilterModalOpen(false)}
+                    onConfirm={handleDateFilterConfirm}
+                    onClear={handleDateFilterClear}
+                    initialStartDate={startDate}
+                    initialEndDate={endDate}
                 />
             )}
         </div>
