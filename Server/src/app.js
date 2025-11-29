@@ -15,18 +15,21 @@ import targetRouter from "./routes/targetRoutes.js";
 import dashboardRouter from "./routes/dashboardRoutes.js";
 import indiaMartRouter from "./routes/indiaMartRoutes.js";
 import notifyRouter from "./routes/notificationRoutes.js";
-
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
+import facebookRouter from "./routes/facebookRoutes.js";
+import requestLogger from "./middlewares/requestLogger.js";
+import logger from "./utils/logger.js";
+import requestId from "./middlewares/requestId.js";
+import { parseErrorStack } from "./utils/parseStack.js";
+import cookieParser from "cookie-parser";
 
 const app = express();
 
 app.use(cors(corsOptions));
 
 app.use(express.json());
-
-// Serve static files from public directory
-//app.use('/public', express.static(path.join(__dirname, '../public')));
+app.use(cookieParser());
+app.use(requestId);
+app.use(requestLogger);
 
 app.use("/api/auth", authRouter);
 app.use("/api/dashboard", dashboardRouter);
@@ -40,9 +43,38 @@ app.use("/api/order", orderRouter);
 app.use("/api/target", targetRouter);
 app.use("/api/indiaMart", indiaMartRouter);
 app.use("/api/notify", notifyRouter);
+app.use("/api/facebook", facebookRouter);
 
 app.get("/api/test", (req, res) => {
+  logger.info("Test API executed successfully");
   res.json({ message: "Hello from backend!" });
 });
+
+app.use((req, res) => {
+  res.status(404).json({ message: "Route Not Found" });
+});
+
+app.use((err, req, res, next) => {
+  
+  const { FilePath, MethodName, LineNumber } = parseErrorStack(err.stack);
+  console.log(err);
+  logger.error("Unhandled Error", {
+    ErrorMessage: err.message,
+    StackTrace: err.stack,
+    FilePath: FilePath || null,
+    MethodName: MethodName || null,
+    LineNumber: LineNumber || null,
+    RequestId: req.id,
+    RequestUrl: req.originalUrl,
+    RequestMethod: req.method,
+    RequestBody: req.body,
+    ResponseStatus: 500,
+    UserId: req?.user?.id || null,
+    AdditionalData: err.additionalData || null,
+  });
+
+  res.status(500).json({ message: "Internal Server Error", requestId: req.id });
+});
+
 
 export default app;

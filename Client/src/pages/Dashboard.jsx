@@ -307,11 +307,11 @@ const Dashboard = () => {
                 </button>
               </div>
 
-              <div className="overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', maxHeight: '400px' }}>
+              <div className="overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', maxHeight: '250px' }}>
                 <style>{`div::-webkit-scrollbar { display: none; }`}</style>
 
                 {leadStateTab === 'chart' ? (
-                  <div className="flex flex-col items-center">
+                  <div className="flex justify-between items-center">
                     <ResponsiveContainer width="100%" height={250}>
                       <PieChart>
                         <Pie

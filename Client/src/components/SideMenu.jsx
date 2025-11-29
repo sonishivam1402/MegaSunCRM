@@ -1,5 +1,5 @@
 import { useAuth } from '../context/AuthContext'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Logo from "/Logo.png";
 
@@ -13,23 +13,31 @@ const SideMenu = () => {
   // Define the order of sections as per image
   const sectionOrder = ['Analytics', 'Sales', 'Management'];
 
-  // Group menus by type
-  const groupedMenus = menus?.reduce((acc, menu) => {
-    const type = menu.Type || 'Other';
-    if (!acc[type]) {
-      acc[type] = [];
-    }
-    acc[type].push(menu);
-    return acc;
-  }, {}) || {};
+  // Memoize grouped menus to prevent unnecessary recalculations
+  const groupedMenus = useMemo(() => {
+    if (!menus || menus.length === 0) return {};
+    
+    const grouped = menus.reduce((acc, menu) => {
+      const type = menu.Type || 'Other';
+      if (!acc[type]) {
+        acc[type] = [];
+      }
+      acc[type].push(menu);
+      return acc;
+    }, {});
 
-  // Sort menus within each group by OrderBy
-  Object.keys(groupedMenus).forEach(type => {
-    groupedMenus[type].sort((a, b) => (a.OrderBy || 0) - (b.OrderBy || 0));
-  });
+    // Sort menus within each group by OrderBy
+    Object.keys(grouped).forEach(type => {
+      grouped[type].sort((a, b) => (a.OrderBy || 0) - (b.OrderBy || 0));
+    });
 
-  // Create ordered sections based on sectionOrder
-  const orderedSections = sectionOrder.filter(type => groupedMenus[type]);
+    return grouped;
+  }, [menus]);
+
+  // Memoize ordered sections to prevent unnecessary recalculations
+  const orderedSections = useMemo(() => {
+    return sectionOrder.filter(type => groupedMenus[type]);
+  }, [groupedMenus]);
 
   useEffect(() => {
     if (menus && menus.length > 0) {
