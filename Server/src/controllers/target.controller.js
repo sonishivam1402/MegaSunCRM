@@ -1,4 +1,5 @@
 import { sql, poolPromise } from "../database/db.js";
+import logger from "../utils/logger.js";
 
 export const getTargets = async (req, res, next) => {
   try {
