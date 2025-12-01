@@ -34,7 +34,7 @@ app.use(requestLogger);
 app.use("/api/auth", authRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/user", userRouter);
-app.use("/api/products", productRouter);
+// app.use("/api/products", productRouter);
 app.use("/api/lead", leadRouter);
 app.use("/api/followUp", followUpRouter);
 app.use("/api/quotation", quotationRouter);
