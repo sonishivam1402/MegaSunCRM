@@ -5,7 +5,7 @@ import logger from "../utils/logger.js";
 // Get all FollowUps
 export const getFollowUps = async (req, res, next) => {
   try {
-    const { search, filter, limit = 10, offset = 0, userId } = req.query;
+    const { search, filter, limit = 10, offset = 0, userId, startDate, endDate } = req.query;
     const pool = await poolPromise;
     const result = await pool
       .request()
@@ -14,6 +14,8 @@ export const getFollowUps = async (req, res, next) => {
       .input("LimitParameter", sql.Int, parseInt(limit))
       .input("OffsetParameter", sql.Int, parseInt(offset))
       .input("UserId", sql.UniqueIdentifier, userId)
+      .input("StartDate", sql.Date, startDate)
+      .input("EndDate", sql.Date, endDate)
       .execute("sp_GetFollowups_v3");
 
     res.json(result.recordsets);
