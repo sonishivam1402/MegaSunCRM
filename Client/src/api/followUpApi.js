@@ -3,14 +3,24 @@ import API from "./axios";
 // Get Follow-ups
 export const getFollowUps = async (apiParams) => {
   try {
+    const params = {
+        search : apiParams.search,
+        filter : apiParams.filter,
+        limit : apiParams.limit,
+        offset : apiParams.offset,
+        userId : apiParams.userId
+    };
+    
+    // Add date filters if provided
+    if (apiParams.startDate) {
+        params.startDate = apiParams.startDate;
+    }
+    if (apiParams.endDate) {
+        params.endDate = apiParams.endDate;
+    }
+    
     const res = await API.get(`/followUp/filter`,{
-        params : {
-            search : apiParams.search,
-            filter : apiParams.filter,
-            limit : apiParams.limit,
-            offset : apiParams.offset,
-            userId : apiParams.userId
-        }
+        params : params
     });
     return res.data;
   } catch (err) {

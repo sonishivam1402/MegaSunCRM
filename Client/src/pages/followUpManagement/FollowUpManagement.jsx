@@ -13,6 +13,8 @@ import DetailFollowUpModal from './DetailFollowUpModal';
 import HistoryModal from './HistoryModal';
 import { useAuth } from '../../context/AuthContext';
 import getLabelColor from '../../utils/GetLabelColor';
+import DateRangePickerModal from '../../components/DateRangePickerModal ';
+import { Calendar } from 'lucide-react';
 
 const FollowUpManagement = () => {
     // State management
@@ -23,6 +25,9 @@ const FollowUpManagement = () => {
     const [totalRecords, setTotalRecords] = useState(0);
     const [loading, setLoading] = useState(false);
     const [activeFilter, setActiveFilter] = useState('All');
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
+    const [dateFilterModalOpen, setDateFilterModalOpen] = useState(false);
     const [activeDropdown, setActiveDropdown] = useState(null);
     const [addFollowUpModalOpen, setAddFollowUpModalOpen] = useState(false);
     const [editFollowUpModalOpen, setEditFollowUpModalOpen] = useState(false);
@@ -51,7 +56,7 @@ const FollowUpManagement = () => {
     ];
 
     // Fetch follow-ups
-    const fetchFollowUps = useCallback(async (search = '', filter = activeFilter, page = 1, limit = 25) => {
+    const fetchFollowUps = useCallback(async (search = '', filter = activeFilter, page = 1, limit = 25, startDateParam = null, endDateParam = null) => {
         try {
             setLoading(true);
             const offset = (page - 1) * limit;
@@ -63,6 +68,16 @@ const FollowUpManagement = () => {
                 offset: offset,
                 userId: user.UserId
             };
+
+            // Add date filters if provided (format as YYYY-MM-DD)
+            if (startDateParam) {
+                const date = new Date(startDateParam);
+                apiParams.startDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            }
+            if (endDateParam) {
+                const date = new Date(endDateParam);
+                apiParams.endDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            }
 
             const response = await getFollowUps(apiParams);
             // Handle response structure similar to leads
@@ -97,9 +112,9 @@ const FollowUpManagement = () => {
         }
 
         searchTimeoutRef.current = setTimeout(() => {
-            fetchFollowUps(searchValue, activeFilter, page, limit);
+            fetchFollowUps(searchValue, activeFilter, page, limit, startDate, endDate);
         }, 1000);
-    }, [pageSize, fetchFollowUps, activeFilter]);
+    }, [pageSize, fetchFollowUps, activeFilter, startDate, endDate]);
 
     // Handle search input change
     const handleSearchChange = (e) => {
@@ -109,7 +124,7 @@ const FollowUpManagement = () => {
 
         if (value === '' || value.trim().length < 3) {
             // Fetch without search when cleared or less than 3 chars
-            fetchFollowUps('', activeFilter, 1, pageSize);
+            fetchFollowUps('', activeFilter, 1, pageSize, startDate, endDate);
             return;
         }
 
@@ -121,7 +136,7 @@ const FollowUpManagement = () => {
         setActiveFilter(filter);
         setPageNumber(1);
         const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
-        fetchFollowUps(currentSearch, filter, 1, pageSize);
+        fetchFollowUps(currentSearch, filter, 1, pageSize, startDate, endDate);
     };
 
     // Handle page change
@@ -129,7 +144,7 @@ const FollowUpManagement = () => {
         if (page >= 1 && page <= totalPages) {
             setPageNumber(page);
             const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
-            fetchFollowUps(currentSearch, activeFilter, page, pageSize);
+            fetchFollowUps(currentSearch, activeFilter, page, pageSize, startDate, endDate);
         }
     };
 
@@ -138,12 +153,30 @@ const FollowUpManagement = () => {
         setPageSize(newPageSize);
         setPageNumber(1);
         const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
-        fetchFollowUps(currentSearch, activeFilter, 1, newPageSize);
+        fetchFollowUps(currentSearch, activeFilter, 1, newPageSize, startDate, endDate);
+    };
+
+    // Handle date filter confirmation
+    const handleDateFilterConfirm = (start, end) => {
+        setStartDate(start);
+        setEndDate(end);
+        setPageNumber(1); // Reset to first page
+        const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
+        fetchFollowUps(currentSearch, activeFilter, 1, pageSize, start, end);
+    };
+
+    // Handle date filter clear
+    const handleDateFilterClear = () => {
+        setStartDate(null);
+        setEndDate(null);
+        setPageNumber(1); // Reset to first page
+        const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
+        fetchFollowUps(currentSearch, activeFilter, 1, pageSize, null, null);
     };
 
     // Initial data fetch
     useEffect(() => {
-        fetchFollowUps('', activeFilter, 1, pageSize);
+        fetchFollowUps('', activeFilter, 1, pageSize, startDate, endDate);
     }, [fetchFollowUps, pageSize]);
 
     // Cleanup timeout on unmount
@@ -160,7 +193,7 @@ const FollowUpManagement = () => {
         const handleClickOutside = (event) => {
             if (activeDropdown && dropdownRefs.current[activeDropdown]) {
                 if (!dropdownRefs.current[activeDropdown].contains(event.target)) {
-                    setactiveDropdown(null);
+                    setActiveDropdown(null);
                 }
             }
         };
@@ -265,7 +298,8 @@ const FollowUpManagement = () => {
                 setSelectedFollowUp(null)
                 setDeleteModalOpen(false);
                 toast.success(response.data.Message);
-                await fetchFollowUps();
+                const currentSearch = searchTerm.length >= 3 ? searchTerm : '';
+                await fetchFollowUps(currentSearch, activeFilter, pageNumber, pageSize, startDate, endDate);
             }
             else {
                 toast.error(response.data?.[0]?.Message || response.data?.Message || "Something went wrong");
@@ -321,6 +355,18 @@ const FollowUpManagement = () => {
                                 {tab.label}
                             </button>
                         ))}
+
+                        {/* Date Filter */}
+                        <button
+                            onClick={() => setDateFilterModalOpen(true)}
+                            className={`flex items-center gap-2 px-4 py-2 bg-btn-gray border border-gray-300 rounded-md text-sm hover:cursor-pointer ${startDate && endDate ? 'bg-green-100 border-green-500' : ''}`}
+                        >
+                            <Calendar size={14} color='gray' />
+                            Date Filter
+                            {(startDate || endDate) && (
+                                <span className="ml-1 text-xs text-green-700">●</span>
+                            )}
+                        </button>
                     </div>
 
 
@@ -656,7 +702,7 @@ const FollowUpManagement = () => {
                 <AddNewFollowUp
                     isOpen={addFollowUpModalOpen}
                     onClose={() => { setAddFollowUpModalOpen(false), setSelectedFollowUp(null) }}
-                    onSuccess={() => {fetchFollowUps('', activeFilter, 1, pageSize)}}
+                    onSuccess={() => {fetchFollowUps('', activeFilter, 1, pageSize, startDate, endDate)}}
                     followUp={selectedFollowUp}
                 />
             )}
@@ -667,7 +713,7 @@ const FollowUpManagement = () => {
                     comment={selectedFollowUp?.Comments}
                     isOpen={editFollowUpModalOpen}
                     onClose={() => { setEditFollowUpModalOpen(false), setSelectedFollowUp(null) }}
-                    onSuccess={() => fetchFollowUps('', activeFilter, 1, pageSize)}
+                    onSuccess={() => fetchFollowUps('', activeFilter, 1, pageSize, startDate, endDate)}
                 />
             )}
 
@@ -684,6 +730,17 @@ const FollowUpManagement = () => {
                     isOpen={historyModalOpen}
                     onClose={() => { setHistoryModalOpen(false), setSelectedFollowUp(null) }}
                     followUp={selectedFollowUp}
+                />
+            )}
+
+            {dateFilterModalOpen && (
+                <DateRangePickerModal
+                    isOpen={dateFilterModalOpen}
+                    onClose={() => setDateFilterModalOpen(false)}
+                    onConfirm={handleDateFilterConfirm}
+                    onClear={handleDateFilterClear}
+                    initialStartDate={startDate}
+                    initialEndDate={endDate}
                 />
             )}
 
